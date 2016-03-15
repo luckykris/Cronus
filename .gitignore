@@ -2,7 +2,7 @@
 *.o
 *.a
 *.so
-pkg/*
+/pkg
 # Folders
 _obj
 _test
