@@ -2,13 +2,12 @@
 *.o
 *.a
 *.so
-/pkg/*
-*/pkg/*
-*/src/*
-/src/*
 # Folders
 _obj
 _test
+_**/pkg
+_**/src
+
 
 # Architecture specific extensions/prefixes
 *.[568vq]
