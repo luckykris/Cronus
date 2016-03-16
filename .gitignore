@@ -4,6 +4,8 @@
 *.so
 /pkg
 */pkg
+*/src
+/src
 # Folders
 _obj
 _test
