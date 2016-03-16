@@ -5,8 +5,8 @@
 # Folders
 _obj
 _test
-#_**/pkg
-#_**/src
+_**/pkg
+_**/src
 
 
 # Architecture specific extensions/prefixes
