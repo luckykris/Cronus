@@ -1,8 +1,10 @@
 package main
-import(
+
+import (
 	"github.com/luckykris/Cronus/Prometheus/db"
+	"github.com/luckykris/go-utilbox/exit"
 )
 
 func main() {
-	print(1)
+	LoadCfg()
 }
