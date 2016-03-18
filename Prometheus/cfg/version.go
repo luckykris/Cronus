@@ -1,4 +1,4 @@
-package main
+package cfg
 
 const (
 	VERSION float64 = 0.0
