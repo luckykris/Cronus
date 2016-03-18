@@ -1,12 +1,12 @@
 #!/usr/bin/env bash 
-CURDIR=`pwd` 
-if [ ! -d src ];then
+CURDIR=/tmp 
+if [ ! -d $CURDIR/src ];then
 mkdir $CURDIR/src
 fi
-if [ ! -d bin ];then
+if [ ! -d $CURDIR/bin ];then
 mkdir $CURDIR/bin
 fi
-if [ ! -d pkg ];then
+if [ ! -d $CURDIR/pkg ];then
 mkdir $CURDIR/pkg
 fi
 export GOPATH="${CURDIR}/" 
