@@ -1,7 +1,25 @@
 package db
 
-import "database/sql"
-import _ "github.com/go-sql-driver/mysql"
+import (
+	"fmt"
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+)
 
-func startMysql()
-	db, err := sql.Open("mysql", "user:password@/dbname")
+type MysqlDb struct {
+	User    string
+	Passwd  string
+	Db      string
+	Charset string
+	Conn		mysql.driver.Conn
+}
+
+func (db *MysqlDb) Start() {
+	Conn, err := sql.Open("mysql", fmt.Sprintf("%s:%s@/%s?charset=%s",db.User,db.Passwd,db.Db,db.Charset)	
+	if err != nil {
+		return
+	}	
+	db.Conn = Conn	
+}
+
+
