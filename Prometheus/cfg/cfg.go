@@ -20,6 +20,7 @@ type MainCfg struct {
 type DbCfgStruct struct {
 	Class   string `toml:"class"`
 	Host    string `toml:"host"`
+	Port    int64  `toml:"port"`
 	Db      string `toml:"db"`
 	Charset string `toml:"charset"`
 	User    string `toml:"user"`

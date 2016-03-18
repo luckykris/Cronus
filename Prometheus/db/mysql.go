@@ -8,6 +8,7 @@ import (
 
 type MysqlDb struct {
 	Host    string
+	Port    int64
 	User    string
 	Passwd  string
 	Db      string
@@ -16,10 +17,13 @@ type MysqlDb struct {
 }
 
 func (db *MysqlDb) Start() error {
-	Conn, err := sql.Open("mysql", fmt.Sprintf("%s:%s@%s/%s?charset=%s", db.User, db.Passwd, db.Host, db.Db, db.Charset))
+	Conn, err := sql.Open("mysql", fmt.Sprintf("%s:%s@%s:%d/%s?charset=%s", db.User, db.Passwd, db.Host, int(db.Port), db.Db, db.Charset))
 	if err != nil {
 		return err
 	}
 	db.Conn = Conn
 	return nil
+}
+func (db *MysqlDb) Ping() error {
+	return db.Conn.Ping()
 }

@@ -7,6 +7,7 @@ import (
 
 type iDb interface {
 	Start() error
+	Ping() error
 	//Get()
 	//Set()
 }
@@ -14,7 +15,7 @@ type iDb interface {
 func Init(cfg cfg.DbCfgStruct) (iDb, error) {
 	switch cfg.Class {
 	case "mysql":
-		return &MysqlDb{Host: cfg.Host, User: cfg.User, Passwd: cfg.Passwd, Db: cfg.Db, Charset: cfg.Charset}, nil
+		return &MysqlDb{Host: cfg.Host, Port: cfg.Port, User: cfg.User, Passwd: cfg.Passwd, Db: cfg.Db, Charset: cfg.Charset}, nil
 	default:
 		return nil, fmt.Errorf("Don`t support DB class %s ", cfg.Class)
 	}

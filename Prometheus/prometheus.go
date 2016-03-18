@@ -25,6 +25,11 @@ func main() {
 		fmt.Println(err)
 		os.Exit(255)
 	}
+	err = dbobj.Ping()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(255)
+	}
 	for {
 	}
 }

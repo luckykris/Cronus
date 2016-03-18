@@ -1,6 +1,8 @@
 [DataBase]
 class="mysql"
-host="172.16.3.20"
+#host="172.16.3.20"
+host="127.0.0.1"
+port=3306
 db="promethus"
 charset="utf8"
 user="root"
