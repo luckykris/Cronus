@@ -10,8 +10,8 @@ import (
 )
 
 func main() {
-	log.SetLevel(log.DebugLevel)
 	mainCfg := cfg.LoadCfg()
+	log.SetLevel(mainCfg.LogCfg.LevelId)
 	log.Debug("Start init Database.")
 	dbobj, err := db.Init(mainCfg.DbCfg)
 	if err != nil {
@@ -22,14 +22,11 @@ func main() {
 	log.Debug("Start Open Database.")
 	err = dbobj.Start()
 	if err != nil {
-		fmt.Println(err)
+		log.Error("Open Database failed=>", err.Error())
 		os.Exit(255)
 	}
-	err = dbobj.Ping()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(255)
-	}
+	log.Debug("Open Database Success")
+	log.Info("Start ", cfg.SOFTWARE, " success")
 	for {
 	}
 }
