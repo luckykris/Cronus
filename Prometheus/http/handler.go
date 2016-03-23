@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"github.com/Unknwon/macaron"
 	"net/http"
 )
