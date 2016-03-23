@@ -3,16 +3,18 @@ package db
 import (
 	"fmt"
 	"github.com/luckykris/Cronus/Prometheus/cfg"
+	"github.com/luckykris/Cronus/Prometheus/global"
 )
 
-type iDb interface {
+type Dbi interface {
 	Start() error
 	Ping() error
+	GetDeviceType() ([]global.DeviceType, error)
 	//Get()
 	//Set()
 }
 
-func Init(cfg cfg.DbCfgStruct) (iDb, error) {
+func Init(cfg cfg.DbCfgStruct) (Dbi, error) {
 	switch cfg.Class {
 	case "mysql":
 		return &MysqlDb{Host: cfg.Host, Port: cfg.Port, User: cfg.User, Passwd: cfg.Passwd, Db: cfg.Db, Charset: cfg.Charset, MaxLifeTime: cfg.MaxLifeTime, MaxIdleConns: cfg.MaxIdleConns}, nil

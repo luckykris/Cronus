@@ -9,6 +9,5 @@ fi
 if [ ! -d $CURDIR/pkg ];then
 mkdir $CURDIR/pkg
 fi
-export GOPATH="${CURDIR}/" 
 echo 'finished' 
 
