@@ -3,8 +3,8 @@ package http
 func LoadRoute() {
 	WEB.Group("/v1", func() {
 		WEB.Group("/deviceType", func(){
-			 m.Get("/:id", GetDevice)
+			 WEB.Get("/?:id:int", GetDevice)
 		})
 	})
-	WEB.NotFound(NotFound)
+//	WEB.NotFound(NotFound)
 }

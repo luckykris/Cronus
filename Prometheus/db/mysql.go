@@ -47,7 +47,7 @@ func (db *MysqlDb) Close() error {
 }
 
 func (db *MysqlDb) GetDeviceType() ([]global.DeviceType, error) {
-	sql := fmt.Sprintf(`SELECT device_type_id ,device_type_name FROM %s`, TABLEdeviceType)
+	sql := fmt.Sprintf(`SELECT device_model_id ,device_model_name FROM %s`, TABLEdeviceType)
 	allDeviceType := []global.DeviceType{}
 	rows, err := db.DbPool.Query(sql)
 	defer rows.Close()

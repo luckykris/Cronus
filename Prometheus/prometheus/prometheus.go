@@ -5,13 +5,11 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/luckykris/Cronus/Prometheus/cfg"
 	"github.com/luckykris/Cronus/Prometheus/db"
-	"github.com/luckykris/Cronus/Prometheus/http"
 	"os"
 )
 
 type Prometheus struct {
 	dbobj  db.Dbi
-	webobj string
 }
 
 var PROMETHEUS *Prometheus
@@ -36,5 +34,5 @@ func Init(mainCfg cfg.MainCfg) {
 }
 
 func Start() {
-	http.Start()
+
 }

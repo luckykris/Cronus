@@ -1,14 +1,24 @@
 package http
 
 import (
+	//"fmt"
 	"github.com/Unknwon/macaron"
-	"net/http"
+	"github.com/luckykris/Cronus/Prometheus/global"
+	"github.com/luckykris/Cronus/Prometheus/prometheus"
 )
 
-func (ctx *macaron.Context) GetDevice(r macaron.Render, req *http.Request) {
-	r.JSON(200, []string{ctx.Data["id"]})
+
+func  GetDevice(ctx *macaron.Context) {
+	id:=ctx.Params("id")
+	var r interface{}
+	if id == ""{
+		r,_=prometheus.GetAllDeviceType()
+	}else{
+		r=global.DeviceType{1,"test"}
+	}
+	ctx.JSON(200,&r)
 }
 
-func NotFound(r macaron.Render) {
-	r.HTML(404, "notfound", nil)
-}
+//func NotFound(r macaron.Render) {
+//	r.HTML(404, "notfound", nil)
+//}

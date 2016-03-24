@@ -3,8 +3,6 @@ package http
 import (
 	"github.com/Unknwon/macaron"
 	//"github.com/macaron-contrib/bindata"
-	"runtime"
-	"time"
 )
 
 var WEB *macaron.Macaron = macaron.New()
@@ -18,12 +16,12 @@ func _StartMartini() {
 	WEB.Use(macaron.Recovery())
 	WEB.Use(macaron.Static("public",
 		macaron.StaticOptions{
-			FileSystem: bindata.Static(bindata.Options{
-				Asset:      public.Asset,
-				AssetDir:   public.AssetDir,
-				AssetNames: public.AssetNames,
-				Prefix:     "",
-			}),
+	//		FileSystem: bindata.Static(bindata.Options{
+	//			Asset:      public.Asset,
+	//			AssetDir:   public.AssetDir,
+	//			AssetNames: public.AssetNames,
+	//			Prefix:     "",
+	//		}),
 			SkipLogging: true,
 		},
 	))
@@ -40,5 +38,5 @@ func _StartMartini() {
 		//	Prefix:     ""}),
 	}))
 	LoadRoute()
-	WEB.Run("0.0.0.0", 80)
+	WEB.Run("0.0.0.0", 81)
 }
