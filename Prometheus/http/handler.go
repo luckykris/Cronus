@@ -7,16 +7,20 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/prometheus"
 )
 
-
-func  GetDevice(ctx *macaron.Context) {
-	id:=ctx.Params("id")
+func GetDevice(ctx *macaron.Context) {
+	id := ctx.Params("id")
 	var r interface{}
-	if id == ""{
-		r,_=prometheus.GetAllDeviceType()
-	}else{
-		r=global.DeviceType{1,"test"}
+	var err error
+	if id == "" {
+		r, err = prometheus.GetDeviceType()
+		if err != nil {
+			ctx.JSON(500, err.Error())
+			return
+		}
+	} else {
+		r = global.DeviceType{1, "test"}
 	}
-	ctx.JSON(200,&r)
+	ctx.JSON(200, &r)
 }
 
 //func NotFound(r macaron.Render) {

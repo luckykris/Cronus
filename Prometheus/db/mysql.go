@@ -1,11 +1,13 @@
 package db
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/luckykris/Cronus/Prometheus/global"
+	//"reflect"
 	"time"
 )
 
@@ -19,6 +21,11 @@ type MysqlDb struct {
 	MaxLifeTime  int64
 	MaxIdleConns int64
 	DbPool       *sql.DB
+}
+type Cur struct {
+	row          *sql.Rows
+	columns_name [][]byte
+	columns      []interface{}
 }
 
 const (
@@ -46,7 +53,7 @@ func (db *MysqlDb) Close() error {
 	return db.DbPool.Close()
 }
 
-func (db *MysqlDb) GetDeviceType() ([]global.DeviceType, error) {
+func (db *MysqlDb) GetDeviceType(args ...string) (interface{}, error) {
 	sql := fmt.Sprintf(`SELECT device_model_id ,device_model_name FROM %s`, TABLEdeviceType)
 	allDeviceType := []global.DeviceType{}
 	rows, err := db.DbPool.Query(sql)
@@ -61,4 +68,23 @@ func (db *MysqlDb) GetDeviceType() ([]global.DeviceType, error) {
 		allDeviceType = append(allDeviceType, global.DeviceType{Id: id, Name: name})
 	}
 	return allDeviceType, nil
+}
+
+func (db *MysqlDb) Find(table string, columns_name [][]byte, columns ...interface{}) (*Cur, error) {
+	sql := fmt.Sprintf(`SELECT %s FROM %s`, bytes.Join(columns_name, []byte(`,`)), TABLEdeviceType)
+	rows, err := db.DbPool.Query(sql)
+	return &Cur{rows, columns_name, columns}, err
+
+}
+func (c *Cur) Fetch() bool {
+	if c.row.Next() {
+		err := c.row.Scan(c.columns...)
+		if err != nil {
+			return false
+		}
+		return true
+	} else {
+		c.row.Close()
+		return false
+	}
 }

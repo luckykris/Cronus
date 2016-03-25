@@ -3,14 +3,14 @@ package db
 import (
 	"fmt"
 	"github.com/luckykris/Cronus/Prometheus/cfg"
-	"github.com/luckykris/Cronus/Prometheus/global"
+	//"github.com/luckykris/Cronus/Prometheus/global"
 )
 
 type Dbi interface {
 	Start() error
 	Ping() error
-	GetDeviceType() ([]global.DeviceType, error)
-	//Get()
+	GetDeviceType(args ...string) (interface{}, error)
+	Find(string, [][]byte, ...interface{}) (*Cur, error)
 	//Set()
 }
 
