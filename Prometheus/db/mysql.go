@@ -6,8 +6,6 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/luckykris/Cronus/Prometheus/global"
-	//"reflect"
 	"time"
 )
 
@@ -29,7 +27,7 @@ type Cur struct {
 }
 
 const (
-	TABLEdeviceType string = `device_type`
+	TABLEdeviceModel string = `device_model`
 )
 
 func (db *MysqlDb) Start() error {
@@ -53,25 +51,12 @@ func (db *MysqlDb) Close() error {
 	return db.DbPool.Close()
 }
 
-func (db *MysqlDb) GetDeviceType(args ...string) (interface{}, error) {
-	sql := fmt.Sprintf(`SELECT device_model_id ,device_model_name FROM %s`, TABLEdeviceType)
-	allDeviceType := []global.DeviceType{}
-	rows, err := db.DbPool.Query(sql)
-	defer rows.Close()
-	for rows.Next() {
-		var id int
-		var name string
-		err = rows.Scan(&id, &name)
-		if err != nil {
-			return allDeviceType, err
-		}
-		allDeviceType = append(allDeviceType, global.DeviceType{Id: id, Name: name})
+func (db *MysqlDb) Find(table string, columns_name [][]byte, conditions [][]byte, columns ...interface{}) (*Cur, error) {
+	var conditions_str = ""
+	if len(conditions) != 0 {
+		conditions_str = " WHERE " + string(bytes.Join(conditions, []byte(` AND `)))
 	}
-	return allDeviceType, nil
-}
-
-func (db *MysqlDb) Find(table string, columns_name [][]byte, columns ...interface{}) (*Cur, error) {
-	sql := fmt.Sprintf(`SELECT %s FROM %s`, bytes.Join(columns_name, []byte(`,`)), TABLEdeviceType)
+	sql := fmt.Sprintf(`SELECT %s FROM %s %s`, bytes.Join(columns_name, []byte(`,`)), TABLEdeviceModel, conditions_str)
 	rows, err := db.DbPool.Query(sql)
 	return &Cur{rows, columns_name, columns}, err
 
@@ -80,6 +65,7 @@ func (c *Cur) Fetch() bool {
 	if c.row.Next() {
 		err := c.row.Scan(c.columns...)
 		if err != nil {
+			log.Fatal("db fetch failed:", err.Error())
 			return false
 		}
 		return true

@@ -9,13 +9,14 @@ import (
 //	return r, err
 //}
 
-func GetDeviceType() (interface{}, error) {
+func GetDeviceModel(args ...[]byte) (interface{}, error) {
 	var id int
 	var name string
-	cur, err := PROMETHEUS.dbobj.Find("device_model", [][]byte{[]byte(`device_model_id`), []byte(`device_model_name`)}, &id, &name)
-	r := []global.DeviceType{}
+	var _type string
+	cur, err := PROMETHEUS.dbobj.Find("device_model", [][]byte{[]byte(`device_model_id`), []byte(`device_model_name`), []byte(`device_type`)}, args, &id, &name, &_type)
+	r := []global.DeviceModel{}
 	for cur.Fetch() {
-		r = append(r, global.DeviceType{id, name})
+		r = append(r, global.DeviceModel{id, name, _type})
 	}
 	return r, err
 }

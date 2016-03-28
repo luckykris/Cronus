@@ -9,8 +9,7 @@ import (
 type Dbi interface {
 	Start() error
 	Ping() error
-	GetDeviceType(args ...string) (interface{}, error)
-	Find(string, [][]byte, ...interface{}) (*Cur, error)
+	Find(string, [][]byte, [][]byte, ...interface{}) (*Cur, error)
 	//Set()
 }
 

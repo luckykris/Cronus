@@ -1,6 +1,7 @@
 package global
 
-type DeviceType struct {
+type DeviceModel struct {
 	Id   int
 	Name string
+	Type string
 }
