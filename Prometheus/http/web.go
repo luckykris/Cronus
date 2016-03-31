@@ -9,6 +9,7 @@ var WEB *macaron.Macaron = macaron.New()
 var REQ uint64 = 0
 
 func Start() {
+	macaron.Env = macaron.PROD
 	_StartMartini()
 }
 
@@ -16,12 +17,12 @@ func _StartMartini() {
 	WEB.Use(macaron.Recovery())
 	WEB.Use(macaron.Static("public",
 		macaron.StaticOptions{
-	//		FileSystem: bindata.Static(bindata.Options{
-	//			Asset:      public.Asset,
-	//			AssetDir:   public.AssetDir,
-	//			AssetNames: public.AssetNames,
-	//			Prefix:     "",
-	//		}),
+			//		FileSystem: bindata.Static(bindata.Options{
+			//			Asset:      public.Asset,
+			//			AssetDir:   public.AssetDir,
+			//			AssetNames: public.AssetNames,
+			//			Prefix:     "",
+			//		}),
 			SkipLogging: true,
 		},
 	))

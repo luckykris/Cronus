@@ -1,7 +1,7 @@
 package http
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/Unknwon/macaron"
 	"github.com/luckykris/Cronus/Prometheus/global"
 	"github.com/luckykris/Cronus/Prometheus/prometheus"
@@ -69,11 +69,9 @@ func UpdateDeviceModel(ctx *macaron.Context) {
 	}
 	ctx.Req.ParseForm()
 	name := ctx.Req.Form.Get("name")
-	fmt.Println(name)
 	_type := ctx.Req.Form.Get("type")
 	_CheckHasClounms("device_model_name", name, &cloumns, &values)
 	_CheckHasClounms("device_type", _type, &cloumns, &values)
-	fmt.Println(cloumns)
 	err = prometheus.UpdateDeviceModel(id_int, cloumns, values)
 	if err != nil {
 		ctx.JSON(400, err.Error())

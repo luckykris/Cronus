@@ -1,11 +1,11 @@
 package db
 
 import (
-	"bytes"
 	"database/sql"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	_ "github.com/go-sql-driver/mysql"
+	"strings"
 	"time"
 )
 
@@ -50,9 +50,9 @@ func (db *MysqlDb) Close() error {
 func (db *MysqlDb) Get(table string, columns_name []string, conditions []string, columns ...interface{}) (*Cur, error) {
 	var conditions_str = ""
 	if len(conditions) != 0 {
-		conditions_str = " WHERE " + string(bytes.Join(_StringSliceToByteSlice(conditions), []byte(` AND `)))
+		conditions_str = " WHERE " + strings.Join(conditions, ` AND `)
 	}
-	sql := fmt.Sprintf(`SELECT %s FROM %s %s`, bytes.Join(_StringSliceToByteSlice(columns_name), []byte(`,`)), table, conditions_str)
+	sql := fmt.Sprintf(`SELECT %s FROM %s %s`, strings.Join(columns_name, `,`), table, conditions_str)
 	rows, err := db.DbPool.Query(sql)
 	return &Cur{rows, columns_name, columns}, err
 
@@ -72,15 +72,15 @@ func (c *Cur) Fetch() bool {
 }
 
 func (db *MysqlDb) Add(table string, columns_name []string, values [][]interface{}) error {
-	values3 := [][]byte{}
+	values3 := []string{}
 	for row := range values {
-		values2 := [][]byte{}
+		values2 := []string{}
 		for i := range columns_name {
-			values2 = append(values2, []byte(_CheckTypeAndModifyString(values[row][i])))
+			values2 = append(values2, _CheckTypeAndModifyString(values[row][i]))
 		}
-		values3 = append(values3, bytes.Join(values2, []byte(`,`)))
+		values3 = append(values3, strings.Join(values2, `,`))
 	}
-	sql := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`, table, bytes.Join(_StringSliceToByteSlice(columns_name), []byte(`,`)), bytes.Join(values3, []byte(`),(`)))
+	sql := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`, table, strings.Join(columns_name, `,`), strings.Join(values3, `),(`))
 	_, err := db.DbPool.Exec(sql)
 	if err != nil {
 		log.Debug("Mysql insert failed,sql:%s,err:%s", sql, err.Error())
@@ -90,7 +90,7 @@ func (db *MysqlDb) Add(table string, columns_name []string, values [][]interface
 }
 
 func (db *MysqlDb) Delete(table string, conditions []string) error {
-	sql := fmt.Sprintf(`DELETE FROM %s WHERE %s`, table, bytes.Join(_StringSliceToByteSlice(conditions), []byte(` AND `)))
+	sql := fmt.Sprintf(`DELETE FROM %s WHERE %s`, table, strings.Join(conditions, ` AND `))
 	_, err := db.DbPool.Exec(sql)
 	if err != nil {
 		log.Debug("Mysql delete failed,sql:%s,err:%s", sql, err.Error())
@@ -100,12 +100,12 @@ func (db *MysqlDb) Delete(table string, conditions []string) error {
 }
 
 func (db *MysqlDb) Update(table string, conditions []string, columns_name []string, values []interface{}) error {
-	kv := [][]byte{}
-	conditions_str := string(bytes.Join(_StringSliceToByteSlice(conditions), []byte(` AND `)))
+	kv := []string{}
+	conditions_str := strings.Join(conditions, ` AND `)
 	for i := range columns_name {
-		kv = append(kv, []byte(fmt.Sprintf(" %s = %s", columns_name[i], _CheckTypeAndModifyString(values[i]))))
+		kv = append(kv, fmt.Sprintf(" %s = %s", columns_name[i], _CheckTypeAndModifyString(values[i])))
 	}
-	sql := fmt.Sprintf(`UPDATE %s SET %s WHERE %s`, table, bytes.Join(kv, []byte(`,`)), conditions_str)
+	sql := fmt.Sprintf(`UPDATE %s SET %s WHERE %s`, table, strings.Join(kv, `,`), conditions_str)
 	_, err := db.DbPool.Exec(sql)
 	if err != nil {
 		log.Debug("Mysql Update failed,sql:%s,err:%s", sql, err.Error())
@@ -120,14 +120,7 @@ func _CheckTypeAndModifyString(v interface{}) string {
 	case int:
 		return fmt.Sprintf("%d", v.(int))
 	default:
+		log.Debug("Mysql Dbi Can't analyis value's type")
 		return "Unkonw Type"
 	}
-}
-
-func _StringSliceToByteSlice(ss []string) [][]byte {
-	r := [][]byte{}
-	for i := range ss {
-		r = append(r, []byte(ss[i]))
-	}
-	return r
 }
