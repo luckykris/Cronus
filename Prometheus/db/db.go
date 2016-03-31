@@ -9,8 +9,10 @@ import (
 type Dbi interface {
 	Start() error
 	Ping() error
-	Find(string, [][]byte, [][]byte, ...interface{}) (*Cur, error)
-	//Set()
+	Get(string, []string, []string, ...interface{}) (*Cur, error)
+	Add(string, []string, [][]interface{}) error
+	Delete(string, []string) error
+	Update(string, []string, []string, []interface{}) error
 }
 
 func Init(cfg cfg.DbCfgStruct) (Dbi, error) {
