@@ -2,19 +2,11 @@ package toolkit
 
 import (
 	"fmt"
+	"github.com/luckykris/Cronus/Prometheus/toolkit"
 	"testing"
-	"github.com/luckykris/Cronus/Prometheus/cfg"
-	"github.com/luckykris/Cronus/Prometheus/prometheus"
-	log "github.com/Sirupsen/logrus"
 )
 
-func TestGetAllDeviceType(t *testing.T){
-	mainCfg := cfg.LoadCfg()
-	log.SetLevel(mainCfg.LogCfg.LevelId)
-	prometheus.Init(mainCfg)
-	r,err:=prometheus.GetAllDeviceType()
-	if err!=nil{
-		return
-	}
-	fmt.Println(r)
+func TestIpv4StringConverUint32(t *testing.T) {
+	fmt.Println(toolkit.Ipv4StringConverUint32("192.168.33.71"))
+	fmt.Println(toolkit.Ipv4Uint32ConverString(3232244039))
 }
