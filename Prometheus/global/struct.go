@@ -7,17 +7,17 @@ type DeviceModel struct {
 }
 
 type Cabinet struct {
-	Id   int
-	Name string
-	IsCloud string
-	CapacityTotal int64
-	CapacityUsed int64
-	LocationId   int
+	Id            int
+	Name          string
+	IsCloud       string
+	CapacityTotal uint64
+	CapacityUsed  uint64
+	LocationId    int
 }
 
-type Location struct{
-	Id int
-	Name string
-	Pic string
+type Location struct {
+	Id       int
+	Name     string
+	Pic      string
 	FatherId int
 }
