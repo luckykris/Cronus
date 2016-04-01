@@ -1,14 +1,14 @@
 package global
 
 type DeviceModel struct {
-	Id   int
-	Name string
-	Type string
+	DeviceId   int
+	DeviceName string
+	DeviceType string
 }
 
 type Cabinet struct {
-	Id            int
-	Name          string
+	CabinetId     int
+	CabinetName   string
 	IsCloud       string
 	CapacityTotal uint64
 	CapacityUsed  uint64
@@ -16,8 +16,8 @@ type Cabinet struct {
 }
 
 type Location struct {
-	Id       int
-	Name     string
-	Pic      string
-	FatherId int
+	LocationId       int
+	LocationName     string
+	Picture          string
+	FatherLocationId interface{}
 }

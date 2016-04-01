@@ -14,6 +14,12 @@ func LoadRoute() {
 			WEB.Delete("/:id:int", DeleteCabinet)
 			WEB.Patch("/:id:int", UpdateCabinet)
 		})
+		WEB.Group("/location", func() {
+			WEB.Get("/?:id:int", GetLocation)
+			WEB.Post("/", AddLocation)
+			WEB.Delete("/:id:int", DeleteLocation)
+			WEB.Patch("/:id:int", UpdateLocation)
+		})
 	})
 	WEB.NotFound(NotFound)
 }

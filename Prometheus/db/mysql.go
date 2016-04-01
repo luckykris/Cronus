@@ -54,6 +54,7 @@ func (db *MysqlDb) Get(table string, columns_name []string, conditions []string,
 	}
 	sql := fmt.Sprintf(`SELECT %s FROM %s %s`, strings.Join(columns_name, `,`), table, conditions_str)
 	rows, err := db.DbPool.Query(sql)
+	log.Debug(sql)
 	return &Cur{rows, columns_name, columns}, err
 
 }
@@ -81,6 +82,7 @@ func (db *MysqlDb) Add(table string, columns_name []string, values [][]interface
 		values3 = append(values3, strings.Join(values2, `,`))
 	}
 	sql := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`, table, strings.Join(columns_name, `,`), strings.Join(values3, `),(`))
+	log.Debug(sql)
 	_, err := db.DbPool.Exec(sql)
 	if err != nil {
 		log.Debug("Mysql insert failed,sql:%s,err:%s", sql, err.Error())
@@ -91,6 +93,7 @@ func (db *MysqlDb) Add(table string, columns_name []string, values [][]interface
 
 func (db *MysqlDb) Delete(table string, conditions []string) error {
 	sql := fmt.Sprintf(`DELETE FROM %s WHERE %s`, table, strings.Join(conditions, ` AND `))
+	log.Debug(sql)
 	_, err := db.DbPool.Exec(sql)
 	if err != nil {
 		log.Debug("Mysql delete failed,sql:%s,err:%s", sql, err.Error())
@@ -106,6 +109,7 @@ func (db *MysqlDb) Update(table string, conditions []string, columns_name []stri
 		kv = append(kv, fmt.Sprintf(" %s = %s", columns_name[i], _CheckTypeAndModifyString(values[i])))
 	}
 	sql := fmt.Sprintf(`UPDATE %s SET %s WHERE %s`, table, strings.Join(kv, `,`), conditions_str)
+	log.Debug(sql)
 	_, err := db.DbPool.Exec(sql)
 	if err != nil {
 		log.Debug("Mysql Update failed,sql:%s,err:%s", sql, err.Error())
@@ -119,6 +123,8 @@ func _CheckTypeAndModifyString(v interface{}) string {
 		return `'` + v.(string) + `'`
 	case int:
 		return fmt.Sprintf("%d", v.(int))
+	case nil:
+		return `null`
 	default:
 		log.Debug("Mysql Dbi Can't analyis value's type")
 		return "Unkonw Type"
