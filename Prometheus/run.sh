@@ -1,4 +1,5 @@
-CURRENT=/tmp
+source /etc/profile
+CURRENT=/data/gopath
 rm -rf $CURRENT/src/github.com/luckykris/Cronus/Prometheus/db/
 rm -rf $CURRENT/src/github.com/luckykris/Cronus/Prometheus/cfg/
 rm -rf $CURRENT/src/github.com/luckykris/Cronus/Prometheus/prometheus/
@@ -11,4 +12,4 @@ cp -R prometheus $CURRENT/src/github.com/luckykris/Cronus/Prometheus/
 cp -R global $CURRENT/src/github.com/luckykris/Cronus/Prometheus/
 cp -R http $CURRENT/src/github.com/luckykris/Cronus/Prometheus/
 cp -R toolkit $CURRENT/src/github.com/luckykris/Cronus/Prometheus/
-go run prometheus.go -config prometheus.toml
+go run prometheus.go -config /etc/prometheus.toml
