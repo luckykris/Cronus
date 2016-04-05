@@ -1,8 +1,17 @@
 package global
 
-type DeviceModel struct {
-	DeviceId   int
+type Device struct {
+	DeviceId int 
 	DeviceName string
+	DeviceModelId int 
+	FatherDeviceId interface{}
+	CabinetId interface{}
+	UPosition interface{}
+}
+
+type DeviceModel struct {
+	DeviceModelId   int
+	DeviceModelName string
 	DeviceType string
 }
 

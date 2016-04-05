@@ -5,33 +5,51 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/global"
 )
 
-//func GetDeviceType() (interface{}, error) {
-//	r, err := PROMETHEUS.dbobj.GetDeviceType()
-//	return r, err
-//}
 
-func GetDeviceModel(args ...string) (interface{}, error) {
-	var id int
-	var name string
-	var _type string
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceModel, []string{`device_model_id`, `device_model_name`, `device_type`}, args, &id, &name, &_type)
-	r := []global.DeviceModel{}
+
+func GetDevice(args ...string) (interface{}, error) {
+	var device_id int
+	var device_name string
+	var device_model_id string
+	var father_device_id sql.NullInt64
+	var cabinet_id sql.NullInt64
+	var u_position sql.NullInt64
+	var father_device_id_i interface{}
+	var cabinet_id_i interface{}
+	var u_position_i interface{}
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceModel, []string{`device_id`, `device_name`, `device_model_id`,`father_device_id`,`cabinet_id`,`u_position`}, args, &device_id, &device_name, &device_model_id,&father_device_id,&cabinet_id,&u_position)
+	r := []global.Device{}
 	for cur.Fetch() {
-		r = append(r, global.DeviceModel{id, name, _type})
+		if !father_device_id.Valid {
+			father_device_id_i=nil
+		} else {
+			father_device_id_i=father_device_id.Int64
+		}
+		if !cabinet_id.Valid {
+			cabinet_id_i=nil
+		} else {
+			cabinet_id_i=cabinet_id.Int64
+		}
+		if !u_position_id.Valid {
+			u_position_id_i=nil
+		} else {
+			u_position_id_i=u_position_id.Int64
+		}				
+		r = append(r, global.Device{ device_id, device_name, device_model_id,father_device_id_i,cabinet_id_i,u_position_i})
 	}
 	return r, err
 }
 
-func AddDeviceModel(values [][]interface{}) error {
+func AddDevice(values [][]interface{}) error {
 	return PROMETHEUS.dbobj.Add(global.TABLEdeviceModel, []string{`device_model_name`, `device_type`}, values)
 }
 
-func DeleteDeviceModel(id int) error {
+func DeleteDevice(id int) error {
 	c := fmt.Sprintf("device_model_id = %d", id)
 	return PROMETHEUS.dbobj.Delete(global.TABLEdeviceModel, []string{c})
 }
 
-func UpdateDeviceModel(id int, cloumns []string, values []interface{}) error {
+func UpdateDevice(id int, cloumns []string, values []interface{}) error {
 	c := fmt.Sprintf("device_model_id = %d", id)
 	return PROMETHEUS.dbobj.Update(global.TABLEdeviceModel, []string{c}, cloumns, values)
 }
