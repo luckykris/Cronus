@@ -1,5 +1,5 @@
 source /etc/profile
-CURRENT=/tmp/
+CURRENT=/data/gopath
 rm -rf $CURRENT/src/github.com/luckykris/Cronus/Prometheus/db/
 rm -rf $CURRENT/src/github.com/luckykris/Cronus/Prometheus/cfg/
 rm -rf $CURRENT/src/github.com/luckykris/Cronus/Prometheus/prometheus/

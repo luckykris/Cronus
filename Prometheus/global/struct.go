@@ -5,8 +5,6 @@ type Device struct {
 	DeviceName string
 	DeviceModelId int 
 	FatherDeviceId interface{}
-	CabinetId interface{}
-	UPosition interface{}
 }
 
 type DeviceModel struct {
