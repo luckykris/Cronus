@@ -1,0 +1,28 @@
+{% extends "main.html" %}
+{%block body%}
+<div id="bigprojectcontainer">
+<div id="izquierdacont">
+	<div style="opacity: 1;" class="title">{{oneData['title']}}</div>
+	<div style="opacity: 1;" class="description">{{oneData['detail']}}
+    	<br>
+    	<br>
+    	{%if 'otherInfo' in oneData%}
+    		<a href="{{oneData['otherInfo']}}"><font style="color:#FF7BAC;font-size:14px;">Other Information</font></a>
+    	{%endif%}
+		<br>
+		<a href="index"><div id="nav" class="grid"></div></a>
+		<a href="detail?i={{oneData['index']-1}}"><div id="nav" class="prev"></div></a>
+		<a href="detail?i={{oneData['index']+1}}"><div id="nav" class="next"></div></a>
+	</div>
+</div>
+
+<div id="derecha">
+	{%for img in oneData['detail_img']%}
+		<img style="opacity: 1;" src="static/img/detail/{{img}}">
+	{%endfor%}
+	<div id="bottom"></div>
+</div>
+
+</div>
+
+{%endblock%}

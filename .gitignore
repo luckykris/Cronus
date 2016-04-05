@@ -2,7 +2,8 @@
 *.o
 *.a
 *.so
-run.sh
+*.pyc
+*run.sh
 # Folders
 _obj
 _test
