@@ -24,9 +24,9 @@ func GetNetPort(args ...string) (interface{}, error) {
 		if !ipv4_int.Valid {
 			ipv4_int_i = nil
 		} else {
-			ipv4_int_i = ipv4_int.Int64
+			ipv4_int_i = net.Ipv4Uint32ConverString(uint32(ipv4_int.Int64))
 		}
-		r = append(r, global.NetPort{mac_i, net.Ipv4Uint32ConverString(ipv4_int_i), device_id, _type})
+		r = append(r, global.NetPort{mac_i, ipv4_int_i, device_id, _type})
 	}
 	return r, err
 }
