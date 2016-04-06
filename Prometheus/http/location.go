@@ -22,15 +22,14 @@ func GetLocation(ctx *macaron.Context) {
 		ctx.JSON(500, err.Error())
 		return
 	}
-	switch len(r.([]global.Location)) {
-	case 0:
-		ctx.JSON(404, "Not Found")
-	case 1:
-		r = r.([]global.Location)[0]
-		ctx.JSON(200, &r)
-	default:
-		ctx.JSON(200, &r)
+	if id != "" {
+		if len(r.([]global.Location)) < 1 {
+			ctx.JSON(404, "Not Found")
+		} else {
+			r = r.([]global.Location)[0]
+		}
 	}
+	ctx.JSON(200, &r)
 }
 
 func AddLocation(ctx *macaron.Context) {

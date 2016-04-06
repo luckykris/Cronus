@@ -1,12 +1,10 @@
 package prometheus
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/luckykris/Cronus/Prometheus/global"
-	"database/sql"
 )
-
-
 
 func GetDevice(args ...string) (interface{}, error) {
 	var device_id int
@@ -14,15 +12,24 @@ func GetDevice(args ...string) (interface{}, error) {
 	var device_model_id int
 	var father_device_id sql.NullInt64
 	var father_device_id_i interface{}
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdevice, []string{`device_id`, `device_name`, `device_model_id`,`father_device_id`}, args, &device_id, &device_name, &device_model_id,&father_device_id)
+
+	var netPort interface{}
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdevice, []string{`device_id`, `device_name`, `device_model_id`, `father_device_id`}, args, &device_id, &device_name, &device_model_id, &father_device_id)
+	if err != nil {
+		return nil, err
+	}
 	r := []global.Device{}
 	for cur.Fetch() {
 		if !father_device_id.Valid {
-			father_device_id_i=nil
+			father_device_id_i = nil
 		} else {
-			father_device_id_i=father_device_id.Int64
+			father_device_id_i = father_device_id.Int64
 		}
-		r = append(r, global.Device{ device_id, device_name, device_model_id,father_device_id_i})
+		netPort, err = GetNetPort(fmt.Sprintf("device_id = %d", device_id))
+		if err != nil {
+			return nil, err
+		}
+		r = append(r, global.Device{device_id, device_name, device_model_id, father_device_id_i, netPort.([]global.NetPort)})
 	}
 	return r, err
 }

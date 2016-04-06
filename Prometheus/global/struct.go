@@ -1,16 +1,24 @@
 package global
 
 type Device struct {
-	DeviceId int 
-	DeviceName string
-	DeviceModelId int 
+	DeviceId       int
+	DeviceName     string
+	DeviceModelId  int
 	FatherDeviceId interface{}
+	NetPorts       []NetPort
+}
+
+type NetPort struct {
+	Mac      interface{}
+	Ipv4     interface{}
+	DeviceId int
+	Type     string
 }
 
 type DeviceModel struct {
 	DeviceModelId   int
 	DeviceModelName string
-	DeviceType string
+	DeviceType      string
 }
 
 type Cabinet struct {

@@ -1,8 +1,9 @@
 package global
 
 const (
-	TABLEdevice string = `device`
-	TABLEdeviceModel string = `device_model`
+	TABLEdevice      string = `device`
+	TABLEdeviceModel string = `deviceModel`
 	TABLEcabinet     string = `cabinet`
 	TABLElocation    string = `location`
+	TABLEnetPort     string = `netPort`
 )

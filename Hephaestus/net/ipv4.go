@@ -1,12 +1,7 @@
-package toolkit
+package net
 
 import (
-	//bytes"
-	//encoding/binary"
-	"fmt"
 	"net"
-	//"strconv"
-	//"strings"
 )
 
 const (
@@ -24,17 +19,6 @@ func Ipv4Uint32ConverString(ipv4_uint32 uint32) string {
 }
 
 func Ipv4StringConverUint32(ipv4_str string) (uint32, error) {
-	//a_b_c_d := strings.Split(ipv4_str, `.`)
-	//var s int64 = 1 << 7
-	//var ipv4_int64 int64 = 0
-	//for p := range a_b_c_d {
-	//	ipv4_int_p, err := strconv.Atoi(a_b_c_d[p])
-	//	if err != nil {
-	//		return 0, err
-	//	}
-	//	ipv4_int64 = ipv4_int64<<7 + ipv4_int_p
-	//}
-	//return ipv4_int, nil
 	ipv4 := net.ParseIP(ipv4_str)
 	if ipv4 == nil {
 		return 0, fmt.Errorf("Can't parse ip string :%s ", ipv4_str)
