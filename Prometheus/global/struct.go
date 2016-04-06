@@ -15,6 +15,13 @@ type NetPort struct {
 	Type     string
 }
 
+type Space struct {
+	CabinetId int
+	DeviceId int 
+	UPosition int 
+	Position string
+}
+
 type DeviceModel struct {
 	DeviceModelId   int
 	DeviceModelName string

@@ -6,4 +6,5 @@ const (
 	TABLEcabinet     string = `cabinet`
 	TABLElocation    string = `location`
 	TABLEnetPort     string = `netPort`
+	TABLEspace       string = `space`
 )
