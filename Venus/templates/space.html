@@ -1,0 +1,60 @@
+{% extends "main.html" %}
+{%block head%}
+{%endblock%}
+{%block body%}
+<div class="ui tabular menu">
+  <div class="item" data-tab="cabinet">Cabinet</div>
+</div>
+<div class="ui tab" data-tab="cabinet">
+  <div id="container">
+  </div>
+</div>
+{%endblock%}
+{%block js%}
+	<script src="static/js/highcharts/highcharts.js"></script>
+{%endblock%}
+{%block js_to_run%}
+<script>
+arr=[]
+for(var i=0;i<50;i++){                
+ 	arr.push(i)
+}	
+$(function () {
+    $('#container').highcharts({
+        chart: {
+            type: 'column',
+            height: 600,
+        },
+        title: {
+            text: 'Stacked column chart'
+        },
+        xAxis: {
+            categories: ['Apples']
+        },
+        yAxis: {
+            min: 0,
+            max:49,
+            tickPositions:arr,
+            tickPixelInterval:300,
+            allowDecimals:false,
+            title: {
+                text: 'Total Cabinet'
+            }
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal',
+            }
+        },
+        legend:{
+        	enabled:false
+        },
+        series: [
+            {name: 'John',data: [5],color:'blue'},
+            {name: 'empty',data: [3],color:'red'},
+            {name: 'John',data: [5],color:'blue'},
+        ]
+    });
+});				
+</script>
+{%endblock%}

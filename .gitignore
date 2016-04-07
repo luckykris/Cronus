@@ -9,7 +9,7 @@ _obj
 _test
 _**/pkg
 _**/src
-
+_**/__pycache__
 
 # Architecture specific extensions/prefixes
 *.[568vq]
