@@ -26,6 +26,9 @@ func LoadRoute() {
 			WEB.Delete("/:id:int", DeleteDevice)
 			WEB.Patch("/:id:int", UpdateDevice)
 		})
+		WEB.Group("/space", func() {
+			WEB.Get("/", GetSpace)
+		})
 	})
 	WEB.NotFound(NotFound)
 }
