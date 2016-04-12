@@ -6,6 +6,7 @@ type Device struct {
 	DeviceModelId  int
 	FatherDeviceId interface{}
 	NetPorts       []NetPort
+	Tags  []string
 }
 
 type NetPort struct {
@@ -42,4 +43,15 @@ type Location struct {
 	LocationName     string
 	Picture          string
 	FatherLocationId interface{}
+}
+
+type Tag struct {
+	TagId       int
+	Tag     string
+}
+
+
+type DeviceTag struct {
+	DeviceId       int
+	TagId    int
 }
