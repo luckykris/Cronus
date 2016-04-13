@@ -38,6 +38,7 @@ func _StartMartini() {
 		//	AssetNames: templates.AssetNames,
 		//	Prefix:     ""}),
 	}))
+	WEB.Use(macaron.Logger())
 	LoadRoute()
 	WEB.Run("0.0.0.0", 81)
 }
