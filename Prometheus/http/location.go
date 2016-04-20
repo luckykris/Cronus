@@ -25,6 +25,7 @@ func GetLocation(ctx *macaron.Context) {
 	if id != "" {
 		if len(r.([]global.Location)) < 1 {
 			ctx.JSON(404, "Not Found")
+			return
 		} else {
 			r = r.([]global.Location)[0]
 		}
@@ -102,6 +103,6 @@ func UpdateLocation(ctx *macaron.Context) {
 	if err != nil {
 		ctx.JSON(400, err.Error())
 	} else {
-		ctx.JSON(204, "Delete Success")
+		ctx.JSON(204, "Update Success")
 	}
 }

@@ -26,6 +26,7 @@ func GetDevice(ctx *macaron.Context) {
 	if id !="" {
 		if len(r.([]global.Device))<1 {
 			ctx.JSON(404, "Not Found")
+			return
 		}else{
 			r = r.([]global.Device)[0]
 		}
@@ -103,6 +104,6 @@ func UpdateDevice(ctx *macaron.Context) {
 	if err != nil {
 		ctx.JSON(400, err.Error())
 	} else {
-		ctx.JSON(204, "Delete Success")
+		ctx.JSON(204, "Update Success")
 	}
 }

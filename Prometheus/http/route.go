@@ -25,6 +25,9 @@ func LoadRoute() {
 			WEB.Post("/", AddDevice)
 			WEB.Delete("/:id:int", DeleteDevice)
 			WEB.Patch("/:id:int", UpdateDevice)
+			WEB.Get("/:DeviceId:int/Tags/?:TagId:int", GetDeviceTag)
+			WEB.Post("/:DeviceId:int/Tags/:TagId:int", AddDeviceTag)
+			WEB.Delete("/:DeviceId:int/Tags/:TagId:int", DeleteDeviceTag)
 		})
 		WEB.Group("/space", func() {
 			WEB.Get("/", GetSpace)
