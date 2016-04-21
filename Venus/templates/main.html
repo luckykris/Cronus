@@ -10,16 +10,16 @@
     <title>Venus</title>
     <link rel="stylesheet" type="text/css" href="static/css/semantic.min.css">
     <link rel="stylesheet" type="text/css" href="static/css/tab.min.css">
-    {%block head%}{%endblock%}
+    {%block head%}{%end%}
 </head>
 
 <body id="page-top" class="index">
   <div class="ui inverted  menu">
     {%for i,j in [("Home","/home"),("Device","/device"),("Space","/space")]%}
-      <a class="item" href="{{j}}">
+      <a id="{{i}}MenuItem" class="item" href="{{j}}">
         {{i}}
       </a>
-    {%endfor%}
+    {%end%}
       <div class="right menu">
         <div class="item">
           <div class="ui icon input">
@@ -32,14 +32,14 @@
         </a>
       </div>
     </div>  
-  {%block body%}{%endblock%}
+  {%block body%}{%end%}
 </body>
     <script src="static/js/jquery.min.js"></script>
     <script src="static/js/semantic.min.js"></script>
     <script src="static/js/tab.min.js"></script>
-    {%block js%}{%endblock%}
+    {%block js%}{%end%}
     <script>
     $('.tabular.menu .item').tab();
     </script>
-    {%block js_to_run%}{%endblock%}
+    {%block js_to_run%}{%end%}
 </html>
