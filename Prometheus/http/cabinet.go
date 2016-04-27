@@ -92,25 +92,9 @@ func UpdateCabinet(ctx *macaron.Context) {
 	capacity_used := ctx.Req.Form.Get("CapacityUsed")
 	location_id := ctx.Req.Form.Get("LocationId")
 	err = _CheckHasClounms("cabinet_name", name, false, &cloumns, &values)
-	if err != nil {
-		ctx.JSON(400, err.Error())
-		return
-	}
 	err = _CheckHasClounms("iscloud", iscloud, false, &cloumns, &values)
-	if err != nil {
-		ctx.JSON(400, err.Error())
-		return
-	}
 	err = _CheckHasClounms("capacity_total", capacity_total, true, &cloumns, &values)
-	if err != nil {
-		ctx.JSON(400, err.Error())
-		return
-	}
 	err = _CheckHasClounms("capacity_used", capacity_used, true, &cloumns, &values)
-	if err != nil {
-		ctx.JSON(400, err.Error())
-		return
-	}
 	err = _CheckHasClounms("location_id", location_id, true, &cloumns, &values)
 	if err != nil {
 		ctx.JSON(400, err.Error())

@@ -5,8 +5,6 @@ type Device struct {
 	DeviceName     string
 	DeviceModelId  int
 	FatherDeviceId interface{}
-	NetPorts       []NetPort
-	Tags  []string
 }
 
 type NetPort struct {

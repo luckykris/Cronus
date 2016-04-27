@@ -12,16 +12,6 @@ func GetDevice(args ...string) (interface{}, error) {
 	var device_model_id int
 	var father_device_id sql.NullInt64
 	var father_device_id_i interface{}
-	var netPort interface{}
-	var deviceTag interface{}
-	tagMap:= make(map[int]string)
-	tagLs,err:=GetTag()
-	if err != nil {
-		return nil, err
-	}
-	for _,tag:=range tagLs.([]global.Tag){
-		tagMap[tag.TagId]=tag.Tag
-	}
 	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdevice, []string{`device_id`, `device_name`, `device_model_id`, `father_device_id`}, args, &device_id, &device_name, &device_model_id, &father_device_id)
 	if err != nil {
 		return nil, err
@@ -33,19 +23,7 @@ func GetDevice(args ...string) (interface{}, error) {
 		} else {
 			father_device_id_i = father_device_id.Int64
 		}
-		netPort, err = GetNetPort(fmt.Sprintf("device_id = %d", device_id))
-		if err != nil {
-			return nil, err
-		}
-		tags:=[]string{}
-		deviceTag, err = GetDeviceTag(fmt.Sprintf("device_id = %d", device_id))
-		if err != nil {
-			return nil, err
-		}
-		for _,j:=range deviceTag.([]global.DeviceTag){
-			tags=append(tags,tagMap[j.TagId])
-		}
-		r = append(r, global.Device{device_id, device_name, device_model_id, father_device_id_i, netPort.([]global.NetPort),tags})
+		r = append(r, global.Device{device_id, device_name, device_model_id, father_device_id_i})
 	}
 	return r, err
 }
