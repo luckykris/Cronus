@@ -3,7 +3,6 @@ package http
 import (
 	//"fmt"
 	"github.com/Unknwon/macaron"
-	"github.com/luckykris/Cronus/Prometheus/global"
 	"github.com/luckykris/Cronus/Prometheus/prometheus"
 	"strconv"
 )
@@ -24,11 +23,11 @@ func GetDevice(ctx *macaron.Context) {
 		return
 	}
 	if id !="" {
-		if len(r.([]global.Device))<1 {
+		if len(r.([]prometheus.Device))<1 {
 			ctx.JSON(404, "Not Found")
 			return
 		}else{
-			r = r.([]global.Device)[0]
+			r = r.([]prometheus.Device)[0]
 		}
 	}
 	ctx.JSON(200, &r)

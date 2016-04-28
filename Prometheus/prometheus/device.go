@@ -16,14 +16,14 @@ func GetDevice(args ...string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	r := []global.Device{}
+	r := []Device{}
 	for cur.Fetch() {
 		if !father_device_id.Valid {
 			father_device_id_i = nil
 		} else {
 			father_device_id_i = father_device_id.Int64
 		}
-		r = append(r, global.Device{device_id, device_name, device_model_id, father_device_id_i})
+		r = append(r, Device{device_id, device_name, device_model_id, father_device_id_i})
 	}
 	return r, err
 }

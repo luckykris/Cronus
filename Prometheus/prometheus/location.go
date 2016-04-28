@@ -12,12 +12,12 @@ func GetLocation(args ...string) (interface{}, error) {
 	var picture string
 	var father_id sql.NullInt64
 	cur, err := PROMETHEUS.dbobj.Get(global.TABLElocation, []string{`location_id`, `location_name`, `picture`, `father_location_id`}, args, &id, &name, &picture, &father_id)
-	r := []global.Location{}
+	r := []Location{}
 	for cur.Fetch() {
 		if !father_id.Valid {
-			r = append(r, global.Location{id, name, picture, nil})
+			r = append(r, Location{id, name, picture, nil})
 		} else {
-			r = append(r, global.Location{id, name, picture, int(father_id.Int64)})
+			r = append(r, Location{id, name, picture, int(father_id.Int64)})
 		}
 	}
 	return r, err

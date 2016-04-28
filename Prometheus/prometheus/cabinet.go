@@ -13,9 +13,9 @@ func GetCabinet(args ...string) (interface{}, error) {
 	var capacity_used uint64
 	var location_id int
 	cur, err := PROMETHEUS.dbobj.Get(global.TABLEcabinet, []string{`cabinet_id`, `cabinet_name`, `iscloud`, `capacity_total`, `capacity_used`, `location_id`}, args, &id, &name, &iscloud, &capacity_total, &capacity_used, &location_id)
-	r := []global.Cabinet{}
+	r := []Cabinet{}
 	for cur.Fetch() {
-		r = append(r, global.Cabinet{id, name, iscloud, capacity_total, capacity_used, location_id})
+		r = append(r, Cabinet{id, name, iscloud, capacity_total, capacity_used, location_id})
 	}
 	return r, err
 }

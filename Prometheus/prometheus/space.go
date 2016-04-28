@@ -10,9 +10,9 @@ func GetSpace(args ...string) (interface{}, error) {
 	var u_position int
 	var position string
 	cur, err := PROMETHEUS.dbobj.Get(global.TABLEspace, []string{`cabinet_id`, `device_id`, `u_position`, `position`}, args, &cabinet_id, &device_id, &u_position, &position)
-	r := []global.Space{}
+	r := []Space{}
 	for cur.Fetch() {
-		r = append(r, global.Space{cabinet_id, device_id, u_position, position})
+		r = append(r, Space{cabinet_id, device_id, u_position, position})
 	}
 	return r, err
 }

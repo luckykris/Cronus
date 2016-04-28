@@ -15,9 +15,9 @@ func GetDeviceModel(args ...string) (interface{}, error) {
 	var name string
 	var _type string
 	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceModel, []string{`device_model_id`, `device_model_name`, `device_type`}, args, &id, &name, &_type)
-	r := []global.DeviceModel{}
+	r := []DeviceModel{}
 	for cur.Fetch() {
-		r = append(r, global.DeviceModel{id, name, _type})
+		r = append(r, DeviceModel{id, name, _type})
 	}
 	return r, err
 }
