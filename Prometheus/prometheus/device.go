@@ -29,15 +29,15 @@ func GetDevice(args ...string) (interface{}, error) {
 }
 
 func AddDevice(values [][]interface{}) error {
-	return PROMETHEUS.dbobj.Add(global.TABLEdeviceModel, []string{`device_model_name`, `device_type`}, values)
+	return PROMETHEUS.dbobj.Add(global.TABLEdevice, []string{`device_name`,`device_model_id`, `father_device_id`}, values)
 }
 
 func DeleteDevice(id int) error {
-	c := fmt.Sprintf("device_model_id = %d", id)
-	return PROMETHEUS.dbobj.Delete(global.TABLEdeviceModel, []string{c})
+	c := fmt.Sprintf("device_id = %d", id)
+	return PROMETHEUS.dbobj.Delete(global.TABLEdevice, []string{c})
 }
 
 func UpdateDevice(id int, cloumns []string, values []interface{}) error {
-	c := fmt.Sprintf("device_model_id = %d", id)
-	return PROMETHEUS.dbobj.Update(global.TABLEdeviceModel, []string{c}, cloumns, values)
+	c := fmt.Sprintf("device_id = %d", id)
+	return PROMETHEUS.dbobj.Update(global.TABLEdevice, []string{c}, cloumns, values)
 }
