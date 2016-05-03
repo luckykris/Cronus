@@ -24,3 +24,11 @@ CheckApi(){
 }
 
 CheckApi "device" "GET" 
+CheckApi "device" "POST"  "device_name=function-testing&device_model_id=1"
+CheckApi "device/1" "GET" 
+CheckApi "device/1/tags" "GET" 
+CheckApi "device/1/netPorts" "GET" 
+CheckApi "cabinet" "GET" 
+CheckApi "deviceModel" "GET" 
+CheckApi "location" "GET" 
+CheckApi "space" "GET" 

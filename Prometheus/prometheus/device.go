@@ -28,8 +28,8 @@ func GetDevice(args ...string) (interface{}, error) {
 	return r, err
 }
 
-func AddDevice(values [][]interface{}) error {
-	return PROMETHEUS.dbobj.Add(global.TABLEdevice, []string{`device_name`,`device_model_id`, `father_device_id`}, values)
+func AddDevice(device *Device) error {
+	return PROMETHEUS.dbobj.Add(global.TABLEdevice, []string{`device_name`,`device_model_id`, `father_device_id`}, [][]interface{}{[]interface{}{device.DeviceName,device.DeviceModelId,device.FatherDeviceId}})
 }
 
 func DeleteDevice(id int) error {

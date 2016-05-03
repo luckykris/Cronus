@@ -7,7 +7,10 @@ import (
 	"strconv"
 )
 
-//location
+
+
+
+
 func GetDeviceTag(ctx *macaron.Context) {
 	device_id := ctx.Params("DeviceId")
 	tag_id := ctx.Params("TagId")

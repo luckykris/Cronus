@@ -7,7 +7,6 @@ import (
 	"strconv"
 )
 
-//location
 func GetDevice(ctx *macaron.Context) {
 	id := ctx.Params("id")
 	var r interface{}
@@ -34,27 +33,33 @@ func GetDevice(ctx *macaron.Context) {
 }
 
 func AddDevice(ctx *macaron.Context) {
-	ctx.Req.ParseForm()
-	name := ctx.Req.Form.Get("LocationName")
-	pic := ctx.Req.Form.Get("Picture")
-	father_id := ctx.Req.Form.Get("FatherLocationId")
-	var father_id_int interface{}
-	var err error
-	if father_id == "" || father_id == "null" {
-		father_id_int = nil
-	} else {
-		father_id_int, err = strconv.Atoi(father_id)
-		if err != nil {
-			ctx.JSON(400, err.Error())
-			return
-		}
-	}
-	err = prometheus.AddLocation([][]interface{}{[]interface{}{name, pic, father_id_int}})
-	if err != nil {
+	deviceName:=ArgString{"deviceName",true}
+	args_string,err:=getAllStringArgs(ctx,[]ArgString{deviceName})
+	if err!=nil{
 		ctx.JSON(400, err.Error())
-	} else {
-		ctx.JSON(201, "Add Success")
+	}else{
+		ctx.JSON(201, args_string)
+		//ctx.JSON(201, "Add Success")
 	}
+//	father_device_id,error := arg2IntOrNil(ctx.Req.Form.Get("father_device_id"))
+//	var father_device_id_int interface{}
+//	var err error
+//	if father_device_id == "" || father_device_id == "null" {
+//		father_device_id_int = nil
+//	} else {
+//		father_device_id_int, err = strconv.Atoi(father_device_id)
+//		if err != nil {
+//			ctx.JSON(400, err.Error())
+//			return
+//		}
+//	}
+//	device:=&prometheus.Device{DeviceName:device_name,FatherDevice}
+//	err = prometheus.AddDevice([][]interface{}{[]interface{}{device_name, , father_device_id_int}})
+//	if err != nil {
+//		ctx.JSON(400, err.Error())
+//	} else {
+//		ctx.JSON(201, "Add Success")
+//	}
 }
 func DeleteDevice(ctx *macaron.Context) {
 	id := ctx.Params("id")
@@ -83,7 +88,7 @@ func UpdateDevice(ctx *macaron.Context) {
 	ctx.Req.ParseForm()
 	name := ctx.Req.Form.Get("LocationName")
 	pic := ctx.Req.Form.Get("Picture")
-	father_id := ctx.Req.Form.Get("FatherLocationId")
+	father_device_id := ctx.Req.Form.Get("FatherLocationId")
 	err = _CheckHasClounms("location_name", name, false, &cloumns, &values)
 	if err != nil {
 		ctx.JSON(400, err.Error())
@@ -94,7 +99,7 @@ func UpdateDevice(ctx *macaron.Context) {
 		ctx.JSON(400, err.Error())
 		return
 	}
-	err = _CheckHasClounms("father_location_id", father_id, true, &cloumns, &values)
+	err = _CheckHasClounms("father_location_id", father_device_id, true, &cloumns, &values)
 	if err != nil {
 		ctx.JSON(400, err.Error())
 		return
