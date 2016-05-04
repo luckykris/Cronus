@@ -1,7 +1,6 @@
 package http
 
 import (
-	//"fmt"
 	"github.com/Unknwon/macaron"
 	"github.com/luckykris/Cronus/Prometheus/prometheus"
 	"strconv"
@@ -11,11 +10,10 @@ func GetDevice(ctx *macaron.Context) {
 	id := ctx.Params("id")
 	var r interface{}
 	var err error
-	if id == "" {
+	if id == ""{
 		r, err = prometheus.GetDevice()
 	} else {
 		r, err = prometheus.GetDevice("device_id=" + id)
-
 	}
 	if err != nil {
 		ctx.JSON(500, err.Error())
@@ -34,12 +32,24 @@ func GetDevice(ctx *macaron.Context) {
 
 func AddDevice(ctx *macaron.Context) {
 	deviceName:=ArgString{"deviceName",true}
+	deviceModelId:=ArgInt{"deviceModelId",true}
+	faterDeviceId:=ArgInt{"fatherDeviceId",false}
 	args_string,err:=getAllStringArgs(ctx,[]ArgString{deviceName})
 	if err!=nil{
 		ctx.JSON(400, err.Error())
+		return
+	}	
+	args_int,err:=getAllIntArgs(ctx,[]ArgInt{deviceModelId,faterDeviceId})
+	if err!=nil{
+		ctx.JSON(400, err.Error())
+		return
+	}	
+	device:=prometheus.Device{DeviceName:args_string["deviceName"].(string),DeviceModelId:args_int["deviceModelId"].(int),FatherDeviceId:args_int["fatherDeviceId"]}
+	err=prometheus.AddDevice(&device)
+	if err!=nil{
+		ctx.JSON(400, err.Error())
 	}else{
-		ctx.JSON(201, args_string)
-		//ctx.JSON(201, "Add Success")
+		ctx.JSON(201, "Add Success")
 	}
 //	father_device_id,error := arg2IntOrNil(ctx.Req.Form.Get("father_device_id"))
 //	var father_device_id_int interface{}

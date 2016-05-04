@@ -24,7 +24,7 @@ CheckApi(){
 }
 
 CheckApi "device" "GET" 
-CheckApi "device" "POST"  "device_name=function-testing&device_model_id=1"
+CheckApi "device" "POST"  "deviceName=function-testing&deviceModelId=1"
 CheckApi "device/1" "GET" 
 CheckApi "device/1/tags" "GET" 
 CheckApi "device/1/netPorts" "GET" 

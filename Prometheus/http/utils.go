@@ -11,6 +11,10 @@ type ArgString struct{
 	Name string
 	Need bool
 }
+type ArgInt struct{
+	Name string
+	Need bool
+}
 
 func arg2IntOrNil(arg string)(interface{},error){
 	var r_arg interface{}
@@ -50,4 +54,19 @@ func getAllStringArgs(ctx *macaron.Context,args []ArgString)(map[string]interfac
 }
 
 
-
+func getAllIntArgs(ctx *macaron.Context,args []ArgInt)(map[string]interface{},error){
+	args_map:=map[string]interface{}{}
+	var err error
+	ctx.Req.ParseForm()
+	for _,arg:=range args{
+		v,err:=arg2IntOrNil(ctx.Req.Form.Get(arg.Name))
+		if err!=nil{
+			return args_map,err
+		}
+		if arg.Need && v == nil{
+			return args_map,fmt.Errorf("%s can not be nil",arg.Name)
+		}
+		args_map[arg.Name]=v
+	}	
+	return args_map,err
+}
