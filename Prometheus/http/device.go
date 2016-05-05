@@ -49,7 +49,7 @@ func AddDevice(ctx *macaron.Context) {
 	if err!=nil{
 		ctx.JSON(400, err.Error())
 	}else{
-		ctx.JSON(201, "Add Success")
+		ctx.JSON(201,CUDRep{true,nil})
 	}
 //	father_device_id,error := arg2IntOrNil(ctx.Req.Form.Get("father_device_id"))
 //	var father_device_id_int interface{}
@@ -78,7 +78,7 @@ func DeleteDevice(ctx *macaron.Context) {
 		ctx.JSON(404, "Not Found")
 		return
 	}
-	err = prometheus.DeleteLocation(id_int)
+	err = prometheus.DeleteDevice(id_int)
 	if err != nil {
 		ctx.JSON(400, err.Error())
 	} else {

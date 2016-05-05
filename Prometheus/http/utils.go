@@ -6,6 +6,10 @@ import (
 	"github.com/Unknwon/macaron"
 )
 
+type CUDRep struct{
+	Success bool
+	Error interface{}
+}
 
 type ArgString struct{
 	Name string
