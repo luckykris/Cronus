@@ -31,9 +31,9 @@ func GetDevice(ctx *macaron.Context) {
 }
 
 func AddDevice(ctx *macaron.Context) {
-	deviceName:=ArgString{"deviceName",true}
-	deviceModelId:=ArgInt{"deviceModelId",true}
-	faterDeviceId:=ArgInt{"fatherDeviceId",false}
+	deviceName:=ArgString{"deviceName",true,nil}
+	deviceModelId:=ArgInt{"deviceModelId",true,nil}
+	faterDeviceId:=ArgInt{"fatherDeviceId",false,nil}
 	args_string,err:=getAllStringArgs(ctx,[]ArgString{deviceName})
 	if err!=nil{
 		ctx.JSON(400, err.Error())
@@ -49,27 +49,8 @@ func AddDevice(ctx *macaron.Context) {
 	if err!=nil{
 		ctx.JSON(400, err.Error())
 	}else{
-		ctx.JSON(201,CUDRep{true,nil})
+		ctx.JSON(201,"Add Success")
 	}
-//	father_device_id,error := arg2IntOrNil(ctx.Req.Form.Get("father_device_id"))
-//	var father_device_id_int interface{}
-//	var err error
-//	if father_device_id == "" || father_device_id == "null" {
-//		father_device_id_int = nil
-//	} else {
-//		father_device_id_int, err = strconv.Atoi(father_device_id)
-//		if err != nil {
-//			ctx.JSON(400, err.Error())
-//			return
-//		}
-//	}
-//	device:=&prometheus.Device{DeviceName:device_name,FatherDevice}
-//	err = prometheus.AddDevice([][]interface{}{[]interface{}{device_name, , father_device_id_int}})
-//	if err != nil {
-//		ctx.JSON(400, err.Error())
-//	} else {
-//		ctx.JSON(201, "Add Success")
-//	}
 }
 func DeleteDevice(ctx *macaron.Context) {
 	id := ctx.Params("id")
@@ -87,34 +68,34 @@ func DeleteDevice(ctx *macaron.Context) {
 }
 
 func UpdateDevice(ctx *macaron.Context) {
-	cloumns := []string{}
-	values := []interface{}{}
-	id := ctx.Params("id")
-	id_int, err := strconv.Atoi(id)
-	if err != nil {
+	deviceId:= ctx.Params("id")
+	devices,err:=prometheus.GetDevice("device_id="+deviceId)
+	if err!=nil{
+		ctx.JSON(500, err.Error())
+		return
+	}
+	if len(devices) == 0{
 		ctx.JSON(404, "Not Found")
 		return
 	}
-	ctx.Req.ParseForm()
-	name := ctx.Req.Form.Get("LocationName")
-	pic := ctx.Req.Form.Get("Picture")
-	father_device_id := ctx.Req.Form.Get("FatherLocationId")
-	err = _CheckHasClounms("location_name", name, false, &cloumns, &values)
-	if err != nil {
+	device:=devices[0]
+	deviceName:=ArgString{"deviceName",false,device.DeviceName}
+	deviceModelId:=ArgInt{"deviceModelId",false,device.DeviceModelId}
+	faterDeviceId:=ArgInt{"fatherDeviceId",false,device.FatherDeviceId}
+	args_string,err:=getAllStringArgs(ctx,[]ArgString{deviceName})
+	if err!=nil{
 		ctx.JSON(400, err.Error())
 		return
-	}
-	err = _CheckHasClounms("picture", pic, false, &cloumns, &values)
-	if err != nil {
+	}	
+	args_int,err:=getAllIntArgs(ctx,[]ArgInt{deviceModelId,faterDeviceId})
+	if err!=nil{
 		ctx.JSON(400, err.Error())
 		return
-	}
-	err = _CheckHasClounms("father_location_id", father_device_id, true, &cloumns, &values)
-	if err != nil {
-		ctx.JSON(400, err.Error())
-		return
-	}
-	err = prometheus.UpdateLocation(id_int, cloumns, values)
+	}	
+	device.DeviceName=args_string["deviceName"].(string)
+	device.DeviceModelId=args_int["DeviceModelId"].(int)
+	device.FatherDeviceId=args_int["fatherDeviceId"]
+	err = device.UpdateDevice()
 	if err != nil {
 		ctx.JSON(400, err.Error())
 	} else {

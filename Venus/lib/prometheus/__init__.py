@@ -1,20 +1,28 @@
-#coding=utf-8
-import urllib.request
-import urllib.parse
+ #coding=utf-8
+import requests
 import json
+class PrometheusError(Exception):
+	def __init__(self, value):
+		self.value = value
+	def __str__(self):
+		return repr(self.value)
 class Prometheus:
 	def __init__(self,url):
 		self.url=url
 	def __apiRequest(self,api,method,data={}):
-		req_data=urllib.parse.urlencode(data)
-		req = urllib.request.Request(self.url+api,req_data.encode('ascii'),method=method)
-		header={"Content-Type": "application/json"}
-		for k in header:
-			req.add_header(k, header[k])
-		result = urllib.request.urlopen(req)
-		return result.read()
-		#resp=json.loads(result.read().decode('utf-8'))	
-		#return resp
+		if method == "GET":
+			r = requests.get(self.url+api,data)
+		elif method == "POST":
+			r = requests.post(self.url+api,data)
+		elif method == "DELETE":
+			r = requests.delete(self.url+api)
+		if r.status_code >399:
+			raise PrometheusError("HTTP CODE:%d,Text:%s" % (r.status_code,r.json()))
+		else:
+			try:
+				return r.json()
+			except:
+				return r.text
 	def getDevice(self,deviceId=None):
 		api="device"
 		if deviceId !=None:

@@ -6,18 +6,17 @@ import (
 	"github.com/Unknwon/macaron"
 )
 
-type CUDRep struct{
-	Success bool
-	Error interface{}
-}
+
 
 type ArgString struct{
 	Name string
 	Need bool
+	Default interface{}
 }
 type ArgInt struct{
 	Name string
 	Need bool
+	Default interface{}
 }
 
 func arg2IntOrNil(arg string)(interface{},error){
@@ -49,8 +48,12 @@ func getAllStringArgs(ctx *macaron.Context,args []ArgString)(map[string]interfac
 		if err!=nil{
 			return args_map,err
 		}
-		if arg.Need && v == nil{
-			return args_map,fmt.Errorf("%s can not be nil",arg.Name)
+		if v == nil{
+			if arg.Need{
+				return args_map,fmt.Errorf("%s can not be nil",arg.Name)
+			}else{
+				v=arg.Default
+			}
 		}
 		args_map[arg.Name]=v
 	}	
@@ -67,8 +70,12 @@ func getAllIntArgs(ctx *macaron.Context,args []ArgInt)(map[string]interface{},er
 		if err!=nil{
 			return args_map,err
 		}
-		if arg.Need && v == nil{
-			return args_map,fmt.Errorf("%s can not be nil",arg.Name)
+		if v == nil{
+			if arg.Need{
+				return args_map,fmt.Errorf("%s can not be nil",arg.Name)
+			}else{
+				v=arg.Default
+			}
 		}
 		args_map[arg.Name]=v
 	}	
