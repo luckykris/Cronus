@@ -31,9 +31,9 @@ func GetDevice(ctx *macaron.Context) {
 }
 
 func AddDevice(ctx *macaron.Context) {
-	deviceName:=ArgString{"deviceName",true,nil}
-	deviceModelId:=ArgInt{"deviceModelId",true,nil}
-	faterDeviceId:=ArgInt{"fatherDeviceId",false,nil}
+	deviceName:=ArgString{"DeviceName",true,nil}
+	deviceModelId:=ArgInt{"DeviceModelId",true,nil}
+	faterDeviceId:=ArgInt{"FatherDeviceId",false,nil}
 	args_string,err:=getAllStringArgs(ctx,[]ArgString{deviceName})
 	if err!=nil{
 		ctx.JSON(400, err.Error())
@@ -44,7 +44,7 @@ func AddDevice(ctx *macaron.Context) {
 		ctx.JSON(400, err.Error())
 		return
 	}	
-	device:=prometheus.Device{DeviceName:args_string["deviceName"].(string),DeviceModelId:args_int["deviceModelId"].(int),FatherDeviceId:args_int["fatherDeviceId"]}
+	device:=prometheus.Device{DeviceName:args_string["DeviceName"].(string),DeviceModelId:args_int["DeviceModelId"].(int),FatherDeviceId:args_int["FatherDeviceId"]}
 	err=prometheus.AddDevice(&device)
 	if err!=nil{
 		ctx.JSON(400, err.Error())
@@ -79,9 +79,9 @@ func UpdateDevice(ctx *macaron.Context) {
 		return
 	}
 	device:=devices[0]
-	deviceName:=ArgString{"deviceName",false,device.DeviceName}
-	deviceModelId:=ArgInt{"deviceModelId",false,device.DeviceModelId}
-	faterDeviceId:=ArgInt{"fatherDeviceId",false,device.FatherDeviceId}
+	deviceName:=ArgString{"DeviceName",false,device.DeviceName}
+	deviceModelId:=ArgInt{"DeviceModelId",false,device.DeviceModelId}
+	faterDeviceId:=ArgInt{"FatherDeviceId",false,device.FatherDeviceId}
 	args_string,err:=getAllStringArgs(ctx,[]ArgString{deviceName})
 	if err!=nil{
 		ctx.JSON(400, err.Error())
@@ -92,9 +92,9 @@ func UpdateDevice(ctx *macaron.Context) {
 		ctx.JSON(400, err.Error())
 		return
 	}	
-	device.DeviceName=args_string["deviceName"].(string)
+	device.DeviceName=args_string["DeviceName"].(string)
 	device.DeviceModelId=args_int["DeviceModelId"].(int)
-	device.FatherDeviceId=args_int["fatherDeviceId"]
+	device.FatherDeviceId=args_int["FatherDeviceId"]
 	err = device.UpdateDevice()
 	if err != nil {
 		ctx.JSON(400, err.Error())

@@ -16,6 +16,8 @@ class Prometheus:
 			r = requests.post(self.url+api,data)
 		elif method == "DELETE":
 			r = requests.delete(self.url+api)
+		elif method == "UPDATE":
+			r = requests.patch(self.url+api,data)
 		if r.status_code >399:
 			raise PrometheusError("HTTP CODE:%d,Text:%s" % (r.status_code,r.json()))
 		else:
@@ -30,12 +32,13 @@ class Prometheus:
 		return self.__apiRequest(api,'GET')
 	def addDevice(self,device):
 		return self.__apiRequest('device','POST',device)
+	def updateDevice(self,device_id,device):
+		return self.__apiRequest('device/%d' % device_id,'UPDATE',device)
 	def deleteDevice(self,device_id):
 		api='device/%d' % device_id
 		return self.__apiRequest(api,'DELETE')
 	def getCabinet(self,cabinetId=""):
 		api="cabinet/%s" % str(cabinetId)
-		print(api)
 		return self.__apiRequest(api,'GET')	
 	def getSpace(self,data={}):
 		return self.__apiRequest('space','GET',data)
