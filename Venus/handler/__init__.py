@@ -8,6 +8,7 @@ import urllib
 import time
 import pymysql
 from lib import prometheus
+import setting
 ######logging conf path
 formatter = logging.Formatter('[%(asctime)s][%(name)s][%(levelname)s]%(message)s') 
 
@@ -25,7 +26,7 @@ formatter = logging.Formatter('[%(asctime)s][%(name)s][%(levelname)s]%(message)s
 class BaseHandler(tornado.web.RequestHandler):
 	def __init__(self,application, request, **kwargs):
 		tornado.web.RequestHandler.__init__(self,application, request, **kwargs)
-		self.prometheus=prometheus.Prometheus("http://192.168.33.81:81/v1/")
+		self.prometheus=prometheus.Prometheus(setting.Prometheus['api'])
 	def get_current_user(self):
 		user=self.get_secure_cookie("user")
 		if not user:
