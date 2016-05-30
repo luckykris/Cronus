@@ -20,7 +20,6 @@ def device_add():
 @deco
 def device_get():
 	devices=a.getDevice()
-	devices_map={x['DeviceName']:x['DeviceId'] for x  in devices}
 @deco	
 def device_update():
 	devices=a.getDevice()
@@ -31,6 +30,14 @@ def device_delete():
 	devices=a.getDevice()
 	devices_map={x['DeviceName']:x['DeviceId'] for x  in devices}
 	a.deleteDevice(devices_map['functiontest'])
+@deco
+def cabinet_get():
+	a.getCabinet()
+
+@deco
+def space_get():
+	a.getSpace()
+
 #print(a.getDevice())
 #print("get device ok" )
 #print(a.deleteDevice(2))
@@ -38,3 +45,5 @@ def device_delete():
 device_add()
 device_update()
 device_delete()
+cabinet_get()
+space_get()
