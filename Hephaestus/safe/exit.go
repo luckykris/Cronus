@@ -27,6 +27,6 @@ func (self *Exiter)FinishOneExit() {
 func (self *Exiter)Join(){
 	self.WaitExitSafely.Add(1)
 }
-func (self *Exiter)Wait(){
+func (self *Exiter)WaitAllExit(){
 	self.WaitExitSafely.Wait()
 }
