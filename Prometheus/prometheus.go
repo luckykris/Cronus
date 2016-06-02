@@ -14,6 +14,6 @@ func main() {
 	prometheus.Init(mainCfg)
 	log.Info("Start ", cfg.SOFTWARE, " success")
 	http.Start()
-	for {
+	select {
 	}
 }
