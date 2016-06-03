@@ -5,10 +5,11 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/cfg"
 	"github.com/luckykris/Cronus/Prometheus/prometheus"
 	"github.com/luckykris/Cronus/Prometheus/http"
-	_ "github.com/luckykris/go-utilbox/exit"
+	"github.com/luckykris/Cronus/Hephaestus/os"
 )
 
 func main() {
+	os.Daemonize()
 	mainCfg := cfg.LoadCfg()
 	log.SetLevel(mainCfg.LogCfg.LevelId)
 	prometheus.Init(mainCfg)
