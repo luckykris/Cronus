@@ -32,8 +32,8 @@ func AddDevice(device *Device) error {
 	return PROMETHEUS.dbobj.Add(global.TABLEdevice, []string{`device_name`,`device_model_id`, `father_device_id`}, [][]interface{}{[]interface{}{device.DeviceName,device.DeviceModelId,device.FatherDeviceId}})
 }
 
-func DeleteDevice(id int) error {
-	c := fmt.Sprintf("device_id = %d", id)
+func DeleteDevice(device *Device) error {
+	c := fmt.Sprintf("device_id = %d", device.DeviceId)
 	return PROMETHEUS.dbobj.Delete(global.TABLEdevice, []string{c})
 }
 

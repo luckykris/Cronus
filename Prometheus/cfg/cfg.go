@@ -17,6 +17,7 @@ var LOGLEVELMAP = map[string]log.Level{"debug": log.DebugLevel, "info": log.Info
 type MainCfg struct {
 	DbCfg  DbCfgStruct  `toml:"database"`
 	LogCfg LogCfgStruct `toml:"log"`
+	Daemon bool
 }
 
 //database config struct for toml
@@ -40,6 +41,7 @@ type LogCfgStruct struct {
 
 //Load all config
 func LoadCfg() MainCfg {
+	daemon:=flag.Bool("daemon", false, "Start in daemon mode.")
 	cfgfile := flag.String("config", "/etc/"+SOFTWARE+".toml", "Configuration file ")
 	help := flag.Bool("help", false, "Show all the help infomation")
 	version := flag.Bool("version", false, "Show version")
@@ -62,6 +64,8 @@ func LoadCfg() MainCfg {
 		fmt.Printf("Configuration Error:%s\n", err.Error())
 		os.Exit(-1)
 	}
+	//sys config
+	mainCfgObj.Daemon = *daemon
 	//config  database
 	if meta.IsDefined("database") {
 		if !meta.IsDefined("database", "maxLifeTime") {

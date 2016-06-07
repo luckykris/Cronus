@@ -42,3 +42,16 @@ class Prometheus:
 		return self.__apiRequest(api,'GET')	
 	def getSpace(self,data={}):
 		return self.__apiRequest('space','GET',data)
+	def getDeviceNetPorts(self,device_id,netPort_id=None):
+		api="device/%d/netPorts/" % device_id
+		if netPort_id is not None:
+			api=api+str(netPort_id)
+		return self.__apiRequest(api,'GET')	
+	def addDeviceNetPorts(self,device_id,netPort):
+		return self.__apiRequest('device/%d/netPorts/' % device_id,'POST',netPort)
+	def updateDeviceNetPorts(self,device_id,netPort_id,netPort):
+		return self.__apiRequest('device/%d/netPorts/%d' % (device_id,netPort_id),'UPDATE',netPort)
+	def deleteDeviceNetPorts(self,device_id,netPort_id):
+		api='device/%d/netPorts/%d' % (device_id,netPort_id)
+		return self.__apiRequest(api,'DELETE')
+		

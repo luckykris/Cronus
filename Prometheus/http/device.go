@@ -59,7 +59,8 @@ func DeleteDevice(ctx *macaron.Context) {
 		ctx.JSON(404, "Not Found")
 		return
 	}
-	err = prometheus.DeleteDevice(id_int)
+	device:=&prometheus.Device{DeviceId:id_int}
+	err = prometheus.DeleteDevice(device)
 	if err != nil {
 		ctx.JSON(400, err.Error())
 	} else {

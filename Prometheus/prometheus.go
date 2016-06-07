@@ -9,8 +9,10 @@ import (
 )
 
 func main() {
-	os.Daemonize()
 	mainCfg := cfg.LoadCfg()
+	if mainCfg.Daemon{
+		os.Daemonize()
+	}
 	log.SetLevel(mainCfg.LogCfg.LevelId)
 	prometheus.Init(mainCfg)
 	log.Info("Start ", cfg.SOFTWARE, " success")
@@ -18,3 +20,5 @@ func main() {
 	select {
 	}
 }
+
+
