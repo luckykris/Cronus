@@ -47,3 +47,25 @@ func GetDeviceTag(ctx *macaron.Context) {
 		ctx.JSON(200, &r)
 	}
 }
+func AddDeviceTag(ctx *macaron.Context) {
+	device_id := ctx.Params("DeviceId")
+	tag_id := ctx.Params("TagId")
+	var err error
+	device_id_int, err := strconv.Atoi(device_id)
+	if err != nil {
+		ctx.JSON(400, err.Error())
+		return
+	}
+	device := &prometheus.Device{DeviceId: device_id_int}
+	tag_id_int, err := strconv.Atoi(tag_id)
+	if err != nil {
+		ctx.JSON(400, err.Error())
+		return
+	}
+	err = device.AddTag(tag_id_int)
+	if err != nil {
+		ctx.JSON(500, err.Error())
+	} else {
+		ctx.JSON(200,"Success")
+	}
+}

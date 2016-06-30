@@ -38,3 +38,12 @@ func (device *Device) GetTag(id ...int) (interface{}, error) {
 		return []Tag{}, nil
 	}
 }
+
+
+func (device *Device)AddTag(id ...int) error {
+	values:=[][]interface{}{}
+	for _,one :=range id {
+			values=append(values,[]interface{}{device.DeviceId,one})
+	}
+	return PROMETHEUS.dbobj.Add(global.TABLEdeviceTag, []string{`device_id`, `tag_id`}, values)
+}

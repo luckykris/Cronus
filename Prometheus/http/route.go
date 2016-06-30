@@ -30,7 +30,7 @@ func LoadRoute() {
 			WEB.Patch("/:DeviceId:int/netPorts/?:NetPortId:int", UpdateNetPort)
 			WEB.Delete("/:DeviceId:int/netPorts/?:NetPortId:int", DeleteNetPort)
 			WEB.Get("/:DeviceId:int/tags/?:TagId:int", GetDeviceTag)
-			//WEB.Post("/:DeviceId:int/tags/:TagId:int", AddDeviceTag)
+			WEB.Post("/:DeviceId:int/tags/:TagId:int", AddDeviceTag)
 			//WEB.Delete("/:DeviceId:int/tags/:TagId:int", DeleteDeviceTag)
 		})
 		WEB.Group("/space", func() {
