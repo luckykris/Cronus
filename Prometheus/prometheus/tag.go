@@ -40,10 +40,12 @@ func (device *Device) GetTag(id ...int) (interface{}, error) {
 }
 
 
-func (device *Device)AddTag(id ...int) error {
-	values:=[][]interface{}{}
-	for _,one :=range id {
-			values=append(values,[]interface{}{device.DeviceId,one})
-	}
-	return PROMETHEUS.dbobj.Add(global.TABLEdeviceTag, []string{`device_id`, `tag_id`}, values)
+func (device *Device)AddTag(tag *Tag) error {
+	return PROMETHEUS.dbobj.Add(global.TABLEdeviceTag, []string{`device_id`, `tag_id`}, [][]interface{}{[]interface{}{device.DeviceId,tag.TagId}})
+}
+
+func (device *Device)DeleteTag(tag *Tag) error {
+	c1 := fmt.Sprintf("tag_id = %d", tag.TagId )
+	c2 := fmt.Sprintf("device_id = %d", device.DeviceId)
+	return PROMETHEUS.dbobj.Delete(global.TABLEdeviceTag, []string{c1,c2})
 }

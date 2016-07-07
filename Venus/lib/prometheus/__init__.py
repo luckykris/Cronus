@@ -54,4 +54,11 @@ class Prometheus:
 	def deleteDeviceNetPorts(self,device_id,netPort_id):
 		api='device/%d/netPorts/%d' % (device_id,netPort_id)
 		return self.__apiRequest(api,'DELETE')
+	def getDeviceTags(self,device_id,tag_id=None):
+		api="device/%d/tags/" % device_id
+		if tag_id is not None:
+			api=api+str(tag_id)
+		return self.__apiRequest(api,'GET')	
+	def addDeviceTags(self,device_id,tag):
+		return self.__apiRequest('device/%d/tags/' % device_id,'POST',tag)
 		
