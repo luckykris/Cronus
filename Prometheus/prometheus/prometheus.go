@@ -53,7 +53,7 @@ type Location struct {
 
 type Tag struct {
 	TagId int
-	Tag   string
+	TagName   string
 }
 
 type Prometheus struct {

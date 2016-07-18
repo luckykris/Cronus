@@ -26,16 +26,28 @@ class Prometheus:
 			except:
 				return r.text
 	def getDevice(self,deviceId=None):
-		api="device"
+		api="devices"
 		if deviceId !=None:
-			api="device/%d" % deviceId
+			api="devices/%d" % deviceId
 		return self.__apiRequest(api,'GET')
 	def addDevice(self,device):
-		return self.__apiRequest('device','POST',device)
+		return self.__apiRequest('devices','POST',device)
 	def updateDevice(self,device_id,device):
-		return self.__apiRequest('device/%d' % device_id,'UPDATE',device)
+		return self.__apiRequest('devices/%d' % device_id,'UPDATE',device)
 	def deleteDevice(self,device_id):
-		api='device/%d' % device_id
+		api='devices/%d' % device_id
+		return self.__apiRequest(api,'DELETE')
+	def getTag(self,tagId=None):
+		api="tags"
+		if tagId !=None:
+		        api="tags/%d" % tagId
+		return self.__apiRequest(api,'GET')
+	def addTag(self,tag):
+		return self.__apiRequest('tags','POST',tag)
+	def updateTag(self,tag_id,tag):
+		return self.__apiRequest('tags/%d' % tag_id,'UPDATE',tag)
+	def deleteTag(self,tag_id):
+		api='tags/%d' % tag_id
 		return self.__apiRequest(api,'DELETE')
 	def getCabinet(self,cabinetId=""):
 		api="cabinet/%s" % str(cabinetId)
@@ -43,22 +55,24 @@ class Prometheus:
 	def getSpace(self,data={}):
 		return self.__apiRequest('space','GET',data)
 	def getDeviceNetPorts(self,device_id,netPort_id=None):
-		api="device/%d/netPorts/" % device_id
+		api="devices/%d/netPorts/" % device_id
 		if netPort_id is not None:
 			api=api+str(netPort_id)
 		return self.__apiRequest(api,'GET')	
 	def addDeviceNetPorts(self,device_id,netPort):
-		return self.__apiRequest('device/%d/netPorts/' % device_id,'POST',netPort)
+		return self.__apiRequest('devices/%d/netPorts/' % device_id,'POST',netPort)
 	def updateDeviceNetPorts(self,device_id,netPort_id,netPort):
-		return self.__apiRequest('device/%d/netPorts/%d' % (device_id,netPort_id),'UPDATE',netPort)
+		return self.__apiRequest('devices/%d/netPorts/%d' % (device_id,netPort_id),'UPDATE',netPort)
 	def deleteDeviceNetPorts(self,device_id,netPort_id):
-		api='device/%d/netPorts/%d' % (device_id,netPort_id)
+		api='devices/%d/netPorts/%d' % (device_id,netPort_id)
 		return self.__apiRequest(api,'DELETE')
 	def getDeviceTags(self,device_id,tag_id=None):
-		api="device/%d/tags/" % device_id
+		api="devices/%d/tags/" % device_id
 		if tag_id is not None:
 			api=api+str(tag_id)
 		return self.__apiRequest(api,'GET')	
-	def addDeviceTags(self,device_id,tag):
-		return self.__apiRequest('device/%d/tags/' % device_id,'POST',tag)
+	def addDeviceTags(self,device_id,tag_id):
+		return self.__apiRequest('devices/%d/tags/%d' % (device_id,tag_id),'POST')
+	def deleteDeviceTags(self,device_id,tag_id):
+		return self.__apiRequest('devices/%d/tags/%d' % (device_id,tag_id),'DELETE')
 		
