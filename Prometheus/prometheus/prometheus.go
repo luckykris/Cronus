@@ -11,7 +11,7 @@ import (
 type Device struct {
 	DeviceId       int
 	DeviceName     string
-	DeviceModelId  int
+	DeviceType  string
 	FatherDeviceId interface{}
 }
 

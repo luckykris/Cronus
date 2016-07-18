@@ -3,7 +3,7 @@ a=Prometheus("http://127.0.0.1:81/v1/")
 #a=Prometheus("http://172.16.3.20/v1/")
 device={
 	"DeviceName":"functiontest",
-	"DeviceModelId":1
+	"DeviceType":"Server"
 }
 tag={
 	"TagName":"functiontest_tag",

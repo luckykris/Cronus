@@ -13,7 +13,12 @@ func GetDevice(ctx *macaron.Context) {
 	if id == ""{
 		r, err = prometheus.GetDevice()
 	} else {
-		r, err = prometheus.GetDevice("device_id=" + id)
+		id_int, err := strconv.Atoi(id)
+		if err != nil {
+			ctx.JSON(400, err.Error())
+			return
+		}
+		r, err = prometheus.GetDevice(id_int)
 	}
 	if err != nil {
 		ctx.JSON(500, err.Error())
@@ -32,19 +37,19 @@ func GetDevice(ctx *macaron.Context) {
 
 func AddDevice(ctx *macaron.Context) {
 	deviceName:=ArgString{"DeviceName",true,nil}
-	deviceModelId:=ArgInt{"DeviceModelId",true,nil}
+	deviceType:=ArgString{"DeviceType",true,nil}
 	faterDeviceId:=ArgInt{"FatherDeviceId",false,nil}
-	args_string,err:=getAllStringArgs(ctx,[]ArgString{deviceName})
+	args_string,err:=getAllStringArgs(ctx,[]ArgString{deviceName,deviceType})
 	if err!=nil{
 		ctx.JSON(400, err.Error())
 		return
 	}	
-	args_int,err:=getAllIntArgs(ctx,[]ArgInt{deviceModelId,faterDeviceId})
+	args_int,err:=getAllIntArgs(ctx,[]ArgInt{faterDeviceId})
 	if err!=nil{
 		ctx.JSON(400, err.Error())
 		return
 	}	
-	device:=prometheus.Device{DeviceName:args_string["DeviceName"].(string),DeviceModelId:args_int["DeviceModelId"].(int),FatherDeviceId:args_int["FatherDeviceId"]}
+	device:=prometheus.Device{DeviceName:args_string["DeviceName"].(string),DeviceType:args_string["DeviceType"].(string),FatherDeviceId:args_int["FatherDeviceId"]}
 	err=prometheus.AddDevice(&device)
 	if err!=nil{
 		ctx.JSON(400, err.Error())
@@ -60,7 +65,7 @@ func DeleteDevice(ctx *macaron.Context) {
 		return
 	}
 	device:=&prometheus.Device{DeviceId:id_int}
-	err = prometheus.DeleteDevice(device)
+	err = device.DeleteDevice()
 	if err != nil {
 		ctx.JSON(400, err.Error())
 	} else {
@@ -70,7 +75,12 @@ func DeleteDevice(ctx *macaron.Context) {
 
 func UpdateDevice(ctx *macaron.Context) {
 	deviceId:= ctx.Params("id")
-	devices,err:=prometheus.GetDevice("device_id="+deviceId)
+	deviceId_int, err := strconv.Atoi(deviceId)
+	if err != nil {
+		ctx.JSON(400, err.Error())
+		return
+	}
+	devices,err:=prometheus.GetDevice(deviceId_int)
 	if err!=nil{
 		ctx.JSON(500, err.Error())
 		return
@@ -81,20 +91,20 @@ func UpdateDevice(ctx *macaron.Context) {
 	}
 	device:=devices[0]
 	deviceName:=ArgString{"DeviceName",false,device.DeviceName}
-	deviceModelId:=ArgInt{"DeviceModelId",false,device.DeviceModelId}
+	deviceType:=ArgString{"DeviceType",false,device.DeviceType}
 	faterDeviceId:=ArgInt{"FatherDeviceId",false,device.FatherDeviceId}
-	args_string,err:=getAllStringArgs(ctx,[]ArgString{deviceName})
+	args_string,err:=getAllStringArgs(ctx,[]ArgString{deviceName,deviceType})
 	if err!=nil{
 		ctx.JSON(400, err.Error())
 		return
 	}	
-	args_int,err:=getAllIntArgs(ctx,[]ArgInt{deviceModelId,faterDeviceId})
+	args_int,err:=getAllIntArgs(ctx,[]ArgInt{faterDeviceId})
 	if err!=nil{
 		ctx.JSON(400, err.Error())
 		return
 	}	
 	device.DeviceName=args_string["DeviceName"].(string)
-	device.DeviceModelId=args_int["DeviceModelId"].(int)
+	device.DeviceType=args_string["DeviceType"].(string)
 	device.FatherDeviceId=args_int["FatherDeviceId"]
 	err = device.UpdateDevice()
 	if err != nil {
