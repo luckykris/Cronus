@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import ansible.runner
 import sys
 hosts=sys.argv[1]

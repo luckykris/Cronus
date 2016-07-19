@@ -80,7 +80,3 @@ func Init(mainCfg cfg.MainCfg) {
 	}
 	log.Debug("Open Database Success")
 }
-
-func Start() {
-
-}

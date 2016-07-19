@@ -1,23 +1,29 @@
 package sniffer
 import (
 	"strings"
+	"fmt"
+	"github.com/luckykris/Cronus/Prometheus/cfg"
+	"time"
+	"path/filepath"
 )
 
-type Sniffer uint8
 
 const (
-	None	Sniffer = iota
-	Ansible 
+	AnsiblePlugin string = "ansible-sniff.py"
 )
 
-func ParseSniffer(sniffer string) (Sniffer, error) {
-	switch strings.ToLower(sniffer) {
-	case "none":
-		return None,nil
-	case "ansible":
-		return Ansible, nil
-	}
-
-	var s Sniffer
-	return s, fmt.Errorf("unknow sniffer: %q", sniffer)
+type Snifferi interface{
+	Start()
 }
+
+func Init(cfg cfg.SnifferCfgStruct) (Snifferi, error) {
+	switch strings.ToLower(cfg.Class) {
+	case "none":
+		return &None{Interval:time.Duration(cfg.Interval)},nil
+	case "ansible":
+		return &Ansible{Interval:time.Duration(cfg.Interval),Exe:filepath.Join(cfg.PluginPath,AnsiblePlugin)},nil
+	default:
+		return nil, fmt.Errorf("unknow sniffer: %q", cfg.Class)
+	}
+}
+

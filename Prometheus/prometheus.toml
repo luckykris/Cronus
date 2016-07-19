@@ -11,6 +11,7 @@ passwd="redhat"
 [log]
 level="debug"
 
-[prometheus]
-sniffer="ansible"
+[sniffer]
+class="ansible"
 plugin_path="/data/kris/Cronus/Prometheus/plugin"
+interval=1

@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/BurntSushi/toml"
-	"github.com/luckykris/Cronus/sniffer"
 	log "github.com/Sirupsen/logrus"
 	"os"
 )
@@ -18,7 +17,7 @@ var LOGLEVELMAP = map[string]log.Level{"debug": log.DebugLevel, "info": log.Info
 type MainCfg struct {
 	DbCfg  DbCfgStruct  `toml:"database"`
 	LogCfg LogCfgStruct `toml:"log"`
-	LogCfg LogCfgStruct `toml:"prometheus"`
+	SnifferCfg SnifferCfgStruct `toml:"sniffer"`
 	Daemon bool
 }
 
@@ -42,10 +41,10 @@ type LogCfgStruct struct {
 }
 
 //log config struct for toml
-type PrometheusCfgStruct struct {
-	Sniffer   	string    `toml:"sniffer"`
-	SnifferId	uint8	`toml:"snifferId"`
-	PluginPath  string `toml:"plugin_path"`
+type SnifferCfgStruct struct {
+	Class   	string  `toml:"class"`
+	PluginPath  string 	`toml:"plugin_path"`
+	Interval	int64 	`toml:"interval"`
 }
 
 
@@ -108,22 +107,20 @@ func LoadCfg() MainCfg {
 	}
 	levelId, err := log.ParseLevel(mainCfgObj.LogCfg.Level)
 	if err != nil {
-		fmt.Printf(err.Error()+'\n')
+		fmt.Printf(err.Error()+"\n")
 		os.Exit(-1)
 	} else {
 		mainCfgObj.LogCfg.LevelId = levelId
 	}
 	//config promethues 
-	//config log
-	if !meta.IsDefined("promethues", "sniffer") {
-		mainCfgObj.PrometheusCfgStruct.Sniffer = "none"
+	if !meta.IsDefined("sniffer", "class") {
+		mainCfgObj.SnifferCfg.Class = "none"
 	}
-	snifferId, err := sniffer.ParseSniffer(mainCfgObj.PrometheusCfgStruct.Sniffer)
-	if err != nil {
-		fmt.Printf(err.Error()+'\n')
-		os.Exit(-1)
-	} else {
-		mainCfgObj.PrometheusCfgStruct.SnifferId = snifferId
+	if !meta.IsDefined("sniffer", "interval") {
+		mainCfgObj.SnifferCfg.Interval = 1
+	}
+	if !meta.IsDefined("sniffer", "plugin_path") {
+		mainCfgObj.SnifferCfg.PluginPath = "/usr/share/" + SOFTWARE
 	}
 	return mainCfgObj
 }

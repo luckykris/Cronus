@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"github.com/luckykris/Cronus/Prometheus/cfg"
+	"strings"
 	//"github.com/luckykris/Cronus/Prometheus/global"
 )
 
@@ -16,7 +17,7 @@ type Dbi interface {
 }
 
 func Init(cfg cfg.DbCfgStruct) (Dbi, error) {
-	switch cfg.Class {
+	switch strings.ToLower(cfg.Class) {
 	case "mysql":
 		return &MysqlDb{Host: cfg.Host, Port: cfg.Port, User: cfg.User, Passwd: cfg.Passwd, Db: cfg.Db, Charset: cfg.Charset, MaxLifeTime: cfg.MaxLifeTime, MaxIdleConns: cfg.MaxIdleConns}, nil
 	default:
