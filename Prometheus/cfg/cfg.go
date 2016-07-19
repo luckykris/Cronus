@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/BurntSushi/toml"
+	"github.com/luckykris/Cronus/sniffer"
 	log "github.com/Sirupsen/logrus"
 	"os"
 )
@@ -17,6 +18,7 @@ var LOGLEVELMAP = map[string]log.Level{"debug": log.DebugLevel, "info": log.Info
 type MainCfg struct {
 	DbCfg  DbCfgStruct  `toml:"database"`
 	LogCfg LogCfgStruct `toml:"log"`
+	LogCfg LogCfgStruct `toml:"prometheus"`
 	Daemon bool
 }
 
@@ -38,6 +40,14 @@ type LogCfgStruct struct {
 	Level   string    `toml:"level"`
 	LevelId log.Level `toml:"levelId"`
 }
+
+//log config struct for toml
+type PrometheusCfgStruct struct {
+	Sniffer   	string    `toml:"sniffer"`
+	SnifferId	uint8	`toml:"snifferId"`
+	PluginPath  string `toml:"plugin_path"`
+}
+
 
 //Load all config
 func LoadCfg() MainCfg {
@@ -98,17 +108,22 @@ func LoadCfg() MainCfg {
 	}
 	levelId, err := log.ParseLevel(mainCfgObj.LogCfg.Level)
 	if err != nil {
-		fmt.Printf("Can`t support Log Level :%s\n", mainCfgObj.LogCfg.Level)
+		fmt.Printf(err.Error()+'\n')
 		os.Exit(-1)
 	} else {
 		mainCfgObj.LogCfg.LevelId = levelId
 	}
-	//levelId, ok := LOGLEVELMAP[mainCfgObj.LogCfg.Level]
-	//if ok {
-	//	mainCfgObj.LogCfg.LevelId = levelId
-	//} else {
-	//	fmt.Printf("Can`t support Log Level :%s\n", mainCfgObj.LogCfg.Level)
-	//	os.Exit(-1)
-	//}
+	//config promethues 
+	//config log
+	if !meta.IsDefined("promethues", "sniffer") {
+		mainCfgObj.PrometheusCfgStruct.Sniffer = "none"
+	}
+	snifferId, err := sniffer.ParseSniffer(mainCfgObj.PrometheusCfgStruct.Sniffer)
+	if err != nil {
+		fmt.Printf(err.Error()+'\n')
+		os.Exit(-1)
+	} else {
+		mainCfgObj.PrometheusCfgStruct.SnifferId = snifferId
+	}
 	return mainCfgObj
 }

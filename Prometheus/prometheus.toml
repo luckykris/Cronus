@@ -10,3 +10,7 @@ passwd="redhat"
 
 [log]
 level="debug"
+
+[prometheus]
+sniffer="ansible"
+plugin_path="/data/kris/Cronus/Prometheus/plugin"
