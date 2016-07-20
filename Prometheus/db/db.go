@@ -10,7 +10,7 @@ import (
 type Dbi interface {
 	Start() error
 	Ping() error
-	Get(string, []string, []string, ...interface{}) (*Cur, error)
+	Get(string, interface{},[]string, []string, ...interface{}) (*Cur, error)
 	Add(string, []string, [][]interface{}) error
 	Delete(string, []string) error
 	Update(string, []string, []string, []interface{}) error

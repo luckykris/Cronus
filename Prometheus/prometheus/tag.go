@@ -17,7 +17,7 @@ func GetTag(id ...int) ([]Tag, error) {
 		}
 		conditions=append(conditions,fmt.Sprintf("tag_id in (%s)"  ,strings.Join(tmp_condition,",")))
 	}
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEtag, []string{`tag_id`, `tag_name`}, conditions, &tag_id, &tag)
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEtag,nil, []string{`tag_id`, `tag_name`}, conditions, &tag_id, &tag)
 	r := []Tag{}
 	for cur.Fetch() {
 		r = append(r, Tag{tag_id, tag})
@@ -44,7 +44,7 @@ func (device *Device) GetTag(id ...int) (interface{}, error) {
 		conditions = append(conditions, fmt.Sprintf("tag_id=%d", id[0]))
 	}
 	var tag_id int
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceTag, []string{`tag_id`}, conditions, &tag_id)
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceTag, nil,[]string{`tag_id`}, conditions, &tag_id)
 	in_tag_ids := []int{}
 	for cur.Fetch() {
 		in_tag_ids = append(in_tag_ids,  tag_id)

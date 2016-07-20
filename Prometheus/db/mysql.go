@@ -47,12 +47,16 @@ func (db *MysqlDb) Close() error {
 	return db.DbPool.Close()
 }
 
-func (db *MysqlDb) Get(table string, columns_name []string, conditions []string, columns ...interface{}) (*Cur, error) {
+func (db *MysqlDb) Get(table string, groupby interface{},columns_name []string, conditions []string, columns ...interface{}) (*Cur, error) {
 	var conditions_str = ""
+	var groupby_str = ""
 	if len(conditions) != 0 {
 		conditions_str = " WHERE " + strings.Join(conditions, ` AND `)
 	}
-	sql := fmt.Sprintf(`SELECT %s FROM %s %s`, strings.Join(columns_name, `,`), table, conditions_str)
+	if groupby !=nil{
+		groupby_str=fmt.Sprintf("GROUP BY %s",groupby.(string))
+	}
+	sql := fmt.Sprintf("SELECT `%s` FROM %s %s %s", strings.Join(columns_name, "`,`"), table, conditions_str,groupby_str)
 	rows, err := db.DbPool.Query(sql)
 	log.Debug(sql)
 	return &Cur{rows, columns_name, columns}, err

@@ -11,7 +11,7 @@ func GetLocation(args ...string) (interface{}, error) {
 	var name string
 	var picture string
 	var father_id sql.NullInt64
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLElocation, []string{`location_id`, `location_name`, `picture`, `father_location_id`}, args, &id, &name, &picture, &father_id)
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLElocation,nil, []string{`location_id`, `location_name`, `picture`, `father_location_id`}, args, &id, &name, &picture, &father_id)
 	r := []Location{}
 	for cur.Fetch() {
 		if !father_id.Valid {

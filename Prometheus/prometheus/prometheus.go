@@ -11,12 +11,13 @@ import (
 type Server struct {
 	Serial string
 	Hostname string
-	Memsize uint64
+	Memsize int
 	Os  string
-	Release float32
-	LastChangeTime uint64
+	Release float64
+	LastChangeTime int
 	Checksum string
-	Device
+	NetPorts	[]NetPort
+	Device 
 }
 
 type Device struct {
@@ -90,4 +91,12 @@ func Init(mainCfg cfg.MainCfg) {
 		os.Exit(255)
 	}
 	log.Debug("Open Database Success")
+}
+
+
+func (device *Device)Init(	deviceId  int,deviceName   string,deviceType  string,fatherDeviceId interface{}){
+	device.DeviceId=deviceId
+	device.DeviceName=deviceName
+	device.DeviceType=deviceType
+	device.FatherDeviceId=fatherDeviceId
 }

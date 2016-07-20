@@ -20,5 +20,5 @@ func TestAnsible(t *testing.T){
                 fmt.Println(err.Error())
                 return
         }
-        fmt.Println(servers)
+        fmt.Printf("%#v",servers)
 }

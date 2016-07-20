@@ -3,18 +3,34 @@ package prometheus
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	//"github.com/luckykris/Cronus/Hephaestus/net"
 	"github.com/luckykris/Cronus/Prometheus/global"
 )
 
-func GetNetPort(args ...string) ([]NetPort, error) {
+func GetNetPort(device_ids ,netPort_ids []int ) ([]NetPort, error) {
 	var netPort_id int
 	var mac sql.NullString
 	var mac_i interface{}
 	var ipv4_int sql.NullInt64
 	var ipv4_int_i interface{}
 	var netPort_type string
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEnetPort, []string{`netPort_id`, `mac`, `ipv4_int`, `netPort_type`}, args, &netPort_id, &mac, &ipv4_int, &netPort_type)
+	conditions:=[]string{}
+	if len(device_ids) >0 {
+		tmp_ls:=[]string{}
+		for _,v:=range device_ids{
+			tmp_ls=append(tmp_ls,fmt.Sprintf("%d",v))
+		}
+		conditions=append(conditions,fmt.Sprintf("device_id IN (%s)",strings.Join(tmp_ls,",")))
+	}
+	if len(netPort_ids) >0 {
+		tmp_ls:=[]string{}
+		for _,v:=range netPort_ids{
+			tmp_ls=append(tmp_ls,fmt.Sprintf("%d",v))
+		}
+		conditions=append(conditions,fmt.Sprintf("netPort_id IN (%s)",strings.Join(tmp_ls,",")))
+	}
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEnetPort, nil,[]string{`netPort_id`, `mac`, `ipv4_int`, `netPort_type`}, conditions, &netPort_id, &mac, &ipv4_int, &netPort_type)
 	r := []NetPort{}
 	for cur.Fetch() {
 		if !mac.Valid {
@@ -39,10 +55,7 @@ func AddNetPort(device_id int,netPort NetPort)(error) {
 func (device *Device) GetNetPort(id ...int) ([]NetPort, error) {
 	conditions := []string{}
 	conditions = append(conditions, fmt.Sprintf("device_id=%d", device.DeviceId))
-	if len(id) > 0 {
-		conditions = append(conditions, fmt.Sprintf("netPort_id=%d", id[0]))
-	}
-	return GetNetPort(conditions...)
+	return GetNetPort([]int{device.DeviceId},id)
 }
 
 func (device *Device) AddNetPort(netPort NetPort) (error) {

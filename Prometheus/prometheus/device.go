@@ -22,7 +22,7 @@ func GetDevice(id ...int) ([]Device, error) {
 		conditions=append(conditions,fmt.Sprintf("device_id in (%s)"  ,strings.Join(tmp_condition,",")))
 	}
 	r := []Device{}
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdevice, []string{`device_id`, `device_name`, `device_type`, `father_device_id`}, conditions, &device_id, &device_name, &device_type, &father_device_id)
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdevice,nil, []string{`device_id`, `device_name`, `device_type`, `father_device_id`}, conditions, &device_id, &device_name, &device_type, &father_device_id)
 	if err != nil {
 		return r, err
 	}

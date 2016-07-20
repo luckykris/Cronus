@@ -12,9 +12,10 @@ func TestGetAllDeviceType(t *testing.T){
 	mainCfg := cfg.LoadCfg()
 	log.SetLevel(mainCfg.LogCfg.LevelId)
 	prometheus.Init(mainCfg)
-	r,err:=prometheus.GetAllDeviceType()
+	r,err:=prometheus.GetServer()
 	if err!=nil{
+		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(r)
+	fmt.Printf("%#v\n",r)
 }

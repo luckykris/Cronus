@@ -9,4 +9,5 @@ const (
 	TABLEspace       string = `space`
 	TABLEtag		 string = `tag`
 	TABLEdeviceTag 	 string = `deviceTag`
+	TABLEserver 	 string = `server`
 )
