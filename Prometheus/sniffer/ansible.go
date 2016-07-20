@@ -2,9 +2,12 @@ package sniffer
 
 import (
 	"time"
+	"fmt"
 	"runtime"
 	"os/exec"
 	log "github.com/Sirupsen/logrus"
+	"github.com/bitly/go-simplejson"
+	"github.com/luckykris/Cronus/Hephaestus/simplejson"
 )
 
 type Ansible struct{
@@ -29,8 +32,38 @@ func (sniffer *Ansible)Start(){
 
 
 func (sniffer *Ansible)Run()error{
-	c:=exec.Command(sniffer.Exe,"192.168.33.81,192.168.33.82")
+	r,err:=RunAnsibleCommand(sniffer.Exe,"192.168.33.81,192.168.33.82")
+	if err!=nil{
+		return err
+	}
+	_,err=DecodeAnsibleReturn(r)
+	if err!=nil {
+		return err
+	}
+	return nil
+}
+
+func RunAnsibleCommand(exe , arg string)([]byte,error){
+	c:=exec.Command(exe,arg)
 	r,err:=c.Output()
-	log.Debug(string(r))
-	return err
+	return r,err
+}
+
+func DecodeAnsibleReturn(ar []byte)([]prometheus.Server,error){
+	servers :=[]prometheus.Server{}
+	json, err := simplejson.NewJson(ar)
+	success_servers,err:=json.Get("contacted").Map()
+	if err!=nil{
+		return servers,err
+	}
+	for _,infomation :=range success_servers{
+		tmp_json:=&simplejson.Json{Data: infomation,}
+		fmt.Println(tmp_json)
+		//tmp_json.data=infomation
+		serial:=tmp_json.Get("ansible_facts").Get("ansible_product_serial").MustString()
+		hostname:=tmp_json.Get("ansible_facts").Get("ansible_hostname").MustString()
+		os:=tmp_json.Get("ansible_facts").Get("ansible_os_family").MustString()
+		servers=append(servers,prometheus.Server{Serial:serial,Hostname:hostname,Os:os})
+	}
+	return servers,nil
 }

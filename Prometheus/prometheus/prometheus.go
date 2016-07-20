@@ -8,6 +8,17 @@ import (
 	"os"
 )
 
+type Server struct {
+	Serial string
+	Hostname string
+	Memsize uint64
+	Os  string
+	Release float32
+	LastChangeTime uint64
+	Checksum string
+	Device
+}
+
 type Device struct {
 	DeviceId       int
 	DeviceName     string
