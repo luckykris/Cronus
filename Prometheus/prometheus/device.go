@@ -7,7 +7,7 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/global"
 )
 
-func GetDevice(id ...int) ([]Device, error) {
+func GetDevice(id ...int) ([]*Device, error) {
 	var device_id int
 	var device_name string
 	var device_type string
@@ -21,7 +21,7 @@ func GetDevice(id ...int) ([]Device, error) {
 		}
 		conditions=append(conditions,fmt.Sprintf("device_id in (%s)"  ,strings.Join(tmp_condition,",")))
 	}
-	r := []Device{}
+	r := []*Device{}
 	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdevice,nil, []string{`device_id`, `device_name`, `device_type`, `father_device_id`}, conditions, &device_id, &device_name, &device_type, &father_device_id)
 	if err != nil {
 		return r, err
@@ -32,7 +32,7 @@ func GetDevice(id ...int) ([]Device, error) {
 		} else {
 			father_device_id_i = father_device_id.Int64
 		}
-		r = append(r, Device{device_id, device_name, device_type, father_device_id_i})
+		r = append(r, &Device{device_id, device_name, device_type, father_device_id_i})
 	}
 	return r, err
 }

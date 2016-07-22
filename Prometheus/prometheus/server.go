@@ -2,14 +2,17 @@ package prometheus
 
 import (
 	//"database/sql"
+	"time"
+	"crypto/md5"
 	"fmt"
 	"strings"
 	"github.com/luckykris/Cronus/Prometheus/global"
+	log "github.com/Sirupsen/logrus"
 )
 
 
 
-func GetServer(id ...int) ([]Server, error) {
+func GetServer(id ...int) ([]*Server, error) {
 	var device_id int
 	var deviceName string
 	var deviceType string
@@ -19,14 +22,14 @@ func GetServer(id ...int) ([]Server, error) {
 	var memsize int
 	var os string
 	var release float64
-	var last_change_time int
+	var last_change_time int64
 	var checksum string
 	conditions:=[]string{}
 	devices,err:=GetDevice(id...)
-	device_map:=map[int]Device{}
-	servers:=[]Server{}
+	device_map:=map[int]*Device{}
+	servers:=[]*Server{}
 	if err!=nil{
-		return []Server{},err
+		return []*Server{},err
 	}
 	if len(id)>0{
 		tmp_condition:=[]string{}
@@ -54,7 +57,7 @@ func GetServer(id ...int) ([]Server, error) {
 		//server_map[device_id].Release=release
 		//server_map[device_id].LastChangeTime=last_change_time
 		//server_map[device_id].Checksum=checksum
-		server:=Server{
+		server:=&Server{
 					  Serial:serial,
 					  Hostname :hostname,
 					  Memsize: memsize,
@@ -62,6 +65,11 @@ func GetServer(id ...int) ([]Server, error) {
 					  Release :release,
 					  LastChangeTime: last_change_time,
 					  Checksum :checksum}
+		netPorts,err:=server.GetNetPort()
+		if err!=nil{
+			log.Error("prometheus get netPort failed:",err.Error())
+		}
+		server.NetPorts=netPorts
 		server.Init(device_id,deviceName,deviceType,fatherDeviceId)
 		servers=append(servers,server)
 	}
@@ -78,13 +86,25 @@ func GetServer(id ...int) ([]Server, error) {
 //}
 //
 func (server *Server)UpdateServer() error {
-
-	return PROMETHEUS.dbobj.Update(global.TABLEdevice, []string{c}, []string{`device_name`,`device_type`, `father_device_id`}, []interface{}{device.DeviceName,device.DeviceType,device.FatherDeviceId})
+	conditions:=[]string{fmt.Sprintf("device_id = %d" , server.DeviceId)}
+	server_pre_ls,err:=GetServer(server.DeviceId)
+	if err!=nil{
+		return err
+	}
+	checksum:=server.ComputSum()
+	if server_pre_ls[0].Checksum == checksum{
+		return nil
+	}
+	server.LastChangeTime=time.Now().Unix()
+	return PROMETHEUS.dbobj.Update(global.TABLEserver, conditions, []string{`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, []interface{}{server.Serial,server.Hostname,server.Memsize,server.Os,server.Release,server.LastChangeTime,checksum})
 }
 
 
-func(server *Server)Checksum()string{
-	for _,v :=range server.NetPorts{
-
-	}
+func(server *Server)ComputSum()string{
+	s:=fmt.Sprintf("%s%s%d%s%f",server.Serial,server.Hostname,server.Memsize,server.Os,server.Release)
+	return fmt.Sprintf("%x", md5.Sum([]byte(s)))
+	//netPorts_count_ipv4_int:=0
+	//for _,netPort :=range server.NetPorts{
+//		netPorts_count_ipv4_int+=netPort.Ipv4Int
+//	}
 }

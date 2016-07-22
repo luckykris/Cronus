@@ -85,11 +85,11 @@ func (db *MysqlDb) Add(table string, columns_name []string, values [][]interface
 		}
 		values3 = append(values3, strings.Join(values2, `,`))
 	}
-	sql := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`, table, strings.Join(columns_name, `,`), strings.Join(values3, `),(`))
+	sql := fmt.Sprintf("INSERT INTO %s (`%s`) VALUES (%s)", table, strings.Join(columns_name, "`,`"), strings.Join(values3, `),(`))
 	log.Debug(sql)
 	_, err := db.DbPool.Exec(sql)
 	if err != nil {
-		log.Debug("Mysql insert failed,sql:%s,err:%s", sql, err.Error())
+		log.Debug(fmt.Sprintf("Mysql insert failed,sql:%s,err:%s", sql, err.Error()))
 	}
 	return err
 
@@ -100,7 +100,7 @@ func (db *MysqlDb) Delete(table string, conditions []string) error {
 	log.Debug(sql)
 	_, err := db.DbPool.Exec(sql)
 	if err != nil {
-		log.Debug("Mysql delete failed,sql:%s,err:%s", sql, err.Error())
+		log.Debug(fmt.Sprintf("Mysql delete failed,sql:%s,err:%s", sql, err.Error()))
 	}
 	return err
 
@@ -110,13 +110,13 @@ func (db *MysqlDb) Update(table string, conditions []string, columns_name []stri
 	kv := []string{}
 	conditions_str := strings.Join(conditions, ` AND `)
 	for i := range columns_name {
-		kv = append(kv, fmt.Sprintf(" %s = %s", columns_name[i], _CheckTypeAndModifyString(values[i])))
+		kv = append(kv, fmt.Sprintf(" `%s` = %s", columns_name[i], _CheckTypeAndModifyString(values[i])))
 	}
 	sql := fmt.Sprintf(`UPDATE %s SET %s WHERE %s`, table, strings.Join(kv, `,`), conditions_str)
 	log.Debug(sql)
 	_, err := db.DbPool.Exec(sql)
 	if err != nil {
-		log.Debug("Mysql Update failed,sql:%s,err:%s", sql, err.Error())
+		log.Debug(fmt.Sprintf("Mysql Update failed,sql:%s,err:%s", sql, err.Error()))
 	}
 	return err
 }
@@ -127,6 +127,10 @@ func _CheckTypeAndModifyString(v interface{}) string {
 		return `'` + v.(string) + `'`
 	case int:
 		return fmt.Sprintf("%d", v.(int))
+	case int64:
+		return fmt.Sprintf("%d", v.(int64))
+	case float64:
+		return fmt.Sprintf("%f", v.(float64))
 	case nil:
 		return `null`
 	default:

@@ -14,7 +14,7 @@ type Server struct {
 	Memsize int
 	Os  string
 	Release float64
-	LastChangeTime int
+	LastChangeTime int64
 	Checksum string
 	NetPorts	[]NetPort
 	Device 
@@ -100,3 +100,4 @@ func (device *Device)Init(	deviceId  int,deviceName   string,deviceType  string,
 	device.DeviceType=deviceType
 	device.FatherDeviceId=fatherDeviceId
 }
+
