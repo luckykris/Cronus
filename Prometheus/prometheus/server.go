@@ -12,7 +12,7 @@ import (
 
 
 
-func GetServer(id ...int) ([]*Server, error) {
+func GetServer(name interface{},id ...int) ([]*Server, error) {
 	var device_id int
 	var deviceName string
 	var deviceType string
@@ -25,7 +25,7 @@ func GetServer(id ...int) ([]*Server, error) {
 	var last_change_time int64
 	var checksum string
 	conditions:=[]string{}
-	devices,err:=GetDevice(id...)
+	devices,err:=GetDevice(name,id...)
 	device_map:=map[int]*Device{}
 	servers:=[]*Server{}
 	if err!=nil{
@@ -49,45 +49,67 @@ func GetServer(id ...int) ([]*Server, error) {
 		deviceName=device_map[device_id].DeviceName
 		deviceType=device_map[device_id].DeviceType
 		fatherDeviceId=device_map[device_id].FatherDeviceId
-		//server_map[device_id].Serial=serial
-		//server_map[device_id].Serial=serial
-		//server_map[device_id].Hostname=hostname
-		//server_map[device_id].Memsize=memsize
-		//server_map[device_id].Os=os
-		//server_map[device_id].Release=release
-		//server_map[device_id].LastChangeTime=last_change_time
-		//server_map[device_id].Checksum=checksum
-		server:=&Server{
-					  Serial:serial,
-					  Hostname :hostname,
-					  Memsize: memsize,
-					  Os:os,
-					  Release :release,
-					  LastChangeTime: last_change_time,
-					  Checksum :checksum}
+		server:=new(Server)
+		server.Device.DeviceId=device_id
+		server.Device.DeviceName=deviceName
+		server.Device.DeviceType=deviceType
+		server.Device.FatherDeviceId=fatherDeviceId
+		server.Serial=serial
+		server.Hostname=hostname
+		server.Memsize=memsize
+		server.Os=os
+		server.Release=release
+		server.LastChangeTime=last_change_time
+		server.Checksum=checksum
+
+		//server:=&Server{
+		//			  Serial:serial,
+		//			  Hostname :hostname,
+		//			  Memsize: memsize,
+		//			  Os:os,
+		//			  Release :release,
+		//			  LastChangeTime: last_change_time,
+		//			  Checksum :checksum}
+		//server.Init(device_id,deviceName,deviceType,fatherDeviceId)
 		netPorts,err:=server.GetNetPort()
 		if err!=nil{
 			log.Error("prometheus get netPort failed:",err.Error())
 		}
 		server.NetPorts=netPorts
-		server.Init(device_id,deviceName,deviceType,fatherDeviceId)
 		servers=append(servers,server)
 	}
 	return servers, err
 }
 
-//func AddDevice(device *Device) error {
-//	return PROMETHEUS.dbobj.Add(global.TABLEdevice, []string{`device_name`,`device_type`, `father_device_id`}, [][]interface{}{[]interface{}{device.DeviceName,device.DeviceType,device.FatherDeviceId}})
-//}
+func NewServer(deviceName string)*Server{
+	server:=new(Server)
+	server.Device.DeviceName=deviceName
+	server.Device.DeviceType="Server"
+	return server
+}
+
+func (server *Server)AddServer() error {
+	err:=server.AddDevice()
+	if err!=nil{
+		return err
+	}
+	devices,err:=GetDevice(server.Device.DeviceName)
+	if err!=nil{
+		return err
+	}
+	if len(devices)!=1{
+		return fmt.Errorf("amazing critical error!")
+	}
+	return PROMETHEUS.dbobj.Add(global.TABLEserver, []string{`device_id`,`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, [][]interface{}{[]interface{}{devices[0].DeviceId,"Unknow","Unknow",0,"Unknow",0,0,"Never"}})
+}
 //
-//func (device *Device)DeleteDevice() error {
-//	c := fmt.Sprintf("device_id = %d", device.DeviceId)
-//	return PROMETHEUS.dbobj.Delete(global.TABLEdevice, []string{c})
-//}
-//
+func (server *Server)DeleteServer() error {
+	return server.DeleteDevice()
+}
+
 func (server *Server)UpdateServer() error {
 	conditions:=[]string{fmt.Sprintf("device_id = %d" , server.DeviceId)}
-	server_pre_ls,err:=GetServer(server.DeviceId)
+	server_pre_ls,err:=GetServer(nil,server.DeviceId)
 	if err!=nil{
 		return err
 	}

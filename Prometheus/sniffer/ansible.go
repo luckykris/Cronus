@@ -4,12 +4,14 @@ import (
 	"time"
 	"fmt"
 	"strings"
-	"runtime"
+	//"runtime"
+	"strconv"
 	"os/exec"
 	log "github.com/Sirupsen/logrus"
 	"github.com/luckykris/Cronus/Hephaestus/simplejson"
 	"github.com/luckykris/Cronus/Prometheus/prometheus"
 	"github.com/luckykris/Cronus/Hephaestus/net"
+	//"github.com/luckykris/Cronus/Hephaestus/safe"
 )
 
 type Ansible struct{
@@ -17,20 +19,25 @@ type Ansible struct{
 	Exe  string
 }
 
-func (sniffer *Ansible)Start(){
-	for {
-		runtime.Gosched() 
-		//select {
-		//case <-time.After(sniffer.Interval * time.Minute):
-		//	log.Debug("start sniffer.")
-			err:=sniffer.Run()
-			if err!=nil{
-				log.Warn("command run failed:",err.Error())
-			}
-		//}
-		log.Debug("finish sniffer.")
-	}
-}
+//func (sniffer *Ansible)Start(exit *safe.Exiter){
+//	exit.Join()
+//	for {
+//		runtime.Gosched() 
+//		select {
+//		case <-exit.WaitExitSignal():
+//			log.Debug("stoping sniffer")
+//			exit.FinishOneExit()
+//			log.Debug("stopped sniffer")
+//		case <-time.After(sniffer.Interval * time.Minute):
+//			log.Debug("start sniffer.")
+//			err:=sniffer.Run()
+//			if err!=nil{
+//				log.Warn("command run failed:",err.Error())
+//			}
+//		}
+//		log.Debug("finish sniffer.")
+//	}
+//}
 
 
 func (sniffer *Ansible)Run()error{
@@ -44,9 +51,12 @@ func (sniffer *Ansible)Run()error{
 	}
 	return nil
 }
+func (sniffer *Ansible)GetInterval()time.Duration{
+	return sniffer.Interval
+}
 
 func GetServerArray()([]*prometheus.Server,error){
-	return prometheus.GetServer()
+	return prometheus.GetServer(nil)
 }
 
 func RunAnsibleCommand(exe , arg string)([]byte,error){
@@ -60,13 +70,9 @@ func (sniffer *Ansible)SniiferServer(servers []*prometheus.Server)(error){
 	ip_server_map:=map[string]*prometheus.Server{}
 	ip_arr:=[]string{}
 	for _,s:=range servers {
-		fmt.Println(s.NetPorts)
 		if len(s.NetPorts) >0{
-			fmt.Println("got 1")
 			for _,n:=range s.NetPorts{
-				fmt.Println("got 2")
 				if n.Ipv4Int !=nil{
-					fmt.Println("got 3")
 					ipv4_str:=net.Ipv4Uint32ConverString(s.NetPorts[0].Ipv4Int.(uint32))
 					ip_server_map[ipv4_str]=s
 					ip_arr=append(ip_arr,ipv4_str)
@@ -75,8 +81,6 @@ func (sniffer *Ansible)SniiferServer(servers []*prometheus.Server)(error){
 			}
 		}
 	}
-	fmt.Printf("%#v \n",ip_server_map)
-	//ip_device_id_map:=map[string]int{"192.168.33.81":1}
 	ar,err:=RunAnsibleCommand(sniffer.Exe,strings.Join(ip_arr,`,`))
 	if err!=nil{
 		return err
@@ -97,7 +101,12 @@ func (sniffer *Ansible)SniiferServer(servers []*prometheus.Server)(error){
 		hostname:=tmp_json.Get("ansible_facts").Get("ansible_hostname").MustString()
 		os:=tmp_json.Get("ansible_facts").Get("ansible_distribution").MustString()
 		memsize:=tmp_json.Get("ansible_facts").Get("ansible_memtotal_mb").MustInt()
-		release:=tmp_json.Get("ansible_facts").Get("ansible_distribution_version").MustFloat64()
+		release:=tmp_json.Get("ansible_facts").Get("ansible_distribution_version").MustString()
+		release_float, err := strconv.ParseFloat(release, 64)
+		if err!=nil{
+			log.Warn("sniff ",ip,"transfer release to float64 failed :",err)
+			continue
+		}
 		interface_names:=tmp_json.Get("ansible_facts").Get("ansible_interfaces").MustStringArray()
 		netPorts:=[]prometheus.NetPort{}
 		for _,interface_name :=range interface_names {
@@ -118,10 +127,10 @@ func (sniffer *Ansible)SniiferServer(servers []*prometheus.Server)(error){
 		ip_server_map[ip].Serial=serial
 		ip_server_map[ip].Hostname=hostname
 		ip_server_map[ip].Os=os
-		ip_server_map[ip].Release=release
+		ip_server_map[ip].Release=release_float
 		ip_server_map[ip].Memsize=memsize
 		ip_server_map[ip].NetPorts=netPorts
-		err:=ip_server_map[ip].UpdateServer()
+		err=ip_server_map[ip].UpdateServer()
 		if err!=nil{
 			log.Warn("sniff ",ip," failed :",err)
 		}else{

@@ -94,10 +94,10 @@ func Init(mainCfg cfg.MainCfg) {
 }
 
 
-func (device *Device)Init(	deviceId  int,deviceName   string,deviceType  string,fatherDeviceId interface{}){
-	device.DeviceId=deviceId
-	device.DeviceName=deviceName
-	device.DeviceType=deviceType
-	device.FatherDeviceId=fatherDeviceId
-}
+//func (device *Device)Init(	deviceId  int,deviceName   string,deviceType  string,fatherDeviceId interface{}){
+//	device.DeviceId=deviceId
+//	device.DeviceName=deviceName
+//	device.DeviceType=deviceType
+//	device.FatherDeviceId=fatherDeviceId
+//}
 

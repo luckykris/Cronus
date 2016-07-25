@@ -11,14 +11,14 @@ func GetDevice(ctx *macaron.Context) {
 	var r interface{}
 	var err error
 	if id == ""{
-		r, err = prometheus.GetDevice()
+		r, err = prometheus.GetDevice(nil)
 	} else {
 		id_int, err := strconv.Atoi(id)
 		if err != nil {
 			ctx.JSON(400, err.Error())
 			return
 		}
-		r, err = prometheus.GetDevice(id_int)
+		r, err = prometheus.GetDevice(nil,id_int)
 	}
 	if err != nil {
 		ctx.JSON(500, err.Error())
@@ -50,7 +50,7 @@ func AddDevice(ctx *macaron.Context) {
 		return
 	}	
 	device:=prometheus.Device{DeviceName:args_string["DeviceName"].(string),DeviceType:args_string["DeviceType"].(string),FatherDeviceId:args_int["FatherDeviceId"]}
-	err=prometheus.AddDevice(&device)
+	err=device.AddDevice()
 	if err!=nil{
 		ctx.JSON(400, err.Error())
 	}else{
@@ -80,7 +80,7 @@ func UpdateDevice(ctx *macaron.Context) {
 		ctx.JSON(400, err.Error())
 		return
 	}
-	devices,err:=prometheus.GetDevice(deviceId_int)
+	devices,err:=prometheus.GetDevice(nil,deviceId_int)
 	if err!=nil{
 		ctx.JSON(500, err.Error())
 		return

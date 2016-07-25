@@ -1,11 +1,20 @@
 {% extends "main.html" %}
 {%block body%}
 <div class="ui tabular menu">
-  <div class="item" data-tab="tab-name">Tab Name</div>
-  <div class="item" data-tab="tab-name2">Tab Name 2</div>
+  <div class="item" data-tab="tab-name">Server</div>
+  <div class="item" data-tab="tab-name2">VM</div>
 </div>
 <div class="ui tab" data-tab="tab-name">
-  <!-- Tab Content !-->
+<table>
+	<thead>
+	<tr>
+		<td>DeviceName</td>
+		<td>Hostname</td>
+		<td></td>
+		<td></td>
+	<tr>
+	</thead>
+</table>
 </div>
 <div class="ui tab" data-tab="tab-name2">
   <!-- Tab Content !-->
