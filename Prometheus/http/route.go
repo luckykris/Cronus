@@ -43,7 +43,6 @@ func LoadRoute() {
 			WEB.Get("/?:id:int", GetServer)
 			WEB.Post("/", AddServer)
 			WEB.Delete("/:id:int", DeleteServer)
-			WEB.Patch("/:id:int", UpdateServer)
 		})
 		WEB.Group("/space", func() {
 			WEB.Get("/", GetSpace)

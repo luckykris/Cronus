@@ -1,22 +1,135 @@
 {% extends "main.html" %}
 {%block body%}
 <div class="ui tabular menu">
-  <div class="item" data-tab="tab-name">Server</div>
+  <div class="item active" data-tab="tab-name">Server</div>
   <div class="item" data-tab="tab-name2">VM</div>
 </div>
-<div class="ui tab" data-tab="tab-name">
-<table>
-	<thead>
-	<tr>
-		<td>DeviceName</td>
-		<td>Hostname</td>
-		<td></td>
-		<td></td>
-	<tr>
-	</thead>
+<div class="ui tab active" data-tab="tab-name">
+<button onclick="openDlg()" class="ui inverted pink button">New Server</button>
+<button onclick="loadServerTable()" class="ui icon button"><i class="refresh icon"></i></button>
+<table class="ui celled table">
+  <thead id="server_header">
+  </thead>
+  <tbody id="server_table">
+  </tbody>
+  <!--tfoot>
+    <tr><th colspan="3">
+      <div class="ui right floated pagination menu">
+        <a class="icon item">
+          <i class="left chevron icon"></i>
+        </a>
+        <a class="item">1</a>
+        <a class="item">2</a>
+        <a class="item">3</a>
+        <a class="item">4</a>
+        <a class="icon item">
+          <i class="right chevron icon"></i>
+        </a>
+      </div>
+    </th>
+  </tr></tfoot-->
 </table>
 </div>
 <div class="ui tab" data-tab="tab-name2">
   <!-- Tab Content !-->
 </div>
+
+<div id="addServerModal" class="ui modal">
+  <i class="close icon"></i>
+  <div class="header">
+    New Server
+  </div>
+  <div class="image content">
+  	<form id="addServerForm" class="ui form">
+  		<div  class="field">
+  		  <label>Device Name</label>
+  		  <input name="DeviceName" placeholder="DeviceName" type="text">
+  		</div>
+	</form>
+  </div>
+  <div class="actions">
+      <button class="ui inverted green button" onclick="addServer()">Submit</button>
+  </div>
+</div>
+<div id="netPortModal" class="ui modal">
+  <i class="close icon"></i>
+  <div class="header">
+    New Server
+  </div>
+  <div class="image content">
+  	<form id="addNetPortForm" class="ui form">
+  		<div  class="field">
+  		  <label>Device Name</label>
+  		  <input name="DeviceName" placeholder="DeviceName" type="text">
+  		</div>
+	</form>
+  </div>
+  <div class="actions">
+      <button class="ui inverted green button" onclick="addServer()">Submit</button>
+  </div>
+</div>
+
+{%end%}
+{%block js_to_run%}
+<script type="text/javascript">
+var columns=[{'name':'DeviceId'},{'name':'DeviceName'},{'name':'Hostname'},{'name':'Serial'},{'name':'Os'},{'name':'Release'},{'name':'Memsize'},{'name':'LastChangeTime','type':'time'},{'name':'NetPorts','type':'button','func_name':'openNetPort'}]
+function initServerTableHeader(){
+	head_arr=[]
+	head_arr.push("<tr>")
+	$.each(columns,function(k,v){
+		head_arr.push("<th>")
+		head_arr.push(v['name'])
+		head_arr.push("</th>")
+	})
+	head_arr.push("</tr>")
+	$('#server_header').html(head_arr.join(""))
+}
+function netPortModal(){
+	$('#netPortModal').modal('show')
+}
+
+function openDlg(){
+	$('#addServerModal').modal('show')
+}
+function loadServerTable(){
+	$('#server_table').html("")
+	html_arr=[]
+	data=ApiGet("server",null).data
+	$.each(data,function(k,v){
+		html_arr.push("<tr>")
+		tmp_html_arr=[]
+		for(var i=0;i<columns.length;i++){
+			tmp_html_arr.push("<td>")
+			if(columns[i]['type'] == 'time'){
+				tmp_html_arr.push(Timestamp2string(v[columns[i]['name']]))
+			}else if(columns[i]['type'] == 'button'){
+				tmp_html_arr.push('<button onclick="'+columns[i]['func_name']+'('+v[columns[0]['name']]+')" class="ui inverted olive button">'+columns[i]['name']+'</button>')
+			}else{
+				tmp_html_arr.push(v[columns[i]['name']])
+			}
+			tmp_html_arr.push("</td>")
+		}
+		html_arr.push(tmp_html_arr.join(""))
+		html_arr.push("</tr>")
+	})
+	$('#server_table').html(html_arr.join(""))
+}
+function addServer(){
+	data=$('#addServerForm').serializeArray()
+	r=ApiPost("server",data)
+	if(!r.success){
+		alert(r.message)
+	}else{
+		loadServerTable()
+		$('#addServerModal').modal('hide')
+	}
+}
+
+function openNetPort(device_id){
+	data=ApiGet("netPort",{"DeviceId":device_id}).data
+	console.log(openNetPort)
+}
+initServerTableHeader()
+loadServerTable()
+</script>
 {%end%}

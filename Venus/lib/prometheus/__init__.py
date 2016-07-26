@@ -37,6 +37,13 @@ class Prometheus:
 	def deleteDevice(self,device_id):
 		api='devices/%d' % device_id
 		return self.__apiRequest(api,'DELETE')
+	def getServer(self,deviceId=None):
+		api="servers"
+		if deviceId !=None:
+			api="%s/%d" % (api,deviceId)
+		return self.__apiRequest(api,'GET')
+	def addServer(self,server):
+		return  self.__apiRequest('servers','POST',server)
 	def getTag(self,tagId=None):
 		api="tags"
 		if tagId !=None:
