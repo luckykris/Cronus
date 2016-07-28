@@ -1,7 +1,7 @@
 package prometheus
 
 import (
-	"fmt"
+	//"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/luckykris/Cronus/Prometheus/cfg"
 	"github.com/luckykris/Cronus/Prometheus/db"
@@ -16,7 +16,6 @@ type Server struct {
 	Release float64
 	LastChangeTime int64
 	Checksum string
-	NetPorts	[]NetPort
 	Device 
 }
 
@@ -25,6 +24,7 @@ type Device struct {
 	DeviceName     string
 	DeviceType  string
 	FatherDeviceId interface{}
+	NetPorts	[]NetPort
 }
 
 type NetPort struct {
@@ -70,6 +70,10 @@ type Tag struct {
 
 type Prometheus struct {
 	dbobj db.Dbi
+	ServerMapID map[int]*Server
+	NetPortMap map[int]*NetPort
+	DeviceNameMap map[string]*Device
+	DeviceIdMap map[int]*Device
 }
 
 var PROMETHEUS *Prometheus
@@ -77,10 +81,10 @@ var PROMETHEUS *Prometheus
 func Init(mainCfg cfg.MainCfg) {
 	var err error
 	log.Debug("Start init Database.")
-	PROMETHEUS = &Prometheus{}
+	PROMETHEUS = &Prometheus{ServerMapID:map[int]*Server{},DeviceNameMap:map[string]*Device{},DeviceIdMap:map[int]*Device{}}
 	PROMETHEUS.dbobj, err = db.Init(mainCfg.DbCfg)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal("Init Database Failed.")
 		os.Exit(255)
 	}
 	log.Debug("Success init Database.")
@@ -91,6 +95,14 @@ func Init(mainCfg cfg.MainCfg) {
 		os.Exit(255)
 	}
 	log.Debug("Open Database Success")
+	log.Debug("Load Server Start")
+	err=LoadServer()
+	if err!=nil{
+		log.Fatal("Load Server Failed")
+		os.Exit(255)
+	}
+	log.Debug("Load Server Success")
+	//fmt.Printf("%#v",PROMETHEUS.ServerMapID)
 }
 
 

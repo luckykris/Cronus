@@ -7,12 +7,28 @@ import (
 	"fmt"
 	"strings"
 	"github.com/luckykris/Cronus/Prometheus/global"
-	log "github.com/Sirupsen/logrus"
+	//log "github.com/Sirupsen/logrus"
 )
 
 
+func GetServer(name interface{},id ...int) ([]*Server, error){
+	servers:=[]*Server{}
+	if len(id) !=0 {
+		for _,v:=range id{
+			servers=append(servers,PROMETHEUS.ServerMapID[v])
+		}
+		return servers,nil
+	}else{
+		for _,v:=range PROMETHEUS.ServerMapID{
+			servers=append(servers,v)
+		}
+		return servers,nil
+	}
+}
+//func GetServer(name interface{},id ...int) ([]*Server, error) {
+func GetServerFromDb(name interface{},id ...int) ([]*Server, error) {
+	servers:=[]*Server{}
 
-func GetServer(name interface{},id ...int) ([]*Server, error) {
 	var device_id int
 	var deviceName string
 	var deviceType string
@@ -27,7 +43,6 @@ func GetServer(name interface{},id ...int) ([]*Server, error) {
 	conditions:=[]string{}
 	devices,err:=GetDevice(name,id...)
 	device_map:=map[int]*Device{}
-	servers:=[]*Server{}
 	if err!=nil{
 		return []*Server{},err
 	}
@@ -46,10 +61,14 @@ func GetServer(name interface{},id ...int) ([]*Server, error) {
 		device_map[device.DeviceId] = device
 	}
 	for cur.Fetch() {
+		if _,ok:=device_map[device_id];!ok{
+			continue
+		}
 		deviceName=device_map[device_id].DeviceName
 		deviceType=device_map[device_id].DeviceType
 		fatherDeviceId=device_map[device_id].FatherDeviceId
 		server:=new(Server)
+		server.Device.NetPorts=device_map[device_id].NetPorts
 		server.Device.DeviceId=device_id
 		server.Device.DeviceName=deviceName
 		server.Device.DeviceType=deviceType
@@ -71,11 +90,6 @@ func GetServer(name interface{},id ...int) ([]*Server, error) {
 		//			  LastChangeTime: last_change_time,
 		//			  Checksum :checksum}
 		//server.Init(device_id,deviceName,deviceType,fatherDeviceId)
-		netPorts,err:=server.GetNetPort()
-		if err!=nil{
-			log.Error("prometheus get netPort failed:",err.Error())
-		}
-		server.NetPorts=netPorts
 		servers=append(servers,server)
 	}
 	return servers, err
@@ -100,7 +114,25 @@ func (server *Server)AddServer() error {
 	if len(devices)!=1{
 		return fmt.Errorf("amazing critical error!")
 	}
-	return PROMETHEUS.dbobj.Add(global.TABLEserver, []string{`device_id`,`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, [][]interface{}{[]interface{}{devices[0].DeviceId,"Unknow","Unknow",0,"Unknow",0,0,"Never"}})
+	err=PROMETHEUS.dbobj.Add(global.TABLEserver, []string{`device_id`,`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, [][]interface{}{[]interface{}{devices[0].DeviceId,"Unknow","Unknow",0,"Unknow",0,0,"Never"}})
+	if err!=nil{
+		return err
+	}else{
+		server:=new(Server)
+		server.Device.DeviceId=devices[0].DeviceId
+		server.Device.DeviceName=devices[0].DeviceName
+		server.Device.DeviceType="Server"
+		server.Device.FatherDeviceId=devices[0].FatherDeviceId
+		server.Serial="Unknow"
+		server.Hostname="Unknow"
+		server.Memsize=0
+		server.Os="Unknow"
+		server.Release=0
+		server.LastChangeTime=0
+		server.Checksum="Never"
+		PROMETHEUS.ServerMapID[devices[0].DeviceId]=server
+		return nil
+	}
 }
 //
 func (server *Server)DeleteServer() error {
@@ -130,3 +162,4 @@ func(server *Server)ComputSum()string{
 //		netPorts_count_ipv4_int+=netPort.Ipv4Int
 //	}
 }
+

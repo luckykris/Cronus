@@ -59,7 +59,13 @@ func (device *Device) GetNetPort(id ...int) ([]NetPort, error) {
 }
 
 func (device *Device) AddNetPort(netPort NetPort) (error) {
-	return AddNetPort(device.DeviceId,netPort)
+	err:=AddNetPort(device.DeviceId,netPort)
+	if err!=nil{
+		return err
+	}else{
+		LoadServer(device.DeviceId)
+		return nil
+	}
 }
 
 func (netPort *NetPort) UpdateNetPort() (error) {

@@ -36,3 +36,23 @@ function Timestamp2string(timestamp){
   newDate.setTime(timestamp * 1000);
   return newDate.toLocaleString();
 }
+
+function Ip4vInt2string(ipv4Int){
+  d_c_b_a=[]
+  IPV4MASK = 1 << 8
+  for(s= 0;s < 4; s++ ){
+    d_c_b_a[s] = (ipv4Int % IPV4MASK).toString()
+    ipv4Int = ipv4Int >>>8
+  }
+  return d_c_b_a.reverse().join(".")
+}
+
+function String2ip4vInt(ipv4_str){
+  a_b_c_d=ipv4_str.split(".")
+  ipv4Int=0
+  for(s= 0;s < 4; s++ ){
+    ipv4Int=ipv4Int*256
+    ipv4Int+=parseInt(a_b_c_d[s])
+  }
+  return ipv4Int
+}

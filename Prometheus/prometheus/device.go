@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"github.com/luckykris/Cronus/Prometheus/global"
+	log "github.com/Sirupsen/logrus"
 )
 
 func GetDevice(name interface{},id ...int) ([]*Device, error) {
@@ -35,7 +36,17 @@ func GetDevice(name interface{},id ...int) ([]*Device, error) {
 		} else {
 			father_device_id_i = father_device_id.Int64
 		}
-		r = append(r, &Device{device_id, device_name, device_type, father_device_id_i})
+		device:=new(Device)
+		device.DeviceId=device_id
+		device.DeviceName=device_name
+		device.DeviceType=device_type
+		device.FatherDeviceId=father_device_id_i
+		netPorts,err:=device.GetNetPort()
+		if err!=nil{
+			log.Error("prometheus get netPort failed:",err.Error())
+		}
+		device.NetPorts=netPorts
+		r = append(r, device)
 	}
 	return r, err
 }

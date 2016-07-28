@@ -51,30 +51,42 @@
       <button class="ui inverted green button" onclick="addServer()">Submit</button>
   </div>
 </div>
+
 <div id="netPortModal" class="ui modal">
   <i class="close icon"></i>
   <div class="header">
-    New Server
+    Net Ports
   </div>
   <div class="image content">
+    <table class="ui celled table">
+      <thead id="netPort_header">
+      </thead>
+      <tbody id="netPort_table">
+      </tbody>
+    </table>   
+  </div>
+  <div class="image content"> 
   	<form id="addNetPortForm" class="ui form">
+        <input type="hidden" name="DeviceId" placeholder="DeviceId" >
   		<div  class="field">
-  		  <label>Device Name</label>
-  		  <input name="DeviceName" placeholder="DeviceName" type="text">
+  		  <label>Ip</label>
+  		  <input name="Ip" placeholder="Ip" type="text">
   		</div>
 	</form>
   </div>
   <div class="actions">
-      <button class="ui inverted green button" onclick="addServer()">Submit</button>
+      <button class="ui inverted green button" onclick="addNetport()">New</button>
   </div>
 </div>
 
 {%end%}
 {%block js_to_run%}
-<script type="text/javascript">
+<script type="text/javascript">   
 var columns=[{'name':'DeviceId'},{'name':'DeviceName'},{'name':'Hostname'},{'name':'Serial'},{'name':'Os'},{'name':'Release'},{'name':'Memsize'},{'name':'LastChangeTime','type':'time'},{'name':'NetPorts','type':'button','func_name':'openNetPort'}]
+var columnsNetport=[{'name':'NetPortId'},{'name':'Mac'},{'name':'Ipv4Int','type':'ipv4'},{'name':'Type'}]
+
 function initServerTableHeader(){
-	head_arr=[]
+	var head_arr=[]
 	head_arr.push("<tr>")
 	$.each(columns,function(k,v){
 		head_arr.push("<th>")
@@ -84,17 +96,26 @@ function initServerTableHeader(){
 	head_arr.push("</tr>")
 	$('#server_header').html(head_arr.join(""))
 }
-function netPortModal(){
-	$('#netPortModal').modal('show')
+function initNetPortTableHeader(){
+  var head_arr=[]
+  head_arr.push("<tr>")
+  $.each(columnsNetport,function(k,v){
+    head_arr.push("<th>")
+    head_arr.push(v['name'])
+    head_arr.push("</th>")
+  })
+  head_arr.push("</tr>")
+  $('#netPort_header').html(head_arr.join(""))
 }
+
 
 function openDlg(){
 	$('#addServerModal').modal('show')
 }
 function loadServerTable(){
 	$('#server_table').html("")
-	html_arr=[]
-	data=ApiGet("server",null).data
+	var html_arr=[]
+	var data=ApiGet("server",null).data
 	$.each(data,function(k,v){
 		html_arr.push("<tr>")
 		tmp_html_arr=[]
@@ -114,9 +135,35 @@ function loadServerTable(){
 	})
 	$('#server_table').html(html_arr.join(""))
 }
+function loadNetPortTable(device_id){
+  $('#netPort_table').html("")
+  $('#addNetPortForm input').val(device_id)
+  var html_arr=[]
+  var data=ApiGet("netPort",{"DeviceId":device_id}).data
+  $.each(data,function(k,v){
+    html_arr.push("<tr>")
+    var tmp_html_arr=[]
+    for(var i=0;i<columnsNetport.length;i++){
+      tmp_html_arr.push("<td>")
+      if(columnsNetport[i]['type'] == 'time'){
+        tmp_html_arr.push(Timestamp2string(v[columnsNetport[i]['name']]))
+      }else if(columnsNetport[i]['type'] == 'button'){
+        tmp_html_arr.push('<button onclick="'+columnsNetport[i]['func_name']+'('+v[columnsNetport[0]['name']]+')" class="ui inverted olive button">'+columnsNetport[i]['name']+'</button>')
+      }else if(columnsNetport[i]['type'] == 'ipv4'){
+        tmp_html_arr.push(Ip4vInt2string(v[columnsNetport[i]['name']]))
+      }else{
+        tmp_html_arr.push(v[columnsNetport[i]['name']])
+      }
+      tmp_html_arr.push("</td>")
+    }
+    html_arr.push(tmp_html_arr.join(""))
+    html_arr.push("</tr>")
+  })
+  $('#netPort_table').html(html_arr.join(""))
+}
 function addServer(){
-	data=$('#addServerForm').serializeArray()
-	r=ApiPost("server",data)
+	var data=$('#addServerForm').serializeArray()
+	var r=ApiPost("server",data)
 	if(!r.success){
 		alert(r.message)
 	}else{
@@ -124,12 +171,23 @@ function addServer(){
 		$('#addServerModal').modal('hide')
 	}
 }
+function addNetport(){
+  var data=$('#addNetPortForm').serializeArray()
+  data.push({"name":"Ipv4Int","value":String2ip4vInt(data[1]['value'])})
+  var r=ApiPost("netPort",data)
+  if(!r.success){
+    alert(r.message)
+  }else{
+    loadNetPortTable(data[0]['value'])
+  }  
+}
 
 function openNetPort(device_id){
-	data=ApiGet("netPort",{"DeviceId":device_id}).data
-	console.log(openNetPort)
+  loadNetPortTable(device_id)
+  $('#netPortModal').modal('show')
 }
 initServerTableHeader()
 loadServerTable()
+initNetPortTableHeader()
 </script>
 {%end%}
