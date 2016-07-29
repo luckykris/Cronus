@@ -93,6 +93,7 @@ function initServerTableHeader(){
 		head_arr.push(v['name'])
 		head_arr.push("</th>")
 	})
+  head_arr.push("<th></th>")
 	head_arr.push("</tr>")
 	$('#server_header').html(head_arr.join(""))
 }
@@ -104,6 +105,7 @@ function initNetPortTableHeader(){
     head_arr.push(v['name'])
     head_arr.push("</th>")
   })
+  head_arr.push("<th></th>")
   head_arr.push("</tr>")
   $('#netPort_header').html(head_arr.join(""))
 }
@@ -130,6 +132,7 @@ function loadServerTable(){
 			}
 			tmp_html_arr.push("</td>")
 		}
+    tmp_html_arr.push('<td style="color:red;font-weight: 900;"><p onclick="deleteServer('+v["DeviceId"]+')">X</p></td>')
 		html_arr.push(tmp_html_arr.join(""))
 		html_arr.push("</tr>")
 	})
@@ -156,10 +159,15 @@ function loadNetPortTable(device_id){
       }
       tmp_html_arr.push("</td>")
     }
+    tmp_html_arr.push('<td style="color:red;font-weight: 900;"><p onclick="deleteNetPort('+device_id+','+v["NetPortId"]+')">X</p></td>')
     html_arr.push(tmp_html_arr.join(""))
     html_arr.push("</tr>")
   })
   $('#netPort_table').html(html_arr.join(""))
+}
+function deleteServer(id){
+  DeleteDevice(id)
+  loadServerTable()
 }
 function addServer(){
 	var data=$('#addServerForm').serializeArray()
@@ -170,6 +178,11 @@ function addServer(){
 		loadServerTable()
 		$('#addServerModal').modal('hide')
 	}
+}
+
+function deleteNetPort(device_id,netPort_id){
+  DeleteNetPort(device_id,netPort_id)
+  loadNetPortTable(device_id)
 }
 function addNetport(){
   var data=$('#addNetPortForm').serializeArray()

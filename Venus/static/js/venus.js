@@ -22,7 +22,11 @@ function  ApiPost(item,data){
   ajax("post",false,"/"+APIVERSION+"/"+item,data,function(json){a=json},function(){alert(APIERRINFO)});
   return a;
 }
-
+function  ApiDelete(item,data){
+  var a =null;
+  ajax("delete",false,"/"+APIVERSION+"/"+item,data,function(json){a=json},function(){alert(APIERRINFO)});
+  return a;
+}
 
 function GetColumn(dic){
   column=[]
@@ -55,4 +59,43 @@ function String2ip4vInt(ipv4_str){
     ipv4Int+=parseInt(a_b_c_d[s])
   }
   return ipv4Int
+}
+
+
+//
+function DeleteDevice(id){
+  a=ApiDelete("device",{"DeviceId":id})
+  if(a.success){
+    alert("deleted!")
+  }else{
+    alert(a.message)
+  }
+}
+function DeleteNetPort(device_id,netPort_id){
+  a=ApiDelete("netPort",{"DeviceId":device_id,"NetPortId":netPort_id})
+  if(a.success){
+    alert("deleted!")
+  }else{
+    alert(a.message)
+  }
+}
+
+function GetCabinet(){
+  a=ApiGet("cabinet",{})
+  if(a.success){
+    return a.data
+  }else{
+    alert(a.message)
+  }
+}
+
+function GetDeviceMap(){
+  var map={}
+  a=ApiGet("device",{})
+  if(!a.success){
+    alert(a.message)
+  }else{
+    $.each(a.data,function(k,v){map[v.DeviceId]=v.DeviceName})
+  }
+  return map
 }

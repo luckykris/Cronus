@@ -95,13 +95,13 @@ func Init(mainCfg cfg.MainCfg) {
 		os.Exit(255)
 	}
 	log.Debug("Open Database Success")
-	log.Debug("Load Server Start")
-	err=LoadServer()
-	if err!=nil{
-		log.Fatal("Load Server Failed")
-		os.Exit(255)
-	}
-	log.Debug("Load Server Success")
+	//log.Debug("Load Server Start")
+	//err=LoadServer()
+	//if err!=nil{
+	//	log.Fatal("Load Server Failed")
+	//	os.Exit(255)
+	//}
+	//log.Debug("Load Server Success")
 	//fmt.Printf("%#v",PROMETHEUS.ServerMapID)
 }
 

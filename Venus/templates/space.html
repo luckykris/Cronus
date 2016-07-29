@@ -3,16 +3,21 @@
 {%end%}
 {%block body%}
 <div class="ui tabular menu">
+  <div class="item active" data-tab="location">Location</div>
   <div class="item" data-tab="space">Space</div>
   <div class="item" data-tab="cabinet">Cabinet</div>
+</div>
+<div class="ui tab active" data-tab="location">
+  <div id="container">
+  </div>
 </div>
 <div class="ui tab" data-tab="space">
   <div id="spaceChart">
   </div>
 </div>
 <div class="ui tab" data-tab="cabinet">
-  <select>
-    <option>1</option>
+  <select onchange="loadOneCabinet()" id="select_cabinet_id">
+    <option> --- </option>
   </select>
   <div id="cabinetChart">
   </div>
@@ -20,19 +25,134 @@
 {%end%}
 {%block js%}
 	<script src="static/js/highcharts/highcharts.js"></script>
+  <script src="static/js/highcharts/highcharts-more.js"></script>
+  <script src="static/js/highcharts/treemap.js"></script>
   <script src="static/js/venus.js"></script>
 {%end%}
 {%block js_to_run%}
 <script>
-$("#SpaceMenuItem").attr("class","teal item active")
+$(function () {
+  var data = {
+    "长春": {
+      "F1": {
+        "Vm":"100",
+        "Server":"50"
+      }
+    },
+    "大连":{
+        "F1": {
+        "Vm":"100",
+        "Server":"50"
+      }
+    },
+    "华为云":{
+        "F1": {
+        "Vm":"100",
+        "Server":"50"
+      }
+    }
+  };
+  var points = [],
+    region_p,
+    region_val,
+    region_i,
+    country_p,
+    country_i,
+    cause_p,
+    cause_i,
+    cause_name = [];
+  cause_name['Communicable & other Group I'] = 'Communicable diseases';
+  cause_name['Noncommunicable diseases'] = 'Non-communicable diseases';
+  cause_name['Injuries'] = 'Injuries';
+  region_i = 0;
+  for (var region in data) {
+    region_val = 0;
+    region_p = {
+      id: "id_" + region_i,
+      name: region,
+      color: Highcharts.getOptions().colors[region_i]
+    };
+    country_i = 0;
+    for (var country in data[region]) {
+      country_p = {
+        id: region_p.id + "_" + country_i,
+        name: country,
+        parent: region_p.id
+      };
+      points.push(country_p);
+      cause_i = 0;
+      for (var cause in data[region][country]) {
+        cause_p = {
+          id: country_p.id + "_" + cause_i,
+          name: cause_name[cause],
+          parent: country_p.id,
+          value: Math.round(+data[region][country][cause])
+        };
+        region_val += cause_p.value;
+        points.push(cause_p);
+        cause_i++;
+      }
+      country_i++;
+    }
+    region_p.value = Math.round(region_val / country_i);
+    points.push(region_p);
+    region_i++;
+  }
+  var chart = new Highcharts.Chart({
+    chart: {
+      renderTo: 'container'
+    },
+    series: [{
+      type: "treemap",
+      layoutAlgorithm: 'squarified',
+      allowDrillToNode: true,
+      dataLabels: {
+        enabled: false
+      },
+      levelIsConstant: false,
+      levels: [{
+        level: 1,
+        dataLabels: {
+          enabled: true
+        },
+        borderWidth: 3
+      }],
+      data: points
+    }],
+    subtitle: {
+      text: 'Click points to drill down. Source: <a href="http://apps.who.int/gho/data/node.main.12?lang=en">WHO</a>.'
+    },
+    title: {
+      text: 'Global Mortality Rate 2012, per 100 000 population'
+    }
+  });
+});
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var DEVICEMAP=GetDeviceMap()
 function getHighChartSeries(n,len){
   if(n==null){
     color="red"
     _name="empty"
   }else{
     color="blue"
-    _name=n
+    _name=DEVICEMAP[n]
   }
   return {name:_name,data:[len],color:color}
 }
@@ -56,10 +176,19 @@ function mapCabinetSpace(data){
   return [poArr,arr]
 }
 
-function loadOneCabinet(cabinet_id){
+function initCabinetSelect(){
+  var data=GetCabinet()
+  var option_arr=[]
+  $.each(data,function(k,v){option_arr.push('<option value="'+v.CabinetId+'">'+v.CabinetName+'</option>')})
+  $('#select_cabinet_id').append(option_arr.join(""))
+}
+
+
+function loadOneCabinet(){
+  var cabinet_id=$('#select_cabinet_id').val()
   var ls=ApiGet("space",{"cabinetId":cabinet_id})['data']
   var result=mapCabinetSpace(ls)
-  console.log(result)
+  //console.log(result)
   $('#cabinetChart').highcharts({
       chart: {
           type: 'column',
@@ -69,7 +198,7 @@ function loadOneCabinet(cabinet_id){
           text: 'Stacked column chart'
       },
       xAxis: {
-          categories: ['Apples']
+          categories: ['']
       },
       yAxis: {
           min: 0,
@@ -91,7 +220,7 @@ function loadOneCabinet(cabinet_id){
       },
       series: result[1]
   });
-}			
-loadOneCabinet(1)
+}		
+initCabinetSelect()	
 </script>
 {%end%}

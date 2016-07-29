@@ -18,3 +18,10 @@ class netPort(BaseHandler):
 			raise Exception("You Need Fill Device Name")
 		netPort={"Ipv4Int":Ipv4Int,"Type":"Unknow"}
 		return self.prometheus.addDeviceNetPorts(int(DeviceId),netPort)
+	@BaseHandler.apiProtocol
+	def delete(self):
+		DeviceId=self.get_argument("DeviceId",None)
+		NetPortId=self.get_argument("NetPortId",None)
+		if DeviceId== None:
+			raise Exception("You Need Fill Device Name")
+		return self.prometheus.deleteDeviceNetPorts(int(DeviceId),int(NetPortId))

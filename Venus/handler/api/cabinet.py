@@ -2,7 +2,6 @@
 from handler.__init__ import *
 from lib import prometheus
 class cabinet(BaseHandler):
-	#@tornado.web.authenticated
-	#@BaseHandler.Traceback
+	@BaseHandler.apiProtocol
 	def get(self):
-		self.write({"data":self.prometheus.getCabinet({})})
+		return self.prometheus.getCabinet()

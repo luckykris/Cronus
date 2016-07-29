@@ -9,13 +9,13 @@ import (
 
 
 
-func LoadServer(id ...int) error {
-	servers,err:=GetServerFromDb(nil,id...) 
-	if err!=nil{
-		return err
-	}
-	for _,server:=range servers{
-		PROMETHEUS.ServerMapID[server.Device.DeviceId]=server
-	}
-	return nil
-}
+//func LoadServer(id ...int) error {
+//	servers,err:=GetServerFromDb(nil,id...) 
+//	if err!=nil{
+//		return err
+//	}
+//	for _,server:=range servers{
+//		PROMETHEUS.ServerMapID[server.Device.DeviceId]=server
+//	}
+//	return nil
+//}

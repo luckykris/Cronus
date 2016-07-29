@@ -11,22 +11,22 @@ import (
 )
 
 
-func GetServer(name interface{},id ...int) ([]*Server, error){
-	servers:=[]*Server{}
-	if len(id) !=0 {
-		for _,v:=range id{
-			servers=append(servers,PROMETHEUS.ServerMapID[v])
-		}
-		return servers,nil
-	}else{
-		for _,v:=range PROMETHEUS.ServerMapID{
-			servers=append(servers,v)
-		}
-		return servers,nil
-	}
-}
-//func GetServer(name interface{},id ...int) ([]*Server, error) {
-func GetServerFromDb(name interface{},id ...int) ([]*Server, error) {
+//func GetServer(name interface{},id ...int) ([]*Server, error){
+//	servers:=[]*Server{}
+//	if len(id) !=0 {
+//		for _,v:=range id{
+//			servers=append(servers,PROMETHEUS.ServerMapID[v])
+//		}
+//		return servers,nil
+//	}else{
+//		for _,v:=range PROMETHEUS.ServerMapID{
+//			servers=append(servers,v)
+//		}
+//		return servers,nil
+//	}
+//}
+func GetServer(name interface{},id ...int) ([]*Server, error) {
+//func GetServerFromDb(name interface{},id ...int) ([]*Server, error) {
 	servers:=[]*Server{}
 
 	var device_id int

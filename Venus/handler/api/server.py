@@ -14,3 +14,9 @@ class server(BaseHandler):
 			raise Exception("You Need Fill Device Name")
 		server={"DeviceName":DeviceName}
 		return self.prometheus.addServer(server)
+	@BaseHandler.apiProtocol
+	def delete(self):
+		DeviceId=self.get_argument("DeviceId",None)
+		if DeviceId== None:
+			raise Exception("You Need Fill Device Name")
+		return self.prometheus.deleteDevice({'DeviceId':DeviceId})
