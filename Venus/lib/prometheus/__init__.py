@@ -44,6 +44,11 @@ class Prometheus:
 		return self.__apiRequest(api,'GET')
 	def addServer(self,server):
 		return  self.__apiRequest('servers','POST',server)
+	def getDeviceModel(self,deviceModelId=None):
+		api="deviceModel"
+		if deviceModelId !=None:
+			api="%s/%d" % (api,deviceModelId)
+		return self.__apiRequest(api,'GET')
 	def getTag(self,tagId=None):
 		api="tags"
 		if tagId !=None:

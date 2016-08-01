@@ -42,8 +42,13 @@ func AddServer(ctx *macaron.Context) {
 		ctx.JSON(400, err.Error())
 		return
 	}
-	server:=prometheus.NewServer(args_string["DeviceName"].(string))
-	err=server.AddServer()
+	deviceModelId:=ArgInt{"DeviceModelId",true,nil}
+	args_int,err:=getAllIntArgs(ctx,[]ArgInt{deviceModelId})
+	if err!=nil{
+		ctx.JSON(400, err.Error())
+		return
+	}
+	err=prometheus.AddServer(args_string["DeviceName"].(string),args_int["DeviceModelId"].(int))
 	if err!=nil{
 		ctx.JSON(400, err.Error())
 	}else{

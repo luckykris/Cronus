@@ -99,3 +99,23 @@ function GetDeviceMap(){
   }
   return map
 }
+
+function GetDeviceModel(){
+  a=ApiGet("deviceModel",{})
+  if(a.success){
+    return a.data
+  }else{
+    alert(a.message)
+  }
+}
+
+function GetDeviceModelMap(){
+  var map={}
+  a=ApiGet("deviceModel",{})
+  if(!a.success){
+    alert(a.message)
+  }else{
+    $.each(a.data,function(k,v){map[v.DeviceModelId]=v.DeviceModelName})
+  }
+  return map
+}

@@ -11,27 +11,24 @@ import (
 )
 
 
-//func GetServer(name interface{},id ...int) ([]*Server, error){
-//	servers:=[]*Server{}
-//	if len(id) !=0 {
-//		for _,v:=range id{
-//			servers=append(servers,PROMETHEUS.ServerMapID[v])
-//		}
-//		return servers,nil
-//	}else{
-//		for _,v:=range PROMETHEUS.ServerMapID{
-//			servers=append(servers,v)
-//		}
-//		return servers,nil
-//	}
-//}
-func GetServer(name interface{},id ...int) ([]*Server, error) {
-//func GetServerFromDb(name interface{},id ...int) ([]*Server, error) {
+func GetServer(name interface{},id ...int) ([]*Server, error){
 	servers:=[]*Server{}
-
+	if len(id) !=0 {
+		for _,v:=range id{
+			servers=append(servers,PROMETHEUS.ServerMapId[v])
+		}
+		return servers,nil
+	}else{
+		for _,v:=range PROMETHEUS.ServerMapId{
+			servers=append(servers,v)
+		}
+		return servers,nil
+	}
+}
+func CacheServer(name interface{},id ...int) (error) {
 	var device_id int
 	var deviceName string
-	var deviceType string
+	var deviceModel *DeviceModel
 	var fatherDeviceId interface{}
 	var serial string
 	var hostname string
@@ -44,7 +41,7 @@ func GetServer(name interface{},id ...int) ([]*Server, error) {
 	devices,err:=GetDevice(name,id...)
 	device_map:=map[int]*Device{}
 	if err!=nil{
-		return []*Server{},err
+		return err
 	}
 	if len(id)>0{
 		tmp_condition:=[]string{}
@@ -55,23 +52,23 @@ func GetServer(name interface{},id ...int) ([]*Server, error) {
 	}
 	cur, err := PROMETHEUS.dbobj.Get(global.TABLEserver, nil, []string{`device_id`,`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, conditions, &device_id, &serial, &hostname, &memsize,&os,&release,&last_change_time,&checksum)
 	if err != nil {
-		return servers, err
+		return  err
 	}
 	for _,device:=range devices {
 		device_map[device.DeviceId] = device
 	}
 	for cur.Fetch() {
 		if _,ok:=device_map[device_id];!ok{
-			continue
+			return fmt.Errorf("device data fatal!")
 		}
 		deviceName=device_map[device_id].DeviceName
-		deviceType=device_map[device_id].DeviceType
+		deviceModel=device_map[device_id].DeviceModel
 		fatherDeviceId=device_map[device_id].FatherDeviceId
 		server:=new(Server)
 		server.Device.NetPorts=device_map[device_id].NetPorts
 		server.Device.DeviceId=device_id
 		server.Device.DeviceName=deviceName
-		server.Device.DeviceType=deviceType
+		server.Device.DeviceModel=deviceModel
 		server.Device.FatherDeviceId=fatherDeviceId
 		server.Serial=serial
 		server.Hostname=hostname
@@ -80,34 +77,19 @@ func GetServer(name interface{},id ...int) ([]*Server, error) {
 		server.Release=release
 		server.LastChangeTime=last_change_time
 		server.Checksum=checksum
-
-		//server:=&Server{
-		//			  Serial:serial,
-		//			  Hostname :hostname,
-		//			  Memsize: memsize,
-		//			  Os:os,
-		//			  Release :release,
-		//			  LastChangeTime: last_change_time,
-		//			  Checksum :checksum}
-		//server.Init(device_id,deviceName,deviceType,fatherDeviceId)
-		servers=append(servers,server)
+		PROMETHEUS.ServerMapId[server.Device.DeviceId]=server
 	}
-	return servers, err
+	return err
 }
 
-func NewServer(deviceName string)*Server{
-	server:=new(Server)
-	server.Device.DeviceName=deviceName
-	server.Device.DeviceType="Server"
-	return server
-}
 
-func (server *Server)AddServer() error {
-	err:=server.AddDevice()
+
+func AddServer(device_name string,device_model_id int) error {
+	err:=AddDevice(device_name,device_model_id,nil)
 	if err!=nil{
 		return err
 	}
-	devices,err:=GetDevice(server.Device.DeviceName)
+	devices,err:=GetDevice(device_name)
 	if err!=nil{
 		return err
 	}
@@ -121,7 +103,7 @@ func (server *Server)AddServer() error {
 		server:=new(Server)
 		server.Device.DeviceId=devices[0].DeviceId
 		server.Device.DeviceName=devices[0].DeviceName
-		server.Device.DeviceType="Server"
+		server.Device.DeviceModel=devices[0].DeviceModel
 		server.Device.FatherDeviceId=devices[0].FatherDeviceId
 		server.Serial="Unknow"
 		server.Hostname="Unknow"
@@ -130,7 +112,7 @@ func (server *Server)AddServer() error {
 		server.Release=0
 		server.LastChangeTime=0
 		server.Checksum="Never"
-		PROMETHEUS.ServerMapID[devices[0].DeviceId]=server
+		PROMETHEUS.ServerMapId[devices[0].DeviceId]=server
 		return nil
 	}
 }
@@ -150,7 +132,15 @@ func (server *Server)UpdateServer() error {
 		return nil
 	}
 	server.LastChangeTime=time.Now().Unix()
-	return PROMETHEUS.dbobj.Update(global.TABLEserver, conditions, []string{`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, []interface{}{server.Serial,server.Hostname,server.Memsize,server.Os,server.Release,server.LastChangeTime,checksum})
+	err:=PROMETHEUS.dbobj.Update(global.TABLEserver, conditions, []string{`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, []interface{}{server.Serial,server.Hostname,server.Memsize,server.Os,server.Release,server.LastChangeTime,checksum})
+	if err!=nil{
+		return err
+	}
+	err:=CacheServer(nil,server.Device.DeviceId)
+	if err!=nil{
+		return err
+	}
+	return nil
 }
 
 

@@ -15,18 +15,23 @@ func GetDeviceModel(ctx *macaron.Context) {
 	if id == "" {
 		r, err = prometheus.GetDeviceModel()
 	} else {
-		r, err = prometheus.GetDeviceModel("device_model_id=" + id)
+		id_int, err := strconv.Atoi(id)
+		if err != nil {
+			ctx.JSON(404, "Not Found")
+			return
+		}
+		r, err = prometheus.GetDeviceModel(id_int)
 	}
 	if err != nil {
 		ctx.JSON(500, err.Error())
 		return
 	}
 	if id != "" {
-		if len(r.([]prometheus.DeviceModel)) < 1 {
+		if len(r.([]*prometheus.DeviceModel)) < 1 {
 			ctx.JSON(404, "Not Found")
 			return
 		} else {
-			r = r.([]prometheus.DeviceModel)[0]
+			r = r.([]*prometheus.DeviceModel)[0]
 		}
 	}
 	ctx.JSON(200, &r)
@@ -36,7 +41,7 @@ func AddDeviceModel(ctx *macaron.Context) {
 	ctx.Req.ParseForm()
 	name := ctx.Req.Form.Get("DeviceModelName")
 	_type := ctx.Req.Form.Get("DeviceType")
-	err := prometheus.AddDeviceModel([][]interface{}{[]interface{}{name, _type}})
+	err := prometheus.AddDeviceModel(name, _type)
 	if err != nil {
 		ctx.JSON(400, err.Error())
 	} else {

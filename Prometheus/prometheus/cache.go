@@ -7,15 +7,28 @@ import (
 
 
 
+func LoadCache()error{
+	var err error
+	err=LoadDeviceModel()
+	err=LoadServer()
+	return err
+}
 
 
-//func LoadServer(id ...int) error {
-//	servers,err:=GetServerFromDb(nil,id...) 
-//	if err!=nil{
-//		return err
-//	}
-//	for _,server:=range servers{
-//		PROMETHEUS.ServerMapID[server.Device.DeviceId]=server
-//	}
-//	return nil
-//}
+func LoadServer() error {
+	err:=CacheServer(nil) 
+	if err!=nil{
+		return err
+	}else{
+		return nil
+	}
+}
+
+func LoadDeviceModel()error{
+	err:=CacheDeviceModel(nil) 
+	if err!=nil{
+		return err
+	}else{
+		return nil
+	}
+}

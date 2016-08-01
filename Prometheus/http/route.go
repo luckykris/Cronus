@@ -30,7 +30,7 @@ func LoadRoute() {
 			WEB.Get("/?:id:int", GetDevice)
 			WEB.Post("/", AddDevice)
 			WEB.Delete("/:id:int", DeleteDevice)
-			WEB.Patch("/:id:int", UpdateDevice)
+			//WEB.Patch("/:id:int", UpdateDevice)
 			WEB.Get("/:DeviceId:int/netPorts/?:NetPortId:int", GetNetPort)
 			WEB.Post("/:DeviceId:int/netPorts/", AddNetPort)
 			WEB.Patch("/:DeviceId:int/netPorts/?:NetPortId:int", UpdateNetPort)
@@ -38,6 +38,9 @@ func LoadRoute() {
 			WEB.Get("/:DeviceId:int/tags/?:TagId:int", GetDeviceTag)
 			WEB.Post("/:DeviceId:int/tags/:TagId:int", AddDeviceTag)
 			WEB.Delete("/:DeviceId:int/tags/:TagId:int", DeleteDeviceTag)
+			WEB.Get("/:DeviceId:int/space/?:TagId:int", GetDeviceSpace)
+			//WEB.Post("/:DeviceId:int/space/:TagId:int", AddDeviceSpace)
+			//WEB.Delete("/:DeviceId:int/space/:TagId:int", DeleteDeviceSpace)
 		})
 		WEB.Group("/servers", func() {
 			WEB.Get("/?:id:int", GetServer)

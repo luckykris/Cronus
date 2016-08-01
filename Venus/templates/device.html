@@ -45,6 +45,18 @@
   		  <label>Device Name</label>
   		  <input name="DeviceName" placeholder="DeviceName" type="text">
   		</div>
+      <div  class="field">
+        <label>Device Model</label>
+        <div class="ui fluid search normal selection dropdown">
+          <input name="DeviceModelId" type="hidden">
+          <i class="dropdown icon"></i>
+          <div class="default text">Select Device Model</div>
+          <div id="DeviceModelId_select" class="menu">
+            <div class="item" data-value="af">Afghanistan</div>
+            <div class="item" data-value="ax">Aland Islands</div>
+          </div>
+        </div>
+      </div>      
 	</form>
   </div>
   <div class="actions">
@@ -72,7 +84,61 @@
   		  <label>Ip</label>
   		  <input name="Ip" placeholder="Ip" type="text">
   		</div>
-	</form>
+	 </form>
+  </div>
+  <div class="actions">
+      <button class="ui inverted green button" onclick="addNetport()">New</button>
+  </div>
+</div>
+
+<div id="spaceModal" class="ui modal">
+  <i class="close icon"></i>
+  <div class="header">
+    Net Ports
+  </div>
+  <div class="image content">
+    <table class="ui celled table">
+      <thead id="netPort_header">
+      </thead>
+      <tbody id="space_table">
+      </tbody>
+    </table>   
+  </div>
+  <div class="image content"> 
+    <div class="ui fluid search normal selection dropdown">
+      <input name="country" type="hidden">
+      <i class="dropdown icon"></i>
+      <div class="default text">Select Country</div>
+      <div class="menu">
+        <div class="item" data-value="af"></i>Afghanistan</div>
+        <div class="item" data-value="ax"></i>Aland Islands</div>
+      </div>
+    </div>
+  </div>
+  <div>
+      <table class="ui celled table" style="width:30%;left:30%;position:relative;">
+        <tr style="background-color: gray;">
+          <td></td>
+        </tr>
+        <tr style="background-color: gray;">
+          <td></td>
+        </tr>
+        <tr>
+          <td></td>
+        </tr>
+        <tr style="background-color: gray;">
+          <td></td>
+        </tr>
+        <tr style="background-color: gray;">
+          <td></td>
+        </tr>
+        <tr style="background-color: gray;">
+          <td></td>
+        </tr>
+        <tr style="background-color: gray;">
+          <td></td>
+        </tr>
+      </table>
   </div>
   <div class="actions">
       <button class="ui inverted green button" onclick="addNetport()">New</button>
@@ -82,7 +148,7 @@
 {%end%}
 {%block js_to_run%}
 <script type="text/javascript">   
-var columns=[{'name':'DeviceId'},{'name':'DeviceName'},{'name':'Hostname'},{'name':'Serial'},{'name':'Os'},{'name':'Release'},{'name':'Memsize'},{'name':'LastChangeTime','type':'time'},{'name':'NetPorts','type':'button','func_name':'openNetPort'}]
+var columns=[{'name':'DeviceId'},{'name':'DeviceName'},{'name':'Hostname'},{'name':'Serial'},{'name':'Os'},{'name':'Release'},{'name':'Memsize'},{'name':'LastChangeTime','type':'time'},{'name':'NetPorts','type':'button','func_name':'openNetPort'},{'name':'Space','type':'button','func_name':'openSpace'}]
 var columnsNetport=[{'name':'NetPortId'},{'name':'Mac'},{'name':'Ipv4Int','type':'ipv4'},{'name':'Type'}]
 
 function initServerTableHeader(){
@@ -199,8 +265,22 @@ function openNetPort(device_id){
   loadNetPortTable(device_id)
   $('#netPortModal').modal('show')
 }
+
+function openSpace(){
+  $('#spaceModal').modal('show')
+}
+function initServerModel(){
+  var html_arr=[]
+  $.each(GetDeviceModel(),function(k,v){
+    html_arr.push('<div class="item" data-value="'+v.DeviceModelId+'">'+v.DeviceModelName+'</div>')
+  })
+  $('#DeviceModelId_select').html(html_arr.join(""))
+}
+initServerModel()
 initServerTableHeader()
 loadServerTable()
 initNetPortTableHeader()
+$('.ui.dropdown')
+  .dropdown()
 </script>
 {%end%}

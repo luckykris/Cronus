@@ -10,9 +10,10 @@ class server(BaseHandler):
 	@BaseHandler.apiProtocol
 	def post(self):
 		DeviceName=self.get_argument("DeviceName",None)
-		if DeviceName== None:
+		DeviceModelId=self.get_argument("DeviceModelId",None)
+		if DeviceName== None or DeviceModelId == None:
 			raise Exception("You Need Fill Device Name")
-		server={"DeviceName":DeviceName}
+		server={"DeviceName":DeviceName,"DeviceModelId":DeviceModelId}
 		return self.prometheus.addServer(server)
 	@BaseHandler.apiProtocol
 	def delete(self):

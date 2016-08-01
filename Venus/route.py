@@ -10,6 +10,7 @@ route=[
 (r"/v1/cabinet",api.cabinet),
 (r"/v1/server",api.server),
 (r"/v1/device",api.device),
+(r"/v1/deviceModel",api.deviceModel),
 (r"/v1/netPort",api.netPort),
 ######################404##############
 (r".*", BaseHandler)
