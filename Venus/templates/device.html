@@ -94,7 +94,7 @@
 <div id="spaceModal" class="ui modal">
   <i class="close icon"></i>
   <div class="header">
-    Net Ports
+    space
   </div>
   <div class="image content">
     <table class="ui celled table">
@@ -106,42 +106,19 @@
   </div>
   <div class="image content"> 
     <div class="ui fluid search normal selection dropdown">
-      <input name="country" type="hidden">
+      <input id="CabinetId_select_val" name="country" type="hidden" onchange="loadCabinetSpace()">
       <i class="dropdown icon"></i>
       <div class="default text">Select Country</div>
-      <div class="menu">
+      <div class="menu" id="CabinetId_select">
         <div class="item" data-value="af"></i>Afghanistan</div>
         <div class="item" data-value="ax"></i>Aland Islands</div>
       </div>
     </div>
   </div>
   <div>
-      <table class="ui celled table" style="width:30%;left:30%;position:relative;">
-        <tr style="background-color: gray;">
-          <td></td>
-        </tr>
-        <tr style="background-color: gray;">
-          <td></td>
-        </tr>
-        <tr>
-          <td></td>
-        </tr>
-        <tr style="background-color: gray;">
-          <td></td>
-        </tr>
-        <tr style="background-color: gray;">
-          <td></td>
-        </tr>
-        <tr style="background-color: gray;">
-          <td></td>
-        </tr>
-        <tr style="background-color: gray;">
-          <td></td>
-        </tr>
+      <table id="cabinetSpace_table" class="ui celled table" style="width:30%;left:30%;position:relative;">
+
       </table>
-  </div>
-  <div class="actions">
-      <button class="ui inverted green button" onclick="addNetport()">New</button>
   </div>
 </div>
 
@@ -267,6 +244,7 @@ function openNetPort(device_id){
 }
 
 function openSpace(){
+  initSpaceModel()
   $('#spaceModal').modal('show')
 }
 function initServerModel(){
@@ -276,6 +254,26 @@ function initServerModel(){
   })
   $('#DeviceModelId_select').html(html_arr.join(""))
 }
+function initSpaceModel(){
+  var html_arr=[]
+  $.each(GetCabinet(),function(k,v){
+    html_arr.push('<div class="item" data-value="'+v.CabinetId+'">'+v.CabinetName+'</div>')
+  })
+  $('#CabinetId_select').html(html_arr.join(""))
+}
+function loadCabinetSpace(){
+  var html_arr=[]
+  $.each(GetCabinetSpace($('#CabinetId_select_val').val()),function(k,v){
+    if(v.DeviceId==null){
+      html_arr.unshift('<tr upostion="'+v.UPosition+'"><td><a>add</a></td></tr>')
+    }else{
+      html_arr.unshift('<tr upostion="'+v.UPosition+'"  device_id="'+v.DeviceId+'"  style="background-color: gray;"><td></td></tr>')
+    }
+  })
+  $('#cabinetSpace_table').html(html_arr)
+}
+
+initSpaceModel()
 initServerModel()
 initServerTableHeader()
 loadServerTable()

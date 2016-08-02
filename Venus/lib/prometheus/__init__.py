@@ -63,6 +63,9 @@ class Prometheus:
 		return self.__apiRequest(api,'DELETE')
 	def getCabinet(self,cabinetId=""):
 		api="cabinet/%s" % str(cabinetId)
+		return self.__apiRequest(api,'GET')
+	def getCabinetSpace(self,cabinetId):
+		api="cabinet/%d/space" % cabinetId
 		return self.__apiRequest(api,'GET')	
 	def getSpace(self,data={}):
 		return self.__apiRequest('space','GET',data)

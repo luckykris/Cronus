@@ -25,6 +25,7 @@ func GetDeviceModel(id ...int) ([]*DeviceModel,error) {
 
 
 func CacheDeviceModel(name interface{},id ...int) (error) {
+	var u int
 	var device_model_id int
 	var device_name string
 	var _type string
@@ -39,19 +40,20 @@ func CacheDeviceModel(name interface{},id ...int) (error) {
 		}
 		conditions=append( conditions,fmt.Sprintf(`device_model_id IN (%s)`,strings.Join(id_str_ls,",")))
 	}
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceModel, nil,[]string{`device_model_id`, `device_model_name`, `device_type`}, conditions, &device_model_id, &device_name, &_type)
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceModel, nil,[]string{`device_model_id`, `device_model_name`, `device_type`,`u`}, conditions, &device_model_id, &device_name, &_type ,&u)
 	for cur.Fetch() {
 		deviceModel := new(DeviceModel)
 		deviceModel.DeviceModelId=device_model_id
 		deviceModel.DeviceModelName=device_name
 		deviceModel.DeviceType=_type
+		deviceModel.U=u
 		PROMETHEUS.DeviceModelMapId[device_model_id]=deviceModel
 	}
 	return err
 }
 
-func AddDeviceModel(device_model_name ,device_type string) error {
-	err:=PROMETHEUS.dbobj.Add(global.TABLEdeviceModel, []string{`device_model_name`, `device_type`}, [][]interface{}{[]interface{}{device_model_name,device_type}})
+func AddDeviceModel(device_model_name ,device_type string,u int) error {
+	err:=PROMETHEUS.dbobj.Add(global.TABLEdeviceModel, []string{`device_model_name`, `device_type`,`u`}, [][]interface{}{[]interface{}{device_model_name,device_type,u}})
 	if err!=nil{
 		return err
 	}

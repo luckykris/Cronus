@@ -48,3 +48,76 @@ func GetDeviceSpace(ctx *macaron.Context) {
 	}
 	ctx.JSON(200, &r)
 }
+
+
+func AddDeviceSpace(ctx *macaron.Context) {
+	device_id := ctx.Params("DeviceId")
+	device_id_int, err := strconv.Atoi(device_id)
+	if err != nil {
+		ctx.JSON(400, err.Error())
+		return
+	}
+	cabinet_id:=ArgInt{"CabinetId",true,nil}
+	start_u:=ArgInt{"StartU",true,nil}
+	args_int,err:=getAllIntArgs(ctx,[]ArgInt{cabinet_id,start_u})
+	if err!=nil{
+		ctx.JSON(400, err.Error())
+		return
+	}
+	if device,ok:=prometheus.PROMETHEUS.ServerMapId[device_id_int];ok{
+		err=device.AddSpace(args_int["CabinetId"].(int),args_int["StartU"].(int))
+		if err!=nil{
+			ctx.JSON(400, err.Error())
+			return
+		}else{
+			ctx.JSON(200, "Add Success")
+			return
+		}
+	}	
+}
+
+func DeleteDeviceSpace(ctx *macaron.Context) {
+	device_id := ctx.Params("DeviceId")
+	device_id_int, err := strconv.Atoi(device_id)
+	if err != nil {
+		ctx.JSON(400, err.Error())
+		return
+	}
+	if device,ok:=prometheus.PROMETHEUS.ServerMapId[device_id_int];ok{
+		err=device.DeleteSpace()
+		if err!=nil{
+			ctx.JSON(400, err.Error())
+			return
+		}else{
+			ctx.JSON(200, "Delete Success")
+			return
+		}
+	}else{
+		ctx.JSON(404, "Not Found")
+		return
+	}	
+}
+
+
+
+func GetCabinetSpace(ctx *macaron.Context) {
+	cabinet_id := ctx.Params("CabinetId")
+	var r interface{}
+	var err error
+	cabinet_id_int, err := strconv.Atoi(cabinet_id)
+	if err != nil {
+		ctx.JSON(400, err.Error())
+		return
+	}
+	cabinet,ok:=prometheus.PROMETHEUS.CabinetMapId[cabinet_id_int]
+	if !ok{
+		ctx.JSON(404, "Not Found")
+		return
+	}	
+	r, err=cabinet.GetSpace()
+	if err != nil {
+		ctx.JSON(500, err.Error())
+		return
+	}
+	ctx.JSON(200, &r)
+}

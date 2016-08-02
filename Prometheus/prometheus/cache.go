@@ -11,6 +11,7 @@ func LoadCache()error{
 	var err error
 	err=LoadDeviceModel()
 	err=LoadServer()
+	err=LoadCabinet()
 	return err
 }
 
@@ -26,6 +27,15 @@ func LoadServer() error {
 
 func LoadDeviceModel()error{
 	err:=CacheDeviceModel(nil) 
+	if err!=nil{
+		return err
+	}else{
+		return nil
+	}
+}
+
+func LoadCabinet()error{
+	err:=CacheCabinet(nil) 
 	if err!=nil{
 		return err
 	}else{

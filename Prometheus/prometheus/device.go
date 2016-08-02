@@ -72,7 +72,14 @@ func AddDevice(device_name string,device_model_id int,father_device_id interface
 
 func (device *Device)DeleteDevice() error {
 	c := fmt.Sprintf("device_id = %d", device.DeviceId)
-	return PROMETHEUS.dbobj.Delete(global.TABLEdevice, []string{c})
+	err:=PROMETHEUS.dbobj.Delete(global.TABLEdevice, []string{c})
+	if err!=nil{
+		return err
+	}
+	if _,ok := PROMETHEUS.ServerMapId[device.DeviceId] ; ok {
+		delete(PROMETHEUS.ServerMapId,device.DeviceId)
+	}
+	return nil
 }
 
 func (device *Device)UpdateDevice() error {

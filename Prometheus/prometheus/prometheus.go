@@ -45,6 +45,7 @@ type DeviceModel struct {
 	DeviceModelId   int
 	DeviceModelName string
 	DeviceType      string
+	U         		int
 }
 
 type Cabinet struct {
@@ -75,6 +76,7 @@ type Prometheus struct {
 	NetPortMap map[int]*NetPort
 	DeviceNameMap map[string]*Device
 	DeviceIdMap map[int]*Device
+	CabinetMapId map[int]*Cabinet
 }
 
 var PROMETHEUS *Prometheus
@@ -83,9 +85,10 @@ func Init(mainCfg cfg.MainCfg) {
 	var err error
 	log.Debug("Start init Database.")
 	PROMETHEUS = &Prometheus{ServerMapId:map[int]*Server{},
-							 DeviceNameMap:map[string]*Device{},
 							 DeviceIdMap:map[int]*Device{},
+							 DeviceNameMap:map[string]*Device{},
 							 DeviceModelMapId:map[int]*DeviceModel{},
+							 CabinetMapId:map[int]*Cabinet{},
 							}
 	PROMETHEUS.dbobj, err = db.Init(mainCfg.DbCfg)
 	if err != nil {

@@ -119,3 +119,13 @@ function GetDeviceModelMap(){
   }
   return map
 }
+
+
+function GetCabinetSpace(cabinet_id){
+  a=ApiGet("space",{"cabinetId":cabinet_id})
+  if(a.success){
+    return a.data
+  }else{
+    alert(a.message)
+  }
+}

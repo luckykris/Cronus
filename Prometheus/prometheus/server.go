@@ -27,9 +27,6 @@ func GetServer(name interface{},id ...int) ([]*Server, error){
 }
 func CacheServer(name interface{},id ...int) (error) {
 	var device_id int
-	var deviceName string
-	var deviceModel *DeviceModel
-	var fatherDeviceId interface{}
 	var serial string
 	var hostname string
 	var memsize int
@@ -61,15 +58,12 @@ func CacheServer(name interface{},id ...int) (error) {
 		if _,ok:=device_map[device_id];!ok{
 			return fmt.Errorf("device data fatal!")
 		}
-		deviceName=device_map[device_id].DeviceName
-		deviceModel=device_map[device_id].DeviceModel
-		fatherDeviceId=device_map[device_id].FatherDeviceId
 		server:=new(Server)
 		server.Device.NetPorts=device_map[device_id].NetPorts
 		server.Device.DeviceId=device_id
-		server.Device.DeviceName=deviceName
-		server.Device.DeviceModel=deviceModel
-		server.Device.FatherDeviceId=fatherDeviceId
+		server.Device.DeviceName=device_map[device_id].DeviceName
+		server.Device.DeviceModel=device_map[device_id].DeviceModel
+		server.Device.FatherDeviceId=device_map[device_id].FatherDeviceId
 		server.Serial=serial
 		server.Hostname=hostname
 		server.Memsize=memsize
@@ -116,12 +110,10 @@ func AddServer(device_name string,device_model_id int) error {
 		return nil
 	}
 }
-//
-func (server *Server)DeleteServer() error {
-	return server.DeleteDevice()
-}
+
 
 func (server *Server)UpdateServer() error {
+	var err error
 	conditions:=[]string{fmt.Sprintf("device_id = %d" , server.DeviceId)}
 	server_pre_ls,err:=GetServer(nil,server.DeviceId)
 	if err!=nil{
@@ -132,11 +124,11 @@ func (server *Server)UpdateServer() error {
 		return nil
 	}
 	server.LastChangeTime=time.Now().Unix()
-	err:=PROMETHEUS.dbobj.Update(global.TABLEserver, conditions, []string{`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, []interface{}{server.Serial,server.Hostname,server.Memsize,server.Os,server.Release,server.LastChangeTime,checksum})
+	err=PROMETHEUS.dbobj.Update(global.TABLEserver, conditions, []string{`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, []interface{}{server.Serial,server.Hostname,server.Memsize,server.Os,server.Release,server.LastChangeTime,checksum})
 	if err!=nil{
 		return err
 	}
-	err:=CacheServer(nil,server.Device.DeviceId)
+	err=CacheServer(nil,server.Device.DeviceId)
 	if err!=nil{
 		return err
 	}

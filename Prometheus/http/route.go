@@ -13,6 +13,7 @@ func LoadRoute() {
 			WEB.Post("/", AddCabinet)
 			WEB.Delete("/:id:int", DeleteCabinet)
 			WEB.Patch("/:id:int", UpdateCabinet)
+			WEB.Get("/:CabinetId:int/space", GetCabinetSpace)
 		})
 		WEB.Group("/location", func() {
 			WEB.Get("/?:id:int", GetLocation)
@@ -38,9 +39,9 @@ func LoadRoute() {
 			WEB.Get("/:DeviceId:int/tags/?:TagId:int", GetDeviceTag)
 			WEB.Post("/:DeviceId:int/tags/:TagId:int", AddDeviceTag)
 			WEB.Delete("/:DeviceId:int/tags/:TagId:int", DeleteDeviceTag)
-			WEB.Get("/:DeviceId:int/space/?:TagId:int", GetDeviceSpace)
-			//WEB.Post("/:DeviceId:int/space/:TagId:int", AddDeviceSpace)
-			//WEB.Delete("/:DeviceId:int/space/:TagId:int", DeleteDeviceSpace)
+			WEB.Get("/:DeviceId:int/space", GetDeviceSpace)
+			WEB.Post("/:DeviceId:int/space", AddDeviceSpace)
+			WEB.Delete("/:DeviceId:int/space", DeleteDeviceSpace)
 		})
 		WEB.Group("/servers", func() {
 			WEB.Get("/?:id:int", GetServer)

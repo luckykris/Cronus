@@ -41,7 +41,13 @@ func AddDeviceModel(ctx *macaron.Context) {
 	ctx.Req.ParseForm()
 	name := ctx.Req.Form.Get("DeviceModelName")
 	_type := ctx.Req.Form.Get("DeviceType")
-	err := prometheus.AddDeviceModel(name, _type)
+	u := ctx.Req.Form.Get("U")
+	u_int, err := strconv.Atoi(u)
+	if err != nil {
+		ctx.JSON(404, "Not Found")
+		return
+	}
+	err= prometheus.AddDeviceModel(name, _type,u_int)
 	if err != nil {
 		ctx.JSON(400, err.Error())
 	} else {

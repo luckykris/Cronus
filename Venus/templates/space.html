@@ -173,6 +173,7 @@ function mapCabinetSpace(data){
     }
   }
   arr.push(getHighChartSeries(tmp,tmp_len))
+  poArr.push(data.length)
   return [poArr,arr]
 }
 
@@ -186,7 +187,7 @@ function initCabinetSelect(){
 
 function loadOneCabinet(){
   var cabinet_id=$('#select_cabinet_id').val()
-  var ls=ApiGet("space",{"cabinetId":cabinet_id})['data']
+  var ls=GetCabinetSpace(cabinet_id)
   var result=mapCabinetSpace(ls)
   //console.log(result)
   $('#cabinetChart').highcharts({

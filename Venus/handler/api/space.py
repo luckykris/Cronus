@@ -7,7 +7,7 @@ class space(BaseHandler):
 		cabinet_id=self.get_argument("cabinetId","")
 		cabinet=self.prometheus.getCabinet(cabinet_id)
 		total=cabinet['CapacityTotal']
-		spaces=self.prometheus.getSpace({"cabinet_id":cabinet_id})
+		spaces=self.prometheus.getCabinetSpace(int(cabinet_id))
 		dc=dict([(x['UPosition'],x['DeviceId']) for x in spaces])
 		sd=dict([(i,None) for i in range(1,total+1)])
 		for space in spaces:

@@ -13,20 +13,25 @@ func GetCabinet(ctx *macaron.Context) {
 	var r interface{}
 	var err error
 	if id == "" {
-		r, err = prometheus.GetCabinet()
+		r, err = prometheus.GetCabinet(nil)
 	} else {
-		r, err = prometheus.GetCabinet("cabinet_id=" + id)
+		id_int, err := strconv.Atoi(id)
+		if err != nil {
+			ctx.JSON(400, err.Error())
+			return
+		}
+		r, err = prometheus.GetCabinet(nil,id_int)
 	}
 	if err != nil {
 		ctx.JSON(500, err.Error())
 		return
 	}
 	if id != "" {
-		if len(r.([]prometheus.Cabinet)) < 1 {
+		if len(r.([]*prometheus.Cabinet)) < 1 {
 			ctx.JSON(404, "Not Found")
 			return
 		} else {
-			r = r.([]prometheus.Cabinet)[0]
+			r = r.([]*prometheus.Cabinet)[0]
 		}
 	}
 	ctx.JSON(200, &r)
