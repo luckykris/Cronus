@@ -14,6 +14,12 @@ type Dbi interface {
 	Add(string, []string, [][]interface{}) error
 	Delete(string, []string) error
 	Update(string, []string, []string, []interface{}) error
+	Begin()(Txi error)
+}
+
+type Txi interface {
+	Commit() error
+	Rollback() error
 }
 
 func Init(cfg cfg.DbCfgStruct) (Dbi, error) {

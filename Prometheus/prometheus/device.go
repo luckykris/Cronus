@@ -1,4 +1,4 @@
-package prometheus
+		package prometheus
 
 import (
 	"database/sql"
@@ -76,7 +76,8 @@ func (device *Device)DeleteDevice() error {
 	if err!=nil{
 		return err
 	}
-	if _,ok := PROMETHEUS.ServerMapId[device.DeviceId] ; ok {
+	if _,ok := PROMETHEUS.DeviceMapId[device.DeviceId] ; ok {
+		delete(PROMETHEUS.DeviceMapId,device.DeviceId)
 		delete(PROMETHEUS.ServerMapId,device.DeviceId)
 	}
 	return nil

@@ -52,8 +52,6 @@
           <i class="dropdown icon"></i>
           <div class="default text">Select Device Model</div>
           <div id="DeviceModelId_select" class="menu">
-            <div class="item" data-value="af">Afghanistan</div>
-            <div class="item" data-value="ax">Aland Islands</div>
           </div>
         </div>
       </div>      
@@ -91,7 +89,7 @@
   </div>
 </div>
 
-<div id="spaceModal" class="ui modal">
+<div id="spaceModal" class="ui modal fullscreen" style="height:200%;">
   <i class="close icon"></i>
   <div class="header">
     space
@@ -105,21 +103,11 @@
     </table>   
   </div>
   <div class="image content"> 
-    <div class="ui fluid search normal selection dropdown">
-      <input id="CabinetId_select_val" name="country" type="hidden" onchange="loadCabinetSpace()">
-      <i class="dropdown icon"></i>
-      <div class="default text">Select Country</div>
-      <div class="menu" id="CabinetId_select">
-        <div class="item" data-value="af"></i>Afghanistan</div>
-        <div class="item" data-value="ax"></i>Aland Islands</div>
-      </div>
-    </div>
   </div>
   <div>
       <table id="cabinetSpace_table" class="ui celled table" style="width:30%;left:30%;position:relative;">
-
       </table>
-  </div>
+  </div> 
 </div>
 
 {%end%}
@@ -253,6 +241,7 @@ function initServerModel(){
     html_arr.push('<div class="item" data-value="'+v.DeviceModelId+'">'+v.DeviceModelName+'</div>')
   })
   $('#DeviceModelId_select').html(html_arr.join(""))
+  $('#DeviceModelId_select').parent().dropdown({"set selected":1,"hide":true})
 }
 function initSpaceModel(){
   var html_arr=[]
@@ -260,6 +249,7 @@ function initSpaceModel(){
     html_arr.push('<div class="item" data-value="'+v.CabinetId+'">'+v.CabinetName+'</div>')
   })
   $('#CabinetId_select').html(html_arr.join(""))
+  $('#CabinetId_select').parent().dropdown()
 }
 function loadCabinetSpace(){
   var html_arr=[]
@@ -278,7 +268,7 @@ initServerModel()
 initServerTableHeader()
 loadServerTable()
 initNetPortTableHeader()
-$('.ui.dropdown')
-  .dropdown()
+
+ 
 </script>
 {%end%}

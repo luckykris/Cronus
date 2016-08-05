@@ -10,4 +10,8 @@ const (
 	TABLEtag		 string = `tag`
 	TABLEdeviceTag 	 string = `deviceTag`
 	TABLEserver 	 string = `server`
+	TABLEidc 	 	 string = `idc`
+	TABLEvm 	 	 string = `VM`
+	TABLEswitch 	 string = `switch`
+	TABLErouter	     string = `router`
 )

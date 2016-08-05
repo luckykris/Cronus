@@ -55,19 +55,5 @@ func AddServer(ctx *macaron.Context) {
 		ctx.JSON(201,"Add Success")
 	}
 }
-func DeleteServer(ctx *macaron.Context) {
-	id := ctx.Params("id")
-	id_int, err := strconv.Atoi(id)
-	if err != nil {
-		ctx.JSON(404, "Not Found")
-		return
-	}
-	device:=&prometheus.Device{DeviceId:id_int}
-	err = device.DeleteDevice()
-	if err != nil {
-		ctx.JSON(400, err.Error())
-	} else {
-		ctx.JSON(204, "Delete Success")
-	}
-}
+
 

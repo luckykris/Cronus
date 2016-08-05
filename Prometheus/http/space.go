@@ -60,12 +60,14 @@ func AddDeviceSpace(ctx *macaron.Context) {
 	cabinet_id:=ArgInt{"CabinetId",true,nil}
 	start_u:=ArgInt{"StartU",true,nil}
 	args_int,err:=getAllIntArgs(ctx,[]ArgInt{cabinet_id,start_u})
+	position:=ArgString{"Position",true,nil}
+	args_string,err:=getAllStringArgs(ctx,[]ArgString{position})
 	if err!=nil{
 		ctx.JSON(400, err.Error())
 		return
 	}
 	if device,ok:=prometheus.PROMETHEUS.ServerMapId[device_id_int];ok{
-		err=device.AddSpace(args_int["CabinetId"].(int),args_int["StartU"].(int))
+		err=device.AddSpace(args_int["CabinetId"].(int),args_int["StartU"].(int),args_string["Position"].(string))
 		if err!=nil{
 			ctx.JSON(400, err.Error())
 			return

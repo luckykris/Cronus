@@ -3,25 +3,62 @@ package prometheus
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"github.com/luckykris/Cronus/Prometheus/global"
 )
 
-func GetLocation(args ...string) (interface{}, error) {
-	var id int
-	var name string
+func GetLocation(name interface{},id ...int)( []*Location, error) {
+	locations:=[]*Location{}
+	if len(id)!=0 {
+		for _,v:=range id{
+			locations=append(locations,PROMETHEUS.LocationMapId[v])
+		}
+		return locations,nil
+	}else{
+		for _,v:=range PROMETHEUS.LocationMapId{
+			locations=append(locations,v)
+		}
+		return locations,nil
+	}
+}
+
+func CacheLocation(name interface{},id ...int) error {
+	conditions:=[]string{}
+	var location_id int
+	var location_name string
 	var picture string
 	var father_id sql.NullInt64
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLElocation,nil, []string{`location_id`, `location_name`, `picture`, `father_location_id`}, args, &id, &name, &picture, &father_id)
-	r := []Location{}
+	var father_id_i interface{}
+	if name!=nil{
+		conditions=append(conditions,fmt.Sprintf("location_name='%s'",name.(string) ) )
+	}
+	if len(id)>0{
+		tmp_condition:=[]string{}
+		for _,v :=range id{
+			tmp_condition=append(tmp_condition,fmt.Sprintf("%d",v))
+		}
+		conditions=append(conditions,fmt.Sprintf("location_id in (%s)"  ,strings.Join(tmp_condition,",")))
+	}
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLElocation,nil, []string{`location_id`, `location_name`, `picture`, `father_location_id`}, conditions, &location_id, &location_name, &picture, &father_id)
+	if err!=nil{
+		return err
+	}
 	for cur.Fetch() {
 		if !father_id.Valid {
-			r = append(r, Location{id, name, picture, nil})
+			father_id_i = nil
 		} else {
-			r = append(r, Location{id, name, picture, int(father_id.Int64)})
+			father_id_i = int(father_id.Int64)
 		}
+		location:=new(Location)
+		location.LocationId=location_id
+		location.LocationName=location_name
+		location.Picture=picture
+		location.FatherLocationId=father_id_i
+		PROMETHEUS.LocationMapId[location.LocationId]=location
 	}
-	return r, err
+	return  nil
 }
+
 
 func AddLocation(values [][]interface{}) error {
 	return PROMETHEUS.dbobj.Add(global.TABLElocation, []string{`location_name`, `picture`, `father_location_id`}, values)

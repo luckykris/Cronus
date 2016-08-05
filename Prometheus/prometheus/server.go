@@ -71,6 +71,7 @@ func CacheServer(name interface{},id ...int) (error) {
 		server.Release=release
 		server.LastChangeTime=last_change_time
 		server.Checksum=checksum
+		PROMETHEUS.DeviceMapId[server.Device.DeviceId]=server
 		PROMETHEUS.ServerMapId[server.Device.DeviceId]=server
 	}
 	return err
@@ -106,7 +107,8 @@ func AddServer(device_name string,device_model_id int) error {
 		server.Release=0
 		server.LastChangeTime=0
 		server.Checksum="Never"
-		PROMETHEUS.ServerMapId[devices[0].DeviceId]=server
+		PROMETHEUS.DeviceMapId[server.Device.DeviceId]=server
+		PROMETHEUS.ServerMapId[server.Device.DeviceId]=server
 		return nil
 	}
 }

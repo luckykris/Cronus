@@ -13,9 +13,14 @@ func GetLocation(ctx *macaron.Context) {
 	var r interface{}
 	var err error
 	if id == "" {
-		r, err = prometheus.GetLocation()
+		r, err = prometheus.GetLocation(nil)
 	} else {
-		r, err = prometheus.GetLocation("location_id=" + id)
+		id_int, err := strconv.Atoi(id)
+		if err != nil {
+			ctx.JSON(404, "Not Found")
+			return
+		}
+		r, err = prometheus.GetLocation(nil,id_int)
 	}
 	if err != nil {
 		ctx.JSON(500, err.Error())

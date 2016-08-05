@@ -6,66 +6,60 @@ import (
 	"strings"
 )
 
-func GetTag(id ...int) ([]Tag, error) {
-	var tag string
-	var tag_id int
+
+
+
+func DeleteTag(tags ...Tag) error {
 	conditions:=[]string{}
-	if len(id)>0{
-		tmp_condition:=[]string{}
-		for _,v :=range id{
-			tmp_condition=append(tmp_condition,fmt.Sprintf("%d",v))
-		}
-		conditions=append(conditions,fmt.Sprintf("tag_id in (%s)"  ,strings.Join(tmp_condition,",")))
+	tmp_ls:=[]string{}
+	for _,tag:=range tags{
+		tmp_ls=append(tmp_ls,string(tag))
 	}
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEtag,nil, []string{`tag_id`, `tag_name`}, conditions, &tag_id, &tag)
-	r := []Tag{}
-	for cur.Fetch() {
-		r = append(r, Tag{tag_id, tag})
+	if len(tags)<1{
+		return fmt.Errorf("you need specify at least one parameter")
 	}
-	return r, err
-}
-func AddTag(tag *Tag) error {
-	return PROMETHEUS.dbobj.Add(global.TABLEtag, []string{`tag_name`}, [][]interface{}{[]interface{}{tag.TagName}})
-}
-func (tag *Tag) UpdateTag() error {
-	c := fmt.Sprintf("tag_id = %d", tag.TagId)
-	return PROMETHEUS.dbobj.Update(global.TABLEtag,[]string{c}, []string{`tag_name`}, []interface{}{tag.TagName})
-}	
-func (tag *Tag) DeleteTag() error {
-	c := fmt.Sprintf("tag_id = %d", tag.TagId)
-	return PROMETHEUS.dbobj.Delete(global.TABLEtag,[]string{c})
+	conditions=append(conditions,fmt.Sprintf(`tag IN ('%s')` ,strings.Join(tmp_ls,`','`)))
+	return PROMETHEUS.dbobj.Delete(global.TABLEtag,conditions)
 }	
 
 
-func (device *Device) GetTag(id ...int) (interface{}, error) {
+func (self *Device) GetTag() ([]Tag, error) {
 	conditions := []string{}
-	conditions = append(conditions, fmt.Sprintf("device_id=%d", device.DeviceId))
-	if len(id) > 0 {
-		conditions = append(conditions, fmt.Sprintf("tag_id=%d", id[0]))
-	}
-	var tag_id int
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceTag, nil,[]string{`tag_id`}, conditions, &tag_id)
-	in_tag_ids := []int{}
-	for cur.Fetch() {
-		in_tag_ids = append(in_tag_ids,  tag_id)
-	}
+	conditions = append(conditions, fmt.Sprintf("device_id=%d", self.DeviceId))
+	var tag string
+	r:=[]Tag{}
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceTag, nil,[]string{`tag`}, conditions, &tag)
 	if err != nil {
-		return nil, err
+		return r, err
 	}
-	if len(in_tag_ids) > 0 {
-		return GetTag(in_tag_ids...)
-	} else {
-		return []Tag{}, nil
+	for cur.Fetch() {
+		r = append(r,  Tag(tag))
 	}
+	return r,nil
 }
 
 
-func (device *Device)AddTag(tag *Tag) error {
-	return PROMETHEUS.dbobj.Add(global.TABLEdeviceTag, []string{`device_id`, `tag_id`}, [][]interface{}{[]interface{}{device.DeviceId,tag.TagId}})
+func (self *Device)AddTag(tags ...Tag) error {
+	vals:=[][]interface{}{}
+	for _,tag:=range tags{
+		vals=append(vals,[]interface{}{self.DeviceId,string(tag)})
+	}
+	if len(tags)<1{
+		return fmt.Errorf("you need specify at least one parameter") 
+	}
+	return PROMETHEUS.dbobj.Add(global.TABLEdeviceTag, []string{`device_id`, `tag`}, vals)
 }
 
-func (device *Device)DeleteTag(tag *Tag) error {
-	c1 := fmt.Sprintf("tag_id = %d", tag.TagId )
-	c2 := fmt.Sprintf("device_id = %d", device.DeviceId)
-	return PROMETHEUS.dbobj.Delete(global.TABLEdeviceTag, []string{c1,c2})
+
+func (self *Device)DeleteTag(tags ...Tag) error {
+	conditions:=[]string{fmt.Sprintf("device_id = %d",self.DeviceId)}
+	tmp_ls:=[]string{}
+	for _,tag:=range tags{
+		tmp_ls=append(tmp_ls,string(tag))
+	}
+	if len(tags)<1{
+		return fmt.Errorf("you need specify at least one parameter")
+	}
+	conditions=append(conditions,fmt.Sprintf(`tag IN ('%s')` ,strings.Join(tmp_ls,`','`)))
+	return PROMETHEUS.dbobj.Delete(global.TABLEdeviceTag, conditions)
 }

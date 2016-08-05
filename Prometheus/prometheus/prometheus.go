@@ -7,6 +7,19 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/db"
 	"os"
 )
+type Device_i interface{
+	GetTag() ([]Tag, error)
+	AddTag(...Tag) error
+	DeleteTag(...Tag) error
+}
+
+type Device struct {
+	DeviceId       int
+	DeviceName     string
+	FatherDeviceId interface{}
+	DeviceModel  *DeviceModel
+	NetPorts	[]NetPort
+}
 
 type Server struct {
 	Serial string
@@ -19,12 +32,14 @@ type Server struct {
 	Device 
 }
 
-type Device struct {
-	DeviceId       int
-	DeviceName     string
-	FatherDeviceId interface{}
-	DeviceModel  *DeviceModel
-	NetPorts	[]NetPort
+type Vm struct {
+	Hostname string
+	Memsize int
+	Os  string
+	Release float64
+	LastChangeTime int64
+	Checksum string
+	Device 
 }
 
 type NetPort struct {
@@ -54,7 +69,12 @@ type Cabinet struct {
 	IsCloud       string
 	CapacityTotal uint64
 	CapacityUsed  uint64
-	LocationId    int
+	IdcId    int
+}
+type Idc struct{
+	IdcId int
+	IdcName string
+	LocationId int
 }
 
 type Location struct {
@@ -64,19 +84,17 @@ type Location struct {
 	FatherLocationId interface{}
 }
 
-type Tag struct {
-	TagId int
-	TagName   string
-}
+type Tag string
 
 type Prometheus struct {
 	dbobj db.Dbi
 	DeviceModelMapId map[int]*DeviceModel
+	DeviceMapId map[int]Device_i
 	ServerMapId map[int]*Server
-	NetPortMap map[int]*NetPort
-	DeviceNameMap map[string]*Device
-	DeviceIdMap map[int]*Device
+	VmMapId map[int]*Vm
 	CabinetMapId map[int]*Cabinet
+	LocationMapId map[int]*Location
+	IdcMapId map[int]*Idc
 }
 
 var PROMETHEUS *Prometheus
@@ -84,11 +102,13 @@ var PROMETHEUS *Prometheus
 func Init(mainCfg cfg.MainCfg) {
 	var err error
 	log.Debug("Start init Database.")
-	PROMETHEUS = &Prometheus{ServerMapId:map[int]*Server{},
-							 DeviceIdMap:map[int]*Device{},
-							 DeviceNameMap:map[string]*Device{},
+	PROMETHEUS = &Prometheus{DeviceMapId:map[int]Device_i{},
+							 ServerMapId: map[int]*Server{},
+	 						 VmMapId: map[int]*Vm{},
 							 DeviceModelMapId:map[int]*DeviceModel{},
 							 CabinetMapId:map[int]*Cabinet{},
+							 LocationMapId:map[int]*Location{},
+							 IdcMapId:map[int]*Idc{},
 							}
 	PROMETHEUS.dbobj, err = db.Init(mainCfg.DbCfg)
 	if err != nil {
@@ -110,7 +130,7 @@ func Init(mainCfg cfg.MainCfg) {
 		os.Exit(255)
 	}
 	log.Debug("Load Server Success")
-	fmt.Printf("%#v",PROMETHEUS.ServerMapId)
+	fmt.Printf("%#v",PROMETHEUS.DeviceMapId)
 }
 
 

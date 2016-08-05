@@ -21,32 +21,35 @@ func LoadRoute() {
 			WEB.Delete("/:id:int", DeleteLocation)
 			WEB.Patch("/:id:int", UpdateLocation)
 		})
-		WEB.Group("/tags", func() {
-			WEB.Get("/?:id:int", GetTag)
-			WEB.Post("/", AddTag)
-			WEB.Delete("/:id:int", DeleteTag)
-			WEB.Patch("/:id:int", UpdateTag)
+		WEB.Group("/idc", func() {
+			WEB.Get("/?:id:int", GetIdc)
 		})
-		WEB.Group("/devices", func() {
+		WEB.Group("/tag", func() {
+			WEB.Delete("/:tag:string", DeleteTag)
+		})
+		WEB.Group("/device", func() {
 			WEB.Get("/?:id:int", GetDevice)
 			WEB.Post("/", AddDevice)
 			WEB.Delete("/:id:int", DeleteDevice)
 			//WEB.Patch("/:id:int", UpdateDevice)
-			WEB.Get("/:DeviceId:int/netPorts/?:NetPortId:int", GetNetPort)
-			WEB.Post("/:DeviceId:int/netPorts/", AddNetPort)
-			WEB.Patch("/:DeviceId:int/netPorts/?:NetPortId:int", UpdateNetPort)
-			WEB.Delete("/:DeviceId:int/netPorts/?:NetPortId:int", DeleteNetPort)
-			WEB.Get("/:DeviceId:int/tags/?:TagId:int", GetDeviceTag)
-			WEB.Post("/:DeviceId:int/tags/:TagId:int", AddDeviceTag)
-			WEB.Delete("/:DeviceId:int/tags/:TagId:int", DeleteDeviceTag)
+			WEB.Get("/:DeviceId:int/netPort/?:NetPortId:int", GetNetPort)
+			WEB.Post("/:DeviceId:int/netPort/", AddNetPort)
+			WEB.Patch("/:DeviceId:int/netPort/?:NetPortId:int", UpdateNetPort)
+			WEB.Delete("/:DeviceId:int/netPort/?:NetPortId:int", DeleteNetPort)
+			WEB.Get("/:DeviceId:int/tag/", GetDeviceTag)
+			WEB.Post("/:DeviceId:int/tag/:Tag:string", AddDeviceTag)
+			WEB.Delete("/:DeviceId:int/tag/:Tag:string", DeleteDeviceTag)
 			WEB.Get("/:DeviceId:int/space", GetDeviceSpace)
 			WEB.Post("/:DeviceId:int/space", AddDeviceSpace)
 			WEB.Delete("/:DeviceId:int/space", DeleteDeviceSpace)
 		})
-		WEB.Group("/servers", func() {
+		WEB.Group("/server", func() {
 			WEB.Get("/?:id:int", GetServer)
 			WEB.Post("/", AddServer)
-			WEB.Delete("/:id:int", DeleteServer)
+		})
+		WEB.Group("/vm", func() {
+			WEB.Get("/?:id:int", GetVm)
+			WEB.Post("/", AddVm)
 		})
 		WEB.Group("/space", func() {
 			WEB.Get("/", GetSpace)

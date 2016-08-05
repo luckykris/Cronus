@@ -6,7 +6,7 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/global"
 )
 
-func GetCabinet(name interface{},id ...int) (interface{}, error) {
+func GetCabinet(name interface{},id ...int) ([]*Cabinet, error) {
 	cabinets:=[]*Cabinet{}
 	if len(id) !=0 {
 		for _,v:=range id{
@@ -28,7 +28,7 @@ func CacheCabinet(name interface{},id ...int)error{
 	var iscloud string
 	var capacity_total uint64
 	var capacity_used uint64
-	var location_id int
+	var idc_id int
 	if name!=nil{
 		conditions=append(conditions,fmt.Sprintf("cabinet_name='%s'",name.(string)))
 	}
@@ -39,7 +39,10 @@ func CacheCabinet(name interface{},id ...int)error{
 		}
 		conditions=append(conditions,fmt.Sprintf("cabinet_id in (%s)"  ,strings.Join(tmp_condition,",")))
 	}
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEcabinet,nil, []string{`cabinet_id`, `cabinet_name`, `iscloud`, `capacity_total`, `capacity_used`, `location_id`}, conditions, &cabinet_id, &cabinet_name, &iscloud, &capacity_total, &capacity_used, &location_id)
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEcabinet,nil, []string{`cabinet_id`, `cabinet_name`, `iscloud`, `capacity_total`, `capacity_used`, `idc_id`}, conditions, &cabinet_id, &cabinet_name, &iscloud, &capacity_total, &capacity_used, &idc_id)
+	if err!=nil{
+		return err
+	}
 	for cur.Fetch() {
 		cabinet:=new(Cabinet)
 		cabinet.CabinetId=cabinet_id
@@ -47,7 +50,7 @@ func CacheCabinet(name interface{},id ...int)error{
 		cabinet.IsCloud=iscloud
 		cabinet.CapacityTotal=capacity_total
 		cabinet.CapacityUsed=capacity_used
-		cabinet.LocationId=location_id
+		cabinet.IdcId=idc_id
 		if _,ok:=PROMETHEUS.CabinetMapId[cabinet.CabinetId];ok{
 			delete(PROMETHEUS.CabinetMapId,cabinet.CabinetId)
 		}
