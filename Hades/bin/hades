@@ -1,0 +1,83 @@
+#!/bin/env python
+from hades import _input
+from hades import _output
+from hades import cfg
+from hades import ansible_api
+from hades import logger
+from hades import error
+import hades
+import traceback
+import argparse
+import sys
+import os
+def get_cmd_args():
+	parser = argparse.ArgumentParser(description='Hades project is sub module of Cronus.')
+	parser.add_argument('-c',"--config", default=os.path.join(cfg.BASE_DIR,'hades.ini'), help='configuration of hades.')
+	parser.add_argument('-v', '--version',action='store_true', help='version.')
+	args = parser.parse_args()
+	return args
+
+def main():
+	#get cmdline arguments
+	cmd_args=get_cmd_args()
+	if cmd_args.version == True:
+		print(hades.__version__)
+		sys.exit(0)
+	#init configuration
+	try:
+		c=cfg.new(cmd_args.config)
+	except error.AnsibleHttpError:
+		print("Hades can`t load configuration '%s': %s" % (str(cmd_args),str(err)))
+	except Exception as err:
+		print("Fatal! Hades can`t load configuration '%s': %s" % (str(cmd_args),str(err)))
+	#init logger
+	try:
+		log = logger.new(c.get('logger'))
+	except:
+		print("Hades can`t make log file,please make sure the log path is exist." )
+		sys.exit(-1)
+	#init ansible api
+	a_api=ansible_api.new(c.get('hades'),log)
+
+	#main process
+	process_modules=c.get_process_modules()
+	log.debug("process modules analysis:>>%s<<" % str(process_modules))
+	for one_input_module in process_modules:
+		#init input module
+		try:
+			i=_input.new(c.get(one_input_module),log)
+			input_data=i.run_once()
+		except error.AnsibleHttpError:
+			continue
+		except Exception as err:
+			log.critical("input module run failed:%s" % str(err))
+			continue
+		try:
+			meta=a_api.get_property(input_data)
+		except error.AnsibleHttpError:
+			continue
+		except Exception as err:
+			log.error("get property failed:%s" % str(err))
+			log.debug("get property failed:%s" % traceback.format_exc())
+			continue
+		#filt reachable hosts
+		filted_meta={}
+		for x in meta:
+			if meta[x] == None:
+				log.warn("%s is unreachable." % str(x) )
+			else:
+				filted_meta[x]=meta[x]
+				log.debug("%s meta:>>%s<<" % (str(x),meta[x]))
+		for one_output_module in process_modules[one_input_module]:
+			try:
+				#init out put module
+				o=_output.new(c.get(one_output_module),log)
+				o.run_once(filted_meta)
+			except error.AnsibleHttpError:
+				continue
+			except Exception as err:
+				log.error("output module run failed:%s" % str(err))
+				continue
+
+if __name__ == "__main__":
+	main()
