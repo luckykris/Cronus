@@ -72,6 +72,8 @@ list_pop_head( list_t *self){
 	}else{
 		self->head = self->tail = NULL;
 	}
+	void * val=node->val;
+	free(node);
 	return node->val;
 };
 
@@ -82,9 +84,7 @@ list_node_new(void *val) {
   self->prev = NULL;
   self->next = NULL;
   self->val = val;
-  void * val=node->val;
-  free(node);
-  return val;
+  return self;
 }
 
 

@@ -8,11 +8,14 @@ int main(int argc, char const *argv[])
 	char *b= "b";
 	char *c= "c";
 	char *d= "d";
+	int   e= 1;
+	int  *f= &e;
 	list_push(ls,a);
 	list_push(ls,b);
 	list_push(ls,c);
 	list_push(ls,d);
-	list_node_t * tmp_node;
+	list_push(ls,f);
+	void * tmp_node;
 	while(1){
 		printf("%d\n",list_len(ls));
 		tmp_node=list_pop(ls);
