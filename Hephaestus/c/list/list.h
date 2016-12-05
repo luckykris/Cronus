@@ -30,20 +30,25 @@ typedef struct{
 list_t * 
 list_new();
 
-list_node_t * 
-list_push_tail( list_t *self, list_node_t *node);
+//list_node_t * 
+void
+list_push( list_t *self, void *val);
 
-list_node_t * 
-list_push_head( list_t *self, list_node_t *node);
+void
+list_push_head( list_t *self, void *val);
 
-list_node_t *
-list_pop_tail( list_t *self);
+void *
+list_pop( list_t *self);
 
-list_node_t *
+void *
 list_pop_head( list_t *self);
 
 list_node_t *
 list_node_new(void *val);
+
+unsigned int
+list_len(list_t *self);
+
 
 #ifdef __cplusplus
 }

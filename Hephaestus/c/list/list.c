@@ -14,9 +14,10 @@ list_new(){
 }
 
 
-list_node_t * 
-list_push_tail( list_t *self, list_node_t *node){
-	if (!node) return NULL;
+void
+list_push( list_t *self, void *val){
+	list_node_t *node=list_node_new(val);
+	if (!node) return;
 	if (self->len){
 		node->prev = self->tail;
 		node->next = NULL;
@@ -28,12 +29,12 @@ list_push_tail( list_t *self, list_node_t *node){
 		node->prev = node->next = NULL;
 	}
 	++self->len;
-	return node;
 };
 
-list_node_t * 
-list_push_head( list_t *self, list_node_t *node){
-	if (!node) return NULL;
+void 
+list_push_head( list_t *self, void *val){
+	list_node_t *node=list_node_new(val);
+	if (!node) return ;
 	if (self->len){
 		node->next = self->head;
 		node->prev = NULL;
@@ -44,11 +45,10 @@ list_push_head( list_t *self, list_node_t *node){
 		node->prev = node->next = NULL;
 	}
 	++self->len;
-	return node;
 };
 
-list_node_t *
-list_pop_tail( list_t *self){
+void *
+list_pop( list_t *self){
 	if(!self->len) return NULL;
 	list_node_t *node = self->tail;
 	if(--self->len){
@@ -57,10 +57,12 @@ list_pop_tail( list_t *self){
 	}else{
 		self->head = self->tail = NULL;
 	}
-	return node;
+	void * val=node->val;
+	free(node);
+	return val;
 };
 
-list_node_t *
+void *
 list_pop_head( list_t *self){
 	if(!self->len) return NULL;
 	list_node_t *node = self->head;
@@ -70,7 +72,7 @@ list_pop_head( list_t *self){
 	}else{
 		self->head = self->tail = NULL;
 	}
-	return node;
+	return node->val;
 };
 
 list_node_t *
@@ -80,5 +82,14 @@ list_node_new(void *val) {
   self->prev = NULL;
   self->next = NULL;
   self->val = val;
-  return self;
+  void * val=node->val;
+  free(node);
+  return val;
+}
+
+
+
+unsigned int
+list_len(list_t *self){
+	return self->len;
 }

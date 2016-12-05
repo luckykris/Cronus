@@ -4,19 +4,20 @@ int main(int argc, char const *argv[])
 {
 	list_t *ls;
 	ls = list_new();
-	list_node_t *a = list_node_new("a");
-	list_node_t *b = list_node_new("b");
-	list_node_t *c = list_node_new("c");
-	list_node_t *d = list_node_new("d");
-	list_push_tail(ls,a);
-	list_push_tail(ls,b);
-	list_push_head(ls,c);
-	list_push_head(ls,d);
+	char *a= "a";
+	char *b= "b";
+	char *c= "c";
+	char *d= "d";
+	list_push(ls,a);
+	list_push(ls,b);
+	list_push(ls,c);
+	list_push(ls,d);
 	list_node_t * tmp_node;
 	while(1){
-		tmp_node=list_pop_head(ls);
+		printf("%d\n",list_len(ls));
+		tmp_node=list_pop(ls);
 		if(!tmp_node) break ;
-		printf("%s\n",tmp_node->val);
+		printf("%s\n",tmp_node);
 	}
 	return 0;
 }
