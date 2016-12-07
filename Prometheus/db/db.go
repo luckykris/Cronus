@@ -14,7 +14,7 @@ type Dbi interface {
 	Add(string, []string, [][]interface{}) error
 	Delete(string, []string) error
 	Update(string, []string, []string, []interface{}) error
-	Begin()(Txi error)
+	Begin()(Txi,error)
 }
 
 type Txi interface {

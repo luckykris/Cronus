@@ -47,10 +47,10 @@ func (db *MysqlDb) Close() error {
 	return db.DbPool.Close()
 }
 
-func (db *MysqlDb) Begin()(*sql.Tx,error){
+func (db *MysqlDb) Begin()(Txi,error){
 	return db.DbPool.Begin()
 }
-func (tx *sql.Tx)
+
 
 func (db *MysqlDb) Get(table string, groupby interface{},columns_name []string, conditions []string, columns ...interface{}) (*Cur, error) {
 	var conditions_str = ""
