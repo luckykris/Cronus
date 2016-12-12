@@ -49,6 +49,8 @@ list_node_new(void *val);
 unsigned int
 list_len(list_t *self);
 
+void *
+list_index(list_t *self,unsigned int index);
 
 #ifdef __cplusplus
 }

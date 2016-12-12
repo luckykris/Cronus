@@ -93,3 +93,30 @@ unsigned int
 list_len(list_t *self){
 	return self->len;
 }
+
+void *
+list_index(list_t *self,unsigned int index) {
+	unsigned int c,tmp_c;
+	list_node_t *node;
+	c=list_len(self);
+	if(index>c-1){
+		return NULL;
+	}
+	if(index<c/2){
+		tmp_c=index;
+		node = self->head;
+		while(tmp_c>0){
+			node = node->next;
+			tmp_c--;
+		}
+		return node->val;
+	}else{
+		tmp_c=index+1;
+		node = self->tail;
+		while(tmp_c<c){
+			node = node->prev;
+			tmp_c++;
+		}
+		return node->val;
+	}
+}
