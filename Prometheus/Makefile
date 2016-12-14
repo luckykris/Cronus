@@ -6,7 +6,9 @@ SCRIPTDIR='script'
 
 init:
 	$(SCRIPTDIR)/clean_and_update_loacal_gosrc.sh
-test:
+test:init
 	$(complier) run $(program).go -config $(config)
+test_prometheus:init
+	$(complier) test -v ./prometheus
 clean:
 	@echo "nothing to do"

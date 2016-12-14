@@ -61,7 +61,26 @@ func (db *MysqlDb) Get(table string, groupby interface{},columns_name []string, 
 	if groupby !=nil{
 		groupby_str=fmt.Sprintf("GROUP BY %s",groupby.(string))
 	}
-	sql := fmt.Sprintf("SELECT `%s` FROM %s %s %s", strings.Join(columns_name, "`,`"), table, conditions_str,groupby_str)
+	sql := fmt.Sprintf("SELECT %s FROM %s %s %s", strings.Join(columns_name, ","), table, conditions_str,groupby_str)
+	rows, err := db.DbPool.Query(sql)
+	log.Debug(sql)
+	return &Cur{rows, columns_name, columns}, err
+
+}
+func (db *MysqlDb) GetLeftJoin(ltable string,tables [][3]string, groupby interface{},columns_name []string, conditions []string, columns ...interface{}) (*Cur, error) {
+	table:=ltable
+	for i:=range tables{
+		table+=fmt.Sprintf(" LEFT JOIN %s ON %s=%s " , tables[i][0],tables[i][1],tables[i][2] )
+	}
+	var conditions_str = ""
+	var groupby_str = ""
+	if len(conditions) != 0 {
+		conditions_str = " WHERE " + strings.Join(conditions, ` AND `)
+	}
+	if groupby !=nil{
+		groupby_str=fmt.Sprintf("GROUP BY %s",groupby.(string))
+	}
+	sql := fmt.Sprintf("SELECT %s FROM %s %s %s", strings.Join(columns_name, ","), table, conditions_str,groupby_str)
 	rows, err := db.DbPool.Query(sql)
 	log.Debug(sql)
 	return &Cur{rows, columns_name, columns}, err

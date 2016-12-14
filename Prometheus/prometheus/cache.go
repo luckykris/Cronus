@@ -2,72 +2,34 @@ package prometheus
 import (
 	//"github.com/luckykris/Cronus/Prometheus/global"
 	//"database/sql"
+	"container/list"
 )
 
 
-
-
-func LoadCache()error{
-	var err error
-	err=LoadDeviceModel()
-	err=LoadServer()
-	err=LoadVm()
-	err=LoadCabinet()
-	err=LoadLocation()
-	err=LoadIdc()
+func Cache_Index_Init()(error) {
+	var err error=nil
+	//init index
+	DEVICEMODEL_INDEX_ID=map[int]*list.Element{}
+	DEVICE_INDEX_ID=map[string]map[int]*list.Element{}
+	DEVICE_INDEX_ID["server"]=map[int]*list.Element{}
+	
+	//init cache list
+	DEVICE_CACHE=list.New()
+	DEVICEMODEL_CACHE=list.New()
+	m,err:=GetDeviceModelFromDB([]string{},[]string{},[]int{})
+	if err!=nil{
+		return err
+	}
+	for i:=range m{
+		DEVICEMODEL_INDEX_ID[m[i].DeviceModelId]=DEVICEMODEL_CACHE.PushBack(m[i])
+	}
+	s,err:=GetServerFromDB([]int{},[]string{},[]int{} ,[]uint8{})
+	if err!=nil{
+		return err
+	}
+	for i:=range s{
+		DEVICE_INDEX_ID["server"][s[i].Device.DeviceId]=DEVICE_CACHE.PushBack(s[i])
+	}
 	return err
 }
 
-
-func LoadServer() error {
-	err:=CacheServer(nil) 
-	if err!=nil{
-		return err
-	}else{
-		return nil
-	}
-}
-
-func LoadVm() error {
-	err:=CacheVm(nil) 
-	if err!=nil{
-		return err
-	}else{
-		return nil
-	}
-}
-
-
-func LoadDeviceModel()error{
-	err:=CacheDeviceModel(nil) 
-	if err!=nil{
-		return err
-	}else{
-		return nil
-	}
-}
-
-func LoadCabinet()error{
-	err:=CacheCabinet(nil) 
-	if err!=nil{
-		return err
-	}else{
-		return nil
-	}
-}
-func LoadLocation()error{
-	err:=CacheLocation(nil) 
-	if err!=nil{
-		return err
-	}else{
-		return nil
-	}
-}
-func LoadIdc()error{
-	err:=CacheIdc(nil) 
-	if err!=nil{
-		return err
-	}else{
-		return nil
-	}
-}

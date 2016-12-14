@@ -6,17 +6,24 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/cfg"
 	"github.com/luckykris/Cronus/Prometheus/db"
 	"os"
+	"sync"
+	"container/list"
 )
 type Device_i interface{
 	GetTag() ([]Tag, error)
 	AddTag(...Tag) error
 	DeleteTag(...Tag) error
+	ComputSum()string
 }
 
 type Device struct {
+	sync.RWMutex
 	DeviceId       int
 	DeviceName     string
 	FatherDeviceId interface{}
+	Ctime   	   uint64
+	GroupId   	   int
+	Env	           uint8
 	DeviceModel  *DeviceModel
 	NetPorts	[]NetPort
 }
@@ -24,10 +31,11 @@ type Device struct {
 type Server struct {
 	Serial string
 	Hostname string
-	Memsize int
+	Memsize uint32
+	Processor uint8
 	Os  string
 	Release float64
-	LastChangeTime int64
+	LastChangeTime uint64
 	Checksum string
 	Device 
 }
@@ -43,7 +51,6 @@ type Vm struct {
 }
 
 type NetPort struct {
-	NetPortId int
 	Mac       interface{}
 	Ipv4Int   interface{}
 	Type      string
@@ -60,7 +67,8 @@ type DeviceModel struct {
 	DeviceModelId   int
 	DeviceModelName string
 	DeviceType      string
-	U         		int
+	U         		uint8
+	HALF_FULL		string
 }
 
 type Cabinet struct {
@@ -89,22 +97,22 @@ type Tag string
 type Prometheus struct {
 	dbobj db.Dbi
 	DeviceModelMapId map[int]*DeviceModel
-	DeviceMapId map[int]Device_i
-	ServerMapId map[int]*Server
-	VmMapId map[int]*Vm
+	DeviceCache map[string]map[int]Device_i
 	CabinetMapId map[int]*Cabinet
 	LocationMapId map[int]*Location
 	IdcMapId map[int]*Idc
 }
 
 var PROMETHEUS *Prometheus
+var DEVICE_CACHE *list.List
+var DEVICEMODEL_CACHE *list.List
+var DEVICEMODEL_INDEX_ID map[int]*list.Element
+var DEVICE_INDEX_ID map[string]map[int]*list.Element
 
 func Init(mainCfg cfg.MainCfg) {
 	var err error
 	log.Debug("Start init Database.")
-	PROMETHEUS = &Prometheus{DeviceMapId:map[int]Device_i{},
-							 ServerMapId: map[int]*Server{},
-	 						 VmMapId: map[int]*Vm{},
+	PROMETHEUS = &Prometheus{DeviceCache:map[string]map[int]Device_i{"server":map[int]Device_i{},"vm":map[int]Device_i{}},
 							 DeviceModelMapId:map[int]*DeviceModel{},
 							 CabinetMapId:map[int]*Cabinet{},
 							 LocationMapId:map[int]*Location{},
@@ -123,15 +131,16 @@ func Init(mainCfg cfg.MainCfg) {
 		os.Exit(255)
 	}
 	log.Debug("Open Database Success")
-	log.Debug("Load Server Start")
-	err=LoadCache()
+	log.Debug("Init Data Start")
+	err=Cache_Index_Init()
 	if err!=nil{
-		log.Fatal("Load Server Failed")
+		log.Fatal("Init Data Failed")
 		os.Exit(255)
 	}
-	log.Debug("Load Server Success")
-	fmt.Printf("%#v",PROMETHEUS.DeviceMapId)
+	log.Debug("Init Data Success")
+	fmt.Printf("%#v",PROMETHEUS.DeviceCache)
 }
+
 
 
 //func (device *Device)Init(	deviceId  int,deviceName   string,deviceType  string,fatherDeviceId interface{}){

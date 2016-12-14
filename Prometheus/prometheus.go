@@ -5,7 +5,6 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/cfg"
 	"github.com/luckykris/Cronus/Prometheus/prometheus"
 	"github.com/luckykris/Cronus/Prometheus/http"
-	"github.com/luckykris/Cronus/Prometheus/sniffer"
 	"github.com/luckykris/Cronus/Hephaestus/os"
 	"github.com/luckykris/Cronus/Hephaestus/safe"
 )
@@ -20,15 +19,14 @@ func main() {
 	ex:=safe.NewExit()
 	prometheus.Init(mainCfg)
 	log.Debug("Init ","prometheus "  ," success")
+	//
+	//ex.Join()
 	go http.Start()
+	//
 	log.Debug("Start ","http "  ," success")
-	//start sniffer
-	ex.Join()
-	go sniffer.Start(mainCfg.SnifferCfg,ex)
-	log.Debug("Start ","sniffer "  ," success")
 	log.Info("Start ", cfg.SOFTWARE, " success")
 	//set exiter callback for os`s signal handle
-	os.StartSignalHandle("interrupt",func(){ex.StartAllExit()},3)
+	os.StartSignalHandle("interrupt",func(){ex.StartAllExit()},1)
 	log.Info("Stoping ", cfg.SOFTWARE, " success")
 	ex.WaitAllExit()
 	log.Info("Stopped ", cfg.SOFTWARE, " success")

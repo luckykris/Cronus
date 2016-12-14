@@ -8,11 +8,11 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-func TestGetAllDeviceType(t *testing.T){
+func TestPrometheus(t *testing.T){
 	mainCfg := cfg.LoadCfg()
 	log.SetLevel(mainCfg.LogCfg.LevelId)
 	prometheus.Init(mainCfg)
-	r,err:=prometheus.GetServer()
+	r,err:=prometheus.GetDeviceModelFromDB([]string{},[]string{},[]int{})
 	if err!=nil{
 		fmt.Println(err.Error())
 		return

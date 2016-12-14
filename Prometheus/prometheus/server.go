@@ -2,148 +2,108 @@ package prometheus
 
 import (
 	//"database/sql"
-	"time"
-	"crypto/md5"
+	//"time"
+	//"crypto/md5"
 	"fmt"
 	"strings"
 	"github.com/luckykris/Cronus/Prometheus/global"
 	//log "github.com/Sirupsen/logrus"
 )
 
-
-func GetServer(name interface{},id ...int) ([]*Server, error){
-	servers:=[]*Server{}
-	if len(id) !=0 {
-		for _,v:=range id{
-			servers=append(servers,PROMETHEUS.ServerMapId[v])
+func GetServer(device_name_i interface{},device_id_i interface{})([]*Server,error){
+	r:=[]*Server{}
+	if device_id_i !=nil{
+		s,ok:=DEVICE_INDEX_ID["server"][device_id_i.(int)]
+		if ok {
+			r=append(r,s.Value.(*Server))
 		}
-		return servers,nil
-	}else{
-		for _,v:=range PROMETHEUS.ServerMapId{
-			servers=append(servers,v)
-		}
-		return servers,nil
+		return r,nil
 	}
+	for _,v:=range DEVICE_INDEX_ID["server"]{
+		r=append(r,v.Value.(*Server))
+	}
+	return r,nil
 }
-func CacheServer(name interface{},id ...int) (error) {
-	var device_id int
-	var serial string
-	var hostname string
-	var memsize int
-	var os string
-	var release float64
-	var last_change_time int64
-	var checksum string
+
+func GetServerFromDB(device_ids []int ,device_names []string,group_ids []int ,envs []uint8)(result []*Server,err error){
+	err = nil
+	result=[]*Server{}
 	conditions:=[]string{}
-	devices,err:=GetDevice(name,id...)
-	device_map:=map[int]*Device{}
-	if err!=nil{
-		return err
+	//device attribute
+	var device_id 		  int
+	var device_name		  string
+	var device_model_id	  int
+	var ctime             uint64
+	var group_id          int
+	var env				  uint8
+	//server attribute
+	var serial 			  string
+	var hostname 		  string
+	var memsize 		  uint32
+	var processor 		  uint8
+	var os				  string
+	var release     	  float64
+	var last_change_time  uint64
+	var checksum          string
+	if len(device_ids) >0 {
+		conditions=append(conditions,fmt.Sprintf("device_id IN (%s)",int_join(device_ids,",")))
 	}
-	if len(id)>0{
-		tmp_condition:=[]string{}
-		for _,v :=range id{
-			tmp_condition=append(tmp_condition,fmt.Sprintf("%d",v))
-		}
-		conditions=append(conditions,fmt.Sprintf("device_id in (%s)"  ,strings.Join(tmp_condition,",")))
+	if len(device_names)>0 {
+		conditions=append(conditions,fmt.Sprintf("device_name IN ('%s')",strings.Join(device_names,"','")))
 	}
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEserver, nil, []string{`device_id`,`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, conditions, &device_id, &serial, &hostname, &memsize,&os,&release,&last_change_time,&checksum)
-	if err != nil {
-		return  err
+	if len(group_ids)>0 {
+		conditions=append(conditions,fmt.Sprintf("group_ids IN (%s)",int_join(group_ids,",")))
 	}
-	for _,device:=range devices {
-		device_map[device.DeviceId] = device
+	if len(envs)>0 {
+		conditions=append(conditions,fmt.Sprintf("env IN (%s)",uint8_join(envs,",")))
 	}
+	items:=[]string{strings.Join([]string{global.TABLEserver,"device_id"},"."),
+					`device_name`,
+					`device_model_id`,
+					`ctime`,
+					`group_id`,
+					`env`,
+					`serial`,
+					`hostname`,
+					`memsize`,
+					`processor`,
+					`os`,
+					`_release`,
+					`last_change_time`,
+					`checksum`}
+	cur, err := PROMETHEUS.dbobj.GetLeftJoin(global.TABLEserver,[][3]string{[3]string{global.TABLEdevice,strings.Join([]string{global.TABLEdevice,"device_id"},"."),strings.Join([]string{global.TABLEserver,"device_id"},".")}} ,nil,items, conditions,  
+					&device_id,
+					&device_name,
+					&device_model_id,
+					&ctime,
+					&group_id,
+					&env,
+					&serial,
+					&hostname,
+					&memsize,
+					&processor,
+					&os,
+					&release,
+					&last_change_time,
+					&checksum)
 	for cur.Fetch() {
-		if _,ok:=device_map[device_id];!ok{
-			return fmt.Errorf("device data fatal!")
-		}
-		server:=new(Server)
-		server.Device.NetPorts=device_map[device_id].NetPorts
-		server.Device.DeviceId=device_id
-		server.Device.DeviceName=device_map[device_id].DeviceName
-		server.Device.DeviceModel=device_map[device_id].DeviceModel
-		server.Device.FatherDeviceId=device_map[device_id].FatherDeviceId
-		server.Serial=serial
-		server.Hostname=hostname
-		server.Memsize=memsize
-		server.Os=os
-		server.Release=release
-		server.LastChangeTime=last_change_time
-		server.Checksum=checksum
-		PROMETHEUS.DeviceMapId[server.Device.DeviceId]=server
-		PROMETHEUS.ServerMapId[server.Device.DeviceId]=server
+		r := new(Server)
+		r.Device.DeviceId=device_id
+		r.Device.DeviceName=device_name
+		r.Device.DeviceModel=DEVICEMODEL_INDEX_ID[device_model_id].Value.(*DeviceModel)
+		r.Device.FatherDeviceId=nil
+		r.Device.Ctime=ctime
+		r.Device.GroupId=group_id
+		r.Device.Env=env
+		r.Serial=serial
+		r.Hostname=hostname
+		r.Memsize=memsize
+		r.Processor=processor
+		r.Os=os
+		r.Release=release
+		r.LastChangeTime=last_change_time
+		r.Checksum=checksum
+		result=append(result,r)
 	}
-	return err
+	return 
 }
-
-
-
-func AddServer(device_name string,device_model_id int) error {
-	err:=AddDevice(device_name,device_model_id,nil)
-	if err!=nil{
-		return err
-	}
-	devices,err:=GetDevice(device_name)
-	if err!=nil{
-		return err
-	}
-	if len(devices)!=1{
-		return fmt.Errorf("amazing critical error!")
-	}
-	err=PROMETHEUS.dbobj.Add(global.TABLEserver, []string{`device_id`,`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, [][]interface{}{[]interface{}{devices[0].DeviceId,"Unknow","Unknow",0,"Unknow",0,0,"Never"}})
-	if err!=nil{
-		return err
-	}else{
-		server:=new(Server)
-		server.Device.DeviceId=devices[0].DeviceId
-		server.Device.DeviceName=devices[0].DeviceName
-		server.Device.DeviceModel=devices[0].DeviceModel
-		server.Device.FatherDeviceId=devices[0].FatherDeviceId
-		server.Serial="Unknow"
-		server.Hostname="Unknow"
-		server.Memsize=0
-		server.Os="Unknow"
-		server.Release=0
-		server.LastChangeTime=0
-		server.Checksum="Never"
-		PROMETHEUS.DeviceMapId[server.Device.DeviceId]=server
-		PROMETHEUS.ServerMapId[server.Device.DeviceId]=server
-		return nil
-	}
-}
-
-
-func (server *Server)UpdateServer() error {
-	var err error
-	conditions:=[]string{fmt.Sprintf("device_id = %d" , server.DeviceId)}
-	server_pre_ls,err:=GetServer(nil,server.DeviceId)
-	if err!=nil{
-		return err
-	}
-	checksum:=server.ComputSum()
-	if server_pre_ls[0].Checksum == checksum{
-		return nil
-	}
-	server.LastChangeTime=time.Now().Unix()
-	err=PROMETHEUS.dbobj.Update(global.TABLEserver, conditions, []string{`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, []interface{}{server.Serial,server.Hostname,server.Memsize,server.Os,server.Release,server.LastChangeTime,checksum})
-	if err!=nil{
-		return err
-	}
-	err=CacheServer(nil,server.Device.DeviceId)
-	if err!=nil{
-		return err
-	}
-	return nil
-}
-
-
-func(server *Server)ComputSum()string{
-	s:=fmt.Sprintf("%s%s%d%s%f",server.Serial,server.Hostname,server.Memsize,server.Os,server.Release)
-	return fmt.Sprintf("%x", md5.Sum([]byte(s)))
-	//netPorts_count_ipv4_int:=0
-	//for _,netPort :=range server.NetPorts{
-//		netPorts_count_ipv4_int+=netPort.Ipv4Int
-//	}
-}
-

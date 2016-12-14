@@ -11,7 +11,7 @@ func GetServer(ctx *macaron.Context) {
 	var r interface{}
 	var err error
 	if id == ""{
-		r, err = prometheus.GetServer(nil)
+		r, err = prometheus.GetServer(nil,nil)
 	} else {
 		id_int, err := strconv.Atoi(id)
 		if err != nil {
@@ -34,26 +34,4 @@ func GetServer(ctx *macaron.Context) {
 	}
 	ctx.JSON(200, &r)
 }
-
-func AddServer(ctx *macaron.Context) {
-	deviceName:=ArgString{"DeviceName",true,nil}
-	args_string,err:=getAllStringArgs(ctx,[]ArgString{deviceName})
-	if err!=nil{
-		ctx.JSON(400, err.Error())
-		return
-	}
-	deviceModelId:=ArgInt{"DeviceModelId",true,nil}
-	args_int,err:=getAllIntArgs(ctx,[]ArgInt{deviceModelId})
-	if err!=nil{
-		ctx.JSON(400, err.Error())
-		return
-	}
-	err=prometheus.AddServer(args_string["DeviceName"].(string),args_int["DeviceModelId"].(int))
-	if err!=nil{
-		ctx.JSON(400, err.Error())
-	}else{
-		ctx.JSON(201,"Add Success")
-	}
-}
-
 

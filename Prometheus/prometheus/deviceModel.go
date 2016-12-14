@@ -8,64 +8,41 @@ import (
 
 
 
-func GetDeviceModel(id ...int) ([]*DeviceModel,error) {
-	deviceModels:=[]*DeviceModel{}
-	if len(id) !=0 {
-		for _,v:=range id{
-			deviceModels=append(deviceModels,PROMETHEUS.DeviceModelMapId[v])
-		}
-		return deviceModels,nil
-	}else{
-		for _,v:=range PROMETHEUS.DeviceModelMapId{
-			deviceModels=append(deviceModels,v)
-		}
-		return deviceModels,nil
-	}
-}
 
 
-func CacheDeviceModel(name interface{},id ...int) (error) {
-	var u int
+func GetDeviceModelFromDB(names []string,device_types []string,device_model_ids []int) (result []*DeviceModel,err error) {
+	var half_full string
+	var u uint8
 	var device_model_id int
-	var device_name string
-	var _type string
+	var device_model_name string
+	var device_type string
 	conditions:=[]string{}
-	if name !=nil{
-		conditions=append(conditions,fmt.Sprintf(`device_model_name = '%s'`,name.(string)))
+
+	err = nil
+	result=[]*DeviceModel{}
+	if len(device_types) >0{
+		conditions=append(conditions,fmt.Sprintf(`device_type IN ('%s')`,strings.Join(device_types,"','")))
 	}
-	if len(id) >0 {
-		id_str_ls:=[]string{}
-		for _,v :=range id{
-			id_str_ls=append(id_str_ls,fmt.Sprintf("%d",v))
-		}
-		conditions=append( conditions,fmt.Sprintf(`device_model_id IN (%s)`,strings.Join(id_str_ls,",")))
+	if len(names) >0 {
+		conditions=append( conditions,fmt.Sprintf(`device_model_name IN ('%s')`,strings.Join(names,"','")))
 	}
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceModel, nil,[]string{`device_model_id`, `device_model_name`, `device_type`,`u`}, conditions, &device_model_id, &device_name, &_type ,&u)
+	if len(device_model_ids) >0 {
+		conditions=append( conditions,fmt.Sprintf(`device_model_id IN (%s)`,int_join(device_model_ids,",")))
+	}
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceModel, nil,[]string{`device_model_id`, `device_model_name`, `device_type`,`u`,`half_full`}, conditions, &device_model_id, &device_model_name, &device_type ,&u,&half_full)
+	if err!=nil{
+		return
+	}
 	for cur.Fetch() {
 		deviceModel := new(DeviceModel)
 		deviceModel.DeviceModelId=device_model_id
-		deviceModel.DeviceModelName=device_name
-		deviceModel.DeviceType=_type
+		deviceModel.DeviceModelName=device_model_name
+		deviceModel.DeviceType=device_type
 		deviceModel.U=u
-		PROMETHEUS.DeviceModelMapId[device_model_id]=deviceModel
+		result=append(result,deviceModel)
 	}
-	return err
+	return 
 }
 
-func AddDeviceModel(device_model_name ,device_type string,u int) error {
-	err:=PROMETHEUS.dbobj.Add(global.TABLEdeviceModel, []string{`device_model_name`, `device_type`,`u`}, [][]interface{}{[]interface{}{device_model_name,device_type,u}})
-	if err!=nil{
-		return err
-	}
-	return CacheDeviceModel(device_model_name)
-}
 
-func DeleteDeviceModel(id int) error {
-	c := fmt.Sprintf("device_model_id = %d", id)
-	return PROMETHEUS.dbobj.Delete(global.TABLEdeviceModel, []string{c})
-}
 
-func UpdateDeviceModel(id int, cloumns []string, values []interface{}) error {
-	c := fmt.Sprintf("device_model_id = %d", id)
-	return PROMETHEUS.dbobj.Update(global.TABLEdeviceModel, []string{c}, cloumns, values)
-}

@@ -11,6 +11,7 @@ type Dbi interface {
 	Start() error
 	Ping() error
 	Get(string, interface{},[]string, []string, ...interface{}) (*Cur, error)
+	GetLeftJoin(string, [][3]string, interface {}, []string, []string, ...interface {}) (*Cur, error)
 	Add(string, []string, [][]interface{}) error
 	Delete(string, []string) error
 	Update(string, []string, []string, []interface{}) error

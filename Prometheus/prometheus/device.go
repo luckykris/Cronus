@@ -23,12 +23,15 @@ import (
 //	}
 //}
 
-func GetDevice(name interface{},id ...int) ([]*Device, error) {
+func GetDeviceFromDB(name interface{},id ...int) ([]*Device, error) {
 	var device_id int
 	var device_name string
 	var father_device_id sql.NullInt64
 	var father_device_id_i interface{}
 	var device_model_id int
+	var ctime uint64
+	var group_id int
+	var env int
 	conditions:=[]string{}
 	if len(id)>0{
 		tmp_condition:=[]string{}
@@ -41,7 +44,7 @@ func GetDevice(name interface{},id ...int) ([]*Device, error) {
 		conditions=append(conditions,fmt.Sprintf("device_name = '%s'",name.(string)))
 	}
 	r := []*Device{}
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdevice,nil, []string{`device_id`, `device_name`, `father_device_id`,`device_model_id`}, conditions, &device_id, &device_name, &father_device_id,&device_model_id)
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdevice,nil, []string{`device_id`, `device_name`,`device_model_id`, `father_device_id`,`ctime`,`group_id`,`env`}, conditions, &device_id, &device_name,&device_model_id, &father_device_id,&ctime,&group_id,&env)
 	if err != nil {
 		return r, err
 	}
@@ -66,24 +69,4 @@ func GetDevice(name interface{},id ...int) ([]*Device, error) {
 	return r, err
 }
 
-func AddDevice(device_name string,device_model_id int,father_device_id interface{}) error {
-	return PROMETHEUS.dbobj.Add(global.TABLEdevice, []string{`device_name`, `father_device_id`,`device_model_id`}, [][]interface{}{[]interface{}{device_name,father_device_id,device_model_id}})
-}
 
-func (device *Device)DeleteDevice() error {
-	c := fmt.Sprintf("device_id = %d", device.DeviceId)
-	err:=PROMETHEUS.dbobj.Delete(global.TABLEdevice, []string{c})
-	if err!=nil{
-		return err
-	}
-	if _,ok := PROMETHEUS.DeviceMapId[device.DeviceId] ; ok {
-		delete(PROMETHEUS.DeviceMapId,device.DeviceId)
-		delete(PROMETHEUS.ServerMapId,device.DeviceId)
-	}
-	return nil
-}
-
-func (device *Device)UpdateDevice() error {
-	c := fmt.Sprintf("device_id = %d", device.DeviceId)
-	return PROMETHEUS.dbobj.Update(global.TABLEdevice, []string{c}, []string{`device_name`, `father_device_id`,`device_model_id`}, []interface{}{device.DeviceName,device.FatherDeviceId,device.DeviceModel.DeviceModelId})
-}

@@ -38,7 +38,7 @@ func (device *Device)AddSpace(cabinet_id ,start_u int,position string)(error){
 	fmt.Printf("%#v \n",device.DeviceModel)
 	var err error
 	spaces:=[][]interface{}{}
-	end_u:=start_u+device.DeviceModel.U
+	end_u:=start_u+int(device.DeviceModel.U)
 	//check if the space is used
 	r,err:=GetSpace(fmt.Sprintf("cabinet_id=%d",cabinet_id),fmt.Sprintf("position='%s'",position),fmt.Sprintf("u_position >=%d",start_u),fmt.Sprintf("u_position <=%d",end_u))
 	if err!=nil{
