@@ -21,7 +21,7 @@ func main() {
 	log.Debug("Init ","prometheus "  ," success")
 	//
 	//ex.Join()
-	go http.Start()
+	go http.Start(mainCfg.Debug)
 	//
 	log.Debug("Start ","http "  ," success")
 	log.Info("Start ", cfg.SOFTWARE, " success")

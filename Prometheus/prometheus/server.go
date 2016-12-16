@@ -1,14 +1,16 @@
 package prometheus
 
 import (
-	//"database/sql"
-	//"time"
+	"database/sql"
+	"time"
 	//"crypto/md5"
 	"fmt"
 	"strings"
 	"github.com/luckykris/Cronus/Prometheus/global"
-	//log "github.com/Sirupsen/logrus"
+	"github.com/luckykris/Cronus/Prometheus/db"
+	log "github.com/Sirupsen/logrus"
 )
+
 
 func GetServer(device_name_i interface{},device_id_i interface{})([]*Server,error){
 	r:=[]*Server{}
@@ -25,7 +27,56 @@ func GetServer(device_name_i interface{},device_id_i interface{})([]*Server,erro
 	return r,nil
 }
 
-func GetServerFromDB(device_ids []int ,device_names []string,group_ids []int ,envs []uint8)(result []*Server,err error){
+func AddServer(server *Server)(error){
+	err:=AddServerViaDB(server)
+	if err!=nil{
+		return err
+	}else{
+		FlushDeviceCache(server,SERVER)
+		return nil
+	}
+}
+
+func AddServerViaDB(server *Server)(error) {
+	tx,err:=PROMETHEUS.dbobj.Begin()
+	if err!=nil{
+		return err
+	}
+	//check
+	if if_device_name_exist(server.Device.DeviceName){
+		return global.ERROR_resource_duplicate
+	}
+	//
+	rows:=[][]interface{}{[]interface{}{server.Device.DeviceName,
+										server.Device.DeviceModel.DeviceModelId,
+										time.Now().Unix(),
+										server.Device.GroupId,
+										server.Device.Env}}
+	err=tx.Add(global.TABLEdevice,[]string{`device_name`,
+									  `device_model_id`,
+									  `ctime`,
+									  `group_id`,
+									  `env`,
+									  },rows)
+	var device_id int
+	conditions:=[]string{fmt.Sprintf("device_name='%s'",server.Device.DeviceName)}
+	items:=[]string{"device_id"}
+	cur,err:=tx.Get(global.TABLEdevice, nil,items, conditions,  
+					&device_id)
+	if !cur.Fetch(){
+		return global.ERROR_data_logic
+	}
+	//if err!=nil{
+	//	tx.Rollback()
+	//}else{
+	tx.Commit()
+	//}
+	//err=tx.Add(global.TABLEserver,[]string{`device_id`},[][]interface{}{[]interface{}{device_id}})
+	return err
+}
+
+
+func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,envs []uint8)(result []*Server,err error){
 	err = nil
 	result=[]*Server{}
 	conditions:=[]string{}
@@ -45,6 +96,13 @@ func GetServerFromDB(device_ids []int ,device_names []string,group_ids []int ,en
 	var release     	  float64
 	var last_change_time  uint64
 	var checksum          string
+	//netPort attribute
+	var mac sql.NullString
+	var mac_i interface{}
+	var ipv4_int uint32
+	var netPort_type string
+	var function_type string
+
 	if len(device_ids) >0 {
 		conditions=append(conditions,fmt.Sprintf("device_id IN (%s)",int_join(device_ids,",")))
 	}
@@ -57,7 +115,41 @@ func GetServerFromDB(device_ids []int ,device_names []string,group_ids []int ,en
 	if len(envs)>0 {
 		conditions=append(conditions,fmt.Sprintf("env IN (%s)",uint8_join(envs,",")))
 	}
-	items:=[]string{strings.Join([]string{global.TABLEserver,"device_id"},"."),
+	//get netport
+	join_tables_t:=[][4]string{
+							[4]string{db.INNER,global.TABLEserver,strings.Join([]string{global.TABLEserver,"device_id"},"."),strings.Join([]string{global.TABLEnetPort,"device_id"},".")},
+					}
+	items:=[]string{ `mac`,
+					 `ipv4_int`,
+					 strings.Join([]string{global.TABLEserver,"device_id"},"."),
+					 `netPort_type`,
+					 `function_type`,
+					 `ctime`}
+	cur, err := PROMETHEUS.dbobj.GetJoin(global.TABLEnetPort,join_tables_t, nil,items, conditions,  
+					&mac,
+					&ipv4_int,
+					&device_id, 
+					&netPort_type,
+					&function_type,
+					&ctime)
+	device_id_map_netports := map[int][]NetPort{}
+	for cur.Fetch() {
+		if !mac.Valid {
+			mac_i = nil
+		} else {
+			mac_i = mac.String
+		}
+		_,ok:=device_id_map_netports[device_id]
+		if !ok{
+			device_id_map_netports[device_id]=[]NetPort{}
+		}
+		device_id_map_netports[device_id]=append(device_id_map_netports[device_id], NetPort{ mac_i, ipv4_int, netPort_type})
+	}
+	//search server
+	join_tables_t=[][4]string{
+							[4]string{db.LEFT,global.TABLEdevice,strings.Join([]string{global.TABLEdevice,"device_id"},"."),strings.Join([]string{global.TABLEserver,"device_id"},".")},
+					}
+	items=[]string{strings.Join([]string{global.TABLEserver,"device_id"},"."),
 					`device_name`,
 					`device_model_id`,
 					`ctime`,
@@ -71,7 +163,7 @@ func GetServerFromDB(device_ids []int ,device_names []string,group_ids []int ,en
 					`_release`,
 					`last_change_time`,
 					`checksum`}
-	cur, err := PROMETHEUS.dbobj.GetLeftJoin(global.TABLEserver,[][3]string{[3]string{global.TABLEdevice,strings.Join([]string{global.TABLEdevice,"device_id"},"."),strings.Join([]string{global.TABLEserver,"device_id"},".")}} ,nil,items, conditions,  
+	cur, err = PROMETHEUS.dbobj.GetJoin(global.TABLEserver,join_tables_t ,nil,items, conditions,  
 					&device_id,
 					&device_name,
 					&device_model_id,
@@ -86,11 +178,15 @@ func GetServerFromDB(device_ids []int ,device_names []string,group_ids []int ,en
 					&release,
 					&last_change_time,
 					&checksum)
+	var tmp_e2 error //tmp variable error
 	for cur.Fetch() {
 		r := new(Server)
 		r.Device.DeviceId=device_id
 		r.Device.DeviceName=device_name
-		r.Device.DeviceModel=DEVICEMODEL_INDEX_ID[device_model_id].Value.(*DeviceModel)
+		r.Device.DeviceModel,tmp_e2=GetDeviceModel(device_model_id)
+		if tmp_e2!=nil{
+			log.Debug("can`t find device model id:",device_model_id)
+		}
 		r.Device.FatherDeviceId=nil
 		r.Device.Ctime=ctime
 		r.Device.GroupId=group_id
@@ -103,6 +199,12 @@ func GetServerFromDB(device_ids []int ,device_names []string,group_ids []int ,en
 		r.Release=release
 		r.LastChangeTime=last_change_time
 		r.Checksum=checksum
+		tmp_netPorts,ok:=device_id_map_netports[device_id]
+		if ok{
+			r.NetPorts = tmp_netPorts
+		}else{
+			r.NetPorts = []NetPort{}
+		}
 		result=append(result,r)
 	}
 	return 

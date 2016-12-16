@@ -1,30 +1,17 @@
 package http
 
 import (
-	"github.com/Unknwon/macaron"
+	"github.com/go-macaron/macaron"
 	"github.com/luckykris/Cronus/Prometheus/prometheus"
-	"strconv"
 )
 
 func GetServer(ctx *macaron.Context) {
-	id := ctx.Params("id")
 	var r interface{}
 	var err error
-	if id == ""{
+	if ctx.Params("id") == ""{
 		r, err = prometheus.GetServer(nil,nil)
 	} else {
-		id_int, err := strconv.Atoi(id)
-		if err != nil {
-			ctx.JSON(400, err.Error())
-			return
-		}
-		r, err = prometheus.GetServer(nil,id_int)
-	}
-	if err != nil {
-		ctx.JSON(500, err.Error())
-		return
-	}
-	if id !="" {
+		r, err = prometheus.GetServer(nil,ctx.ParamsInt("id"))
 		if len(r.([]*prometheus.Server))<1 {
 			ctx.JSON(404, "Not Found")
 			return
@@ -32,6 +19,30 @@ func GetServer(ctx *macaron.Context) {
 			r = r.([]*prometheus.Server)[0]
 		}
 	}
+	if err != nil {
+		ctx.JSON(500, err.Error())
+		return
+	}
 	ctx.JSON(200, &r)
 }
 
+func AddServer(ctx *macaron.Context) {
+	ctx.Req.ParseForm()
+	var r interface{}
+	var err error
+	server:=new(prometheus.Server)
+	server.Device.DeviceName=ctx.Query("DeviceName")
+	server.Device.DeviceModel,err=prometheus.GetDeviceModel(ctx.QueryInt("DeviceModelId"))
+	if err != nil {
+		ctx.JSON(405, err.Error())
+		return
+	}
+	server.Device.GroupId=0
+	server.Device.Env=0
+	err=prometheus.AddServer(server)
+	if err != nil {
+		ctx.JSON(500, err.Error())
+		return
+	}
+	ctx.JSON(200, &r)
+}

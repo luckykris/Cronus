@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+type crud interface{
+	Query(string, ...interface {}) (*sql.Rows, error)
+	Exec(string, ...interface{}) (sql.Result, error)
+}
+
 type MysqlDb struct {
 	Host         string
 	Port         int64
@@ -24,6 +29,9 @@ type Cur struct {
 	row          *sql.Rows
 	columns_name []string
 	columns      []interface{}
+}
+type Tx struct{
+	inher *sql.Tx
 }
 
 func (db *MysqlDb) Start() error {
@@ -48,11 +56,19 @@ func (db *MysqlDb) Close() error {
 }
 
 func (db *MysqlDb) Begin()(Txi,error){
-	return db.DbPool.Begin()
+	tx,err:=db.DbPool.Begin()
+	t:=new(Tx)
+	t.inher=tx
+	return t,err
+}
+func (tx *Tx)Commit()error{
+		return tx.inher.Commit()
+}
+func (tx *Tx)Rollback()error{
+	return tx.inher.Rollback()
 }
 
-
-func (db *MysqlDb) Get(table string, groupby interface{},columns_name []string, conditions []string, columns ...interface{}) (*Cur, error) {
+func combine_get_sql(crud_i crud,table string, groupby interface{},columns_name []string, conditions []string, columns ...interface{})(*Cur, error){
 	var conditions_str = ""
 	var groupby_str = ""
 	if len(conditions) != 0 {
@@ -62,30 +78,91 @@ func (db *MysqlDb) Get(table string, groupby interface{},columns_name []string, 
 		groupby_str=fmt.Sprintf("GROUP BY %s",groupby.(string))
 	}
 	sql := fmt.Sprintf("SELECT %s FROM %s %s %s", strings.Join(columns_name, ","), table, conditions_str,groupby_str)
-	rows, err := db.DbPool.Query(sql)
 	log.Debug(sql)
+	rows, err :=crud_i.Query(sql)
 	return &Cur{rows, columns_name, columns}, err
-
 }
-func (db *MysqlDb) GetLeftJoin(ltable string,tables [][3]string, groupby interface{},columns_name []string, conditions []string, columns ...interface{}) (*Cur, error) {
+func combine_getjoin_sql(crud_i crud,ltable string,tables [][4]string, groupby interface{},columns_name []string, conditions []string, columns ...interface{})(*Cur, error){
 	table:=ltable
 	for i:=range tables{
-		table+=fmt.Sprintf(" LEFT JOIN %s ON %s=%s " , tables[i][0],tables[i][1],tables[i][2] )
+		table+=fmt.Sprintf(" %s JOIN %s ON %s=%s " ,tables[i][0],tables[i][1],tables[i][2],tables[i][3])
 	}
-	var conditions_str = ""
-	var groupby_str = ""
-	if len(conditions) != 0 {
-		conditions_str = " WHERE " + strings.Join(conditions, ` AND `)
-	}
-	if groupby !=nil{
-		groupby_str=fmt.Sprintf("GROUP BY %s",groupby.(string))
-	}
-	sql := fmt.Sprintf("SELECT %s FROM %s %s %s", strings.Join(columns_name, ","), table, conditions_str,groupby_str)
-	rows, err := db.DbPool.Query(sql)
-	log.Debug(sql)
-	return &Cur{rows, columns_name, columns}, err
-
+	return combine_get_sql(crud_i,table, groupby,columns_name, conditions, columns ...)
 }
+func combine_add_sql(crud_i crud ,table string, columns_name []string, values [][]interface{})error{
+	values3 := []string{}
+	for row := range values {
+		values2 := []string{}
+		for i := range columns_name {
+			values2 = append(values2, _CheckTypeAndModifyString(values[row][i]))
+		}
+		values3 = append(values3, strings.Join(values2, `,`))
+	}
+	sql := fmt.Sprintf("INSERT INTO %s (`%s`) VALUES (%s)", table, strings.Join(columns_name, "`,`"), strings.Join(values3, `),(`))
+	log.Debug(sql)
+	_, err := crud_i.Exec(sql)
+	if err != nil {
+		log.Debug(fmt.Sprintf("Mysql insert failed,sql:%s,err:%s", sql, err.Error()))
+	}
+	return err
+}
+func combine_update_sql(crud_i crud,table string, conditions []string, columns_name []string, values []interface{})error{
+	kv := []string{}
+	conditions_str := strings.Join(conditions, ` AND `)
+	for i := range columns_name {
+		kv = append(kv, fmt.Sprintf(" `%s` = %s", columns_name[i], _CheckTypeAndModifyString(values[i])))
+	}
+	sql := fmt.Sprintf(`UPDATE %s SET %s WHERE %s`, table, strings.Join(kv, `,`), conditions_str)
+	log.Debug(sql)
+	_, err := crud_i.Exec(sql)
+	if err != nil {
+		log.Debug(fmt.Sprintf("Mysql Update failed,sql:%s,err:%s", sql, err.Error()))
+	}
+	return err
+}
+func combine_delete_sql(crud_i crud, table string,conditions []string)error{
+	sql := fmt.Sprintf(`DELETE FROM %s WHERE %s`, table, strings.Join(conditions, ` AND `))
+	log.Debug(sql)
+	_, err := crud_i.Exec(sql)
+	if err != nil {
+		log.Debug(fmt.Sprintf("Mysql delete failed,sql:%s,err:%s", sql, err.Error()))
+	}
+	return err
+}
+
+func (db *MysqlDb) Get(table string, groupby interface{},columns_name []string, conditions []string, columns ...interface{}) (*Cur, error) {
+	return combine_get_sql(db.DbPool,table, groupby,columns_name, conditions, columns ...)
+}
+func (db *MysqlDb) GetJoin(ltable string,tables [][4]string, groupby interface{},columns_name []string, conditions []string, columns ...interface{}) (*Cur, error) {	
+	return combine_getjoin_sql(db.DbPool,ltable, tables,groupby,columns_name, conditions, columns ...)
+}
+func (db *MysqlDb) Add(table string, columns_name []string, values [][]interface{}) error {
+	return combine_add_sql(db.DbPool,table , columns_name , values)
+}
+func (db *MysqlDb) Delete(table string, conditions []string) error {
+		return combine_delete_sql(db.DbPool,table , conditions)
+}
+func (db *MysqlDb) Update(table string, conditions []string, columns_name []string, values []interface{}) error {
+	return combine_update_sql(db.DbPool,table , conditions, columns_name, values )
+}
+
+
+func (tx *Tx) Get(table string, groupby interface{},columns_name []string, conditions []string, columns ...interface{}) (*Cur, error) {
+	return combine_get_sql(tx.inher,table, groupby,columns_name, conditions, columns ...)
+}
+func (tx *Tx) GetJoin(ltable string,tables [][4]string, groupby interface{},columns_name []string, conditions []string, columns ...interface{}) (*Cur, error) {	
+	return combine_getjoin_sql(tx.inher,ltable, tables,groupby,columns_name, conditions, columns ...)
+}
+func (tx *Tx)Add(table string, columns_name []string, values [][]interface{}) error {
+	return combine_add_sql(tx.inher,table , columns_name , values)
+}
+func (tx *Tx) Delete(table string, conditions []string) error {
+		return combine_delete_sql(tx.inher,table , conditions)
+}
+func (tx *Tx) Update(table string, conditions []string, columns_name []string, values []interface{}) error {
+	return combine_update_sql(tx.inher,table , conditions, columns_name, values )
+}
+
 func (c *Cur) Fetch() bool {
 	if c.row.Next() {
 		err := c.row.Scan(c.columns...)
@@ -100,55 +177,16 @@ func (c *Cur) Fetch() bool {
 	}
 }
 
-func (db *MysqlDb) Add(table string, columns_name []string, values [][]interface{}) error {
-	values3 := []string{}
-	for row := range values {
-		values2 := []string{}
-		for i := range columns_name {
-			values2 = append(values2, _CheckTypeAndModifyString(values[row][i]))
-		}
-		values3 = append(values3, strings.Join(values2, `,`))
-	}
-	sql := fmt.Sprintf("INSERT INTO %s (`%s`) VALUES (%s)", table, strings.Join(columns_name, "`,`"), strings.Join(values3, `),(`))
-	log.Debug(sql)
-	_, err := db.DbPool.Exec(sql)
-	if err != nil {
-		log.Debug(fmt.Sprintf("Mysql insert failed,sql:%s,err:%s", sql, err.Error()))
-	}
-	return err
 
-}
 
-func (db *MysqlDb) Delete(table string, conditions []string) error {
-	sql := fmt.Sprintf(`DELETE FROM %s WHERE %s`, table, strings.Join(conditions, ` AND `))
-	log.Debug(sql)
-	_, err := db.DbPool.Exec(sql)
-	if err != nil {
-		log.Debug(fmt.Sprintf("Mysql delete failed,sql:%s,err:%s", sql, err.Error()))
-	}
-	return err
 
-}
-
-func (db *MysqlDb) Update(table string, conditions []string, columns_name []string, values []interface{}) error {
-	kv := []string{}
-	conditions_str := strings.Join(conditions, ` AND `)
-	for i := range columns_name {
-		kv = append(kv, fmt.Sprintf(" `%s` = %s", columns_name[i], _CheckTypeAndModifyString(values[i])))
-	}
-	sql := fmt.Sprintf(`UPDATE %s SET %s WHERE %s`, table, strings.Join(kv, `,`), conditions_str)
-	log.Debug(sql)
-	_, err := db.DbPool.Exec(sql)
-	if err != nil {
-		log.Debug(fmt.Sprintf("Mysql Update failed,sql:%s,err:%s", sql, err.Error()))
-	}
-	return err
-}
 
 func _CheckTypeAndModifyString(v interface{}) string {
 	switch v.(type) {
 	case string:
 		return `'` + v.(string) + `'`
+	case uint8:
+		return fmt.Sprintf("%d", v.(uint8))
 	case int:
 		return fmt.Sprintf("%d", v.(int))
 	case int64:

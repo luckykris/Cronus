@@ -9,8 +9,25 @@ import (
 
 
 
+func GetDeviceModel(device_model_id interface{})(*DeviceModel,error){
+	if device_model_id !=nil{
+		s,ok:=DEVICEMODEL_INDEX_ID[device_model_id.(int)]
+		if ok {
+			return s.Value.(*DeviceModel),nil
+		}
+		return &DeviceModel{},global.ERROR_resource_notexist
+	}
+	return &DeviceModel{},global.ERROR_resource_notexist
+}
+func GetDeviceModel_List()([]*DeviceModel){
+	r:=[]*DeviceModel{}
+	for _,v:=range DEVICEMODEL_INDEX_ID{
+		r=append(r,v.Value.(*DeviceModel))
+	}
+	return r
+}
 
-func GetDeviceModelFromDB(names []string,device_types []string,device_model_ids []int) (result []*DeviceModel,err error) {
+func GetDeviceModelViaDB(names []string,device_types []string,device_model_ids []int) (result []*DeviceModel,err error) {
 	var half_full string
 	var u uint8
 	var device_model_id int

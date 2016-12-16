@@ -7,21 +7,35 @@ import (
 	//"github.com/luckykris/Cronus/Prometheus/global"
 )
 
-type Dbi interface {
-	Start() error
-	Ping() error
+
+type CRUD interface{
 	Get(string, interface{},[]string, []string, ...interface{}) (*Cur, error)
-	GetLeftJoin(string, [][3]string, interface {}, []string, []string, ...interface {}) (*Cur, error)
+	GetJoin(string, [][4]string, interface {}, []string, []string, ...interface {}) (*Cur, error)
 	Add(string, []string, [][]interface{}) error
 	Delete(string, []string) error
 	Update(string, []string, []string, []interface{}) error
+}
+
+type Dbi interface {
+	Start() error
+	Ping() error
 	Begin()(Txi,error)
+	CRUD
 }
 
 type Txi interface {
 	Commit() error
 	Rollback() error
+	CRUD
 }
+const (
+	LEFT string="LEFT"
+	RIGHT string="RIGHT"
+	INNER string="INNER"
+)
+
+
+
 
 func Init(cfg cfg.DbCfgStruct) (Dbi, error) {
 	switch strings.ToLower(cfg.Class) {

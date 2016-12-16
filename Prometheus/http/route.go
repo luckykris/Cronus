@@ -5,6 +5,7 @@ func LoadRoute() {
 		
 		WEB.Group("/server", func() {
 			WEB.Get("/?:id:int", GetServer)
+			WEB.Post("/", AddServer)
 		})
 	})
 	WEB.NotFound(NotFound)

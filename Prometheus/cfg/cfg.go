@@ -19,6 +19,7 @@ type MainCfg struct {
 	LogCfg LogCfgStruct `toml:"log"`
 	SnifferCfg SnifferCfgStruct `toml:"sniffer"`
 	Daemon bool
+	Debug  bool
 }
 
 //database config struct for toml
@@ -50,6 +51,7 @@ type SnifferCfgStruct struct {
 
 //Load all config
 func LoadCfg() MainCfg {
+	debug:=flag.Bool("debug", false, "Start in debug mode.")
 	daemon:=flag.Bool("daemon", false, "Start in daemon mode.")
 	cfgfile := flag.String("config", "/etc/"+SOFTWARE+".toml", "Configuration file ")
 	help := flag.Bool("help", false, "Show all the help infomation")
@@ -75,6 +77,7 @@ func LoadCfg() MainCfg {
 	}
 	//sys config
 	mainCfgObj.Daemon = *daemon
+	mainCfgObj.Debug = *debug
 	//config  database
 	if meta.IsDefined("database") {
 		if !meta.IsDefined("database", "maxLifeTime") {

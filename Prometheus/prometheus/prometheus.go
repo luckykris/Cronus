@@ -7,7 +7,6 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/db"
 	"os"
 	"sync"
-	"container/list"
 )
 type Device_i interface{
 	GetTag() ([]Tag, error)
@@ -53,7 +52,7 @@ type Vm struct {
 type NetPort struct {
 	Mac       interface{}
 	Ipv4Int   interface{}
-	Type      string
+	NetPortType      string
 }
 
 type Space struct {
@@ -64,6 +63,7 @@ type Space struct {
 }
 
 type DeviceModel struct {
+	sync.RWMutex
 	DeviceModelId   int
 	DeviceModelName string
 	DeviceType      string
@@ -103,11 +103,7 @@ type Prometheus struct {
 	IdcMapId map[int]*Idc
 }
 
-var PROMETHEUS *Prometheus
-var DEVICE_CACHE *list.List
-var DEVICEMODEL_CACHE *list.List
-var DEVICEMODEL_INDEX_ID map[int]*list.Element
-var DEVICE_INDEX_ID map[string]map[int]*list.Element
+var PROMETHEUS 				*Prometheus
 
 func Init(mainCfg cfg.MainCfg) {
 	var err error
@@ -142,6 +138,15 @@ func Init(mainCfg cfg.MainCfg) {
 }
 
 
+func if_device_name_exist(name string)bool{
+	for _,a_kind_of_device :=range DEVICE_INDEX_NAME{
+		_,exist:=a_kind_of_device[name]
+		if exist{
+			return true
+		}
+	}
+	return false
+}
 
 //func (device *Device)Init(	deviceId  int,deviceName   string,deviceType  string,fatherDeviceId interface{}){
 //	device.DeviceId=deviceId
