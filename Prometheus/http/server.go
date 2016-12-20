@@ -5,6 +5,7 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/prometheus"
 )
 
+
 func GetServer(ctx *macaron.Context) {
 	var r interface{}
 	var err error
@@ -45,4 +46,22 @@ func AddServer(ctx *macaron.Context) {
 		return
 	}
 	ctx.JSON(200, &r)
+}
+
+func DeleteServer(ctx *macaron.Context) {
+	var err error
+	var server *prometheus.Server
+	servers, err := prometheus.GetServer(nil,ctx.ParamsInt("id"))
+	if len(servers)<1 {
+		ctx.JSON(404, "Not Found")
+		return
+	}else{
+		server = servers[0]
+	}
+	err = server.Delete()
+	if err != nil {
+		ctx.JSON(500, err.Error())
+		return
+	}
+	ctx.JSON(200, nil)
 }

@@ -63,3 +63,6 @@ func GetDeviceModelViaDB(names []string,device_types []string,device_model_ids [
 
 
 
+func (self *DeviceModel)Get_DeviceType()string{
+	return self.DeviceType
+}

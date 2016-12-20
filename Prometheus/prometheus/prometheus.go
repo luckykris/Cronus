@@ -1,7 +1,6 @@
 package prometheus
 
 import (
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/luckykris/Cronus/Prometheus/cfg"
 	"github.com/luckykris/Cronus/Prometheus/db"
@@ -9,10 +8,14 @@ import (
 	"sync"
 )
 type Device_i interface{
-	GetTag() ([]Tag, error)
-	AddTag(...Tag) error
-	DeleteTag(...Tag) error
-	ComputSum()string
+	//GetTag() ([]Tag, error)
+	//AddTag(...Tag) error
+	//DeleteTag(...Tag) error
+	//ComputSum()string
+	Delete()error
+	Get_DeviceId()int
+	Get_DeviceName()string
+	Get_DeviceModel()*DeviceModel
 }
 
 type Device struct {
@@ -96,8 +99,6 @@ type Tag string
 
 type Prometheus struct {
 	dbobj db.Dbi
-	DeviceModelMapId map[int]*DeviceModel
-	DeviceCache map[string]map[int]Device_i
 	CabinetMapId map[int]*Cabinet
 	LocationMapId map[int]*Location
 	IdcMapId map[int]*Idc
@@ -108,8 +109,7 @@ var PROMETHEUS 				*Prometheus
 func Init(mainCfg cfg.MainCfg) {
 	var err error
 	log.Debug("Start init Database.")
-	PROMETHEUS = &Prometheus{DeviceCache:map[string]map[int]Device_i{"server":map[int]Device_i{},"vm":map[int]Device_i{}},
-							 DeviceModelMapId:map[int]*DeviceModel{},
+	PROMETHEUS = &Prometheus{
 							 CabinetMapId:map[int]*Cabinet{},
 							 LocationMapId:map[int]*Location{},
 							 IdcMapId:map[int]*Idc{},
@@ -134,7 +134,6 @@ func Init(mainCfg cfg.MainCfg) {
 		os.Exit(255)
 	}
 	log.Debug("Init Data Success")
-	fmt.Printf("%#v",PROMETHEUS.DeviceCache)
 }
 
 

@@ -2,8 +2,8 @@ package prometheus
 
 import (
 	"database/sql"
+	"crypto/md5"
 	"time"
-	//"crypto/md5"
 	"fmt"
 	"strings"
 	"github.com/luckykris/Cronus/Prometheus/global"
@@ -15,13 +15,13 @@ import (
 func GetServer(device_name_i interface{},device_id_i interface{})([]*Server,error){
 	r:=[]*Server{}
 	if device_id_i !=nil{
-		s,ok:=DEVICE_INDEX_ID["server"][device_id_i.(int)]
+		s,ok:=DEVICE_INDEX_ID[SERVER][device_id_i.(int)]
 		if ok {
 			r=append(r,s.Value.(*Server))
 		}
 		return r,nil
 	}
-	for _,v:=range DEVICE_INDEX_ID["server"]{
+	for _,v:=range DEVICE_INDEX_ID[SERVER]{
 		r=append(r,v.Value.(*Server))
 	}
 	return r,nil
@@ -32,7 +32,7 @@ func AddServer(server *Server)(error){
 	if err!=nil{
 		return err
 	}else{
-		FlushDeviceCache(server,SERVER)
+		FlushDeviceCache(server)
 		return nil
 	}
 }
@@ -42,6 +42,13 @@ func AddServerViaDB(server *Server)(error) {
 	if err!=nil{
 		return err
 	}
+	defer func(){
+		if err!=nil{
+			tx.Rollback()
+		}else{
+			tx.Commit()
+		}
+	}()
 	//check
 	if if_device_name_exist(server.Device.DeviceName){
 		return global.ERROR_resource_duplicate
@@ -58,20 +65,25 @@ func AddServerViaDB(server *Server)(error) {
 									  `group_id`,
 									  `env`,
 									  },rows)
+	if err!=nil{
+		return err
+	}
 	var device_id int
 	conditions:=[]string{fmt.Sprintf("device_name='%s'",server.Device.DeviceName)}
 	items:=[]string{"device_id"}
 	cur,err:=tx.Get(global.TABLEdevice, nil,items, conditions,  
 					&device_id)
 	if !cur.Fetch(){
-		return global.ERROR_data_logic
+		err= global.ERROR_data_logic
 	}
-	//if err!=nil{
-	//	tx.Rollback()
-	//}else{
-	tx.Commit()
-	//}
-	//err=tx.Add(global.TABLEserver,[]string{`device_id`},[][]interface{}{[]interface{}{device_id}})
+	cur.Close()
+	if err!=nil{
+		return err
+	}
+	err=tx.Add(global.TABLEserver,[]string{`device_id`},[][]interface{}{[]interface{}{device_id}})
+	if err!=nil{
+		return err
+	}
 	return err
 }
 
@@ -208,4 +220,62 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 		result=append(result,r)
 	}
 	return 
+}
+
+func UpdateServerViaDB(server *Server) error {
+	var err error
+	conditions:=[]string{fmt.Sprintf("device_id = %d" , server.DeviceId)}
+	server_pre_ls,err:=GetServer(nil,server.DeviceId)
+	if err!=nil{
+		return err
+	}
+	checksum:=server.ComputSum()
+	if server_pre_ls[0].Checksum == checksum{
+		return nil
+	}
+	server.LastChangeTime=uint64(time.Now().Unix())
+	err=PROMETHEUS.dbobj.Update(global.TABLEserver, conditions, []string{`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, []interface{}{server.Serial,server.Hostname,server.Memsize,server.Os,server.Release,server.LastChangeTime,checksum})
+	if err!=nil{
+		return err
+	}
+	if err!=nil{
+		return err
+	}
+	return nil
+}
+//func (self *Server)Update(d Device)(err error){
+//	defer self.Unlock()
+//	self.Lock()
+//	err=nil
+//	err=self.UpdateViaDB(d)
+//	if err!=nil{
+//		return 
+//	}
+//	FlushDeviceCache(self)
+//	return
+//}
+//func (self *Server)UpdateViaDB(d Device)(err error){
+//	err = nil
+//	conditions:=[]string{fmt.Sprintf("device_id = %d" , self.DeviceId)}
+//	items:=[]string{`device_name`,
+//					`ctime`,
+//					`group_id`,
+//					`env`,
+//					}
+//	value:=[]interface{}{d.DeviceName,
+//					   time.Now().Unix(),
+//					   d.GroupId,
+//					   d.Env,
+//					  }
+//	err=PROMETHEUS.dbobj.Update(global.TABLEdevice, conditions, items,value)
+//	return 
+//}
+
+func(server *Server)ComputSum()string{
+	s:=fmt.Sprintf("%s%s%d%s%f",server.Serial,server.Hostname,server.Memsize,server.Os,server.Release)
+	return fmt.Sprintf("%x", md5.Sum([]byte(s)))
+	//netPorts_count_ipv4_int:=0
+	//for _,netPort :=range server.NetPorts{
+//		netPorts_count_ipv4_int+=netPort.Ipv4Int
+//	}
 }

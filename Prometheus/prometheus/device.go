@@ -1,13 +1,45 @@
-		package prometheus
+package prometheus
 
-//import (
+import (
 //	"database/sql"
-//	"fmt"
+	"fmt"
 //	"strings"
-//	"github.com/luckykris/Cronus/Prometheus/global"
+	"time"
+	"github.com/luckykris/Cronus/Prometheus/global"
 //	log "github.com/Sirupsen/logrus"
-//)
+)
 
+func (self *Device)Delete()(err error){
+	defer self.Unlock()
+	self.Lock()
+	err=nil
+	err=self.DeleteViaDB()
+	if err!=nil{
+		return 
+	}
+	DropDeviceCache(self)
+	return 
+}
+func (self *Device)DeleteViaDB()error{
+	conditions:=[]string{}
+	conditions=append(conditions,fmt.Sprintf("device_id=%d",self.Get_DeviceId()))
+	return PROMETHEUS.dbobj.Delete(global.TABLEdevice,conditions)
+}
+func (self *Device)Get_DeviceId()int{
+	defer self.RUnlock()
+	self.RLock()
+	return self.DeviceId
+}
+func (self *Device)Get_DeviceName()string{
+	defer self.RUnlock()
+	self.RLock()
+	return self.DeviceName
+}
+func (self *Device)Get_DeviceModel()*DeviceModel{
+	defer self.RUnlock()
+	self.RLock()
+	return self.DeviceModel
+}
 //func GetDeviceModel(id ...int)([]*DeviceModel,error) {
 //	deviceModels:=[]*DeviceModel{}
 //	if len(id) !=0 {

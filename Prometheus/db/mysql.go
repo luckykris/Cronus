@@ -177,7 +177,9 @@ func (c *Cur) Fetch() bool {
 	}
 }
 
-
+func (c *Cur) Close()  {
+	c.row.Close()
+}
 
 
 

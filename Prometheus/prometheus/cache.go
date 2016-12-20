@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 const(
-		SERVER string="server"
+		SERVER string="Server"
 )
 type Cache struct{
 	Container *list.List
@@ -48,28 +48,48 @@ func Cache_Index_Init()(error) {
 		return err
 	}
 	for i:=range s{
-		cache_and_index_one_device(s[i],SERVER)
+		create_device_index(s[i])
 	}
 	return err
 }
 
-func FlushDeviceCache(device interface{},device_type string){
-	switch device_type{
+func FlushDeviceCache(device Device_i){
+	drop_device_cache(device)
+	create_device_index(device)
+}
+func DropDeviceCache(device Device_i){
+	drop_device_cache(device )
+	drop_device_index(device )
+}
+func drop_device_cache(device Device_i){
+	switch device.Get_DeviceModel().Get_DeviceType(){
 	case SERVER:
-		old_device,ok:=DEVICE_INDEX_ID[SERVER][device.(*Server).Device.DeviceId]
+		old_device,ok:=DEVICE_INDEX_ID[SERVER][device.Get_DeviceId()]
 		if ok{
 			DEVICE_CACHE.Container.Remove(old_device)
 		}
-		cache_and_index_one_device(device,SERVER)
+	default:
+		panic("device type not support")	
 	}
 }
-func cache_and_index_one_device(device interface{},device_type string){
+func create_device_index(device Device_i){
 	defer DEVICE_CACHE.Unlock()
 	DEVICE_CACHE.Lock()
-	tmp_e:=DEVICE_CACHE.Container.PushBack(device)
-	switch device_type{
+	switch device.Get_DeviceModel().Get_DeviceType(){
 	case SERVER:
-			DEVICE_INDEX_ID[SERVER][device.(*Server).Device.DeviceId]=tmp_e
-			DEVICE_INDEX_NAME[SERVER][device.(*Server).Device.DeviceName]=tmp_e	
+		tmp_e:=DEVICE_CACHE.Container.PushBack(device)
+		DEVICE_INDEX_ID[SERVER][device.Get_DeviceId()]=tmp_e
+		DEVICE_INDEX_NAME[SERVER][device.Get_DeviceName()]=tmp_e
+	default:
+		panic("device type not support")	
+	}
+}
+func drop_device_index(device Device_i){
+	switch device.Get_DeviceModel().Get_DeviceType(){
+	case SERVER:
+			delete(DEVICE_INDEX_ID[SERVER],device.(*Server).Get_DeviceId())
+			delete(DEVICE_INDEX_NAME[SERVER],device.(*Server).Get_DeviceName())
+	default:
+		panic("device type not support")	
 	}
 }
