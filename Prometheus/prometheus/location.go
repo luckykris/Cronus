@@ -7,41 +7,45 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/global"
 )
 
-func GetLocation(name interface{},id ...int)( []*Location, error) {
-	locations:=[]*Location{}
-	if len(id)!=0 {
-		for _,v:=range id{
-			locations=append(locations,PROMETHEUS.LocationMapId[v])
+func GetLocation(location_id interface{})( []*Location, error) {
+	r:=[]*Location{}
+	if location_id!=nil{
+		s,ok:=LOCATION_INDEX_ID[location_id.(int)]
+		if ok {
+			r=append(r,s.Value.(*Location))
+			return r,nil
+		}else{
+			return r,global.ERROR_resource_notexist
 		}
-		return locations,nil
-	}else{
-		for _,v:=range PROMETHEUS.LocationMapId{
-			locations=append(locations,v)
-		}
-		return locations,nil
 	}
+	for _,v:=range LOCATION_INDEX_ID{
+		r=append(r,v.Value.(*Location))
+	}
+	return r,nil
 }
 
-func CacheLocation(name interface{},id ...int) error {
+func GetLocationViaDB(location_ids []int,location_names []string)([]*Location,error){
+	r:=[]*Location{}
 	conditions:=[]string{}
 	var location_id int
+	var err error
 	var location_name string
-	var picture string
 	var father_id sql.NullInt64
 	var father_id_i interface{}
-	if name!=nil{
-		conditions=append(conditions,fmt.Sprintf("location_name='%s'",name.(string) ) )
+	if len(location_names)>0{
+		conditions=append(conditions,fmt.Sprintf(`location_name IN ('%s')`,strings.Join(location_names,"','")))
 	}
-	if len(id)>0{
-		tmp_condition:=[]string{}
-		for _,v :=range id{
-			tmp_condition=append(tmp_condition,fmt.Sprintf("%d",v))
-		}
-		conditions=append(conditions,fmt.Sprintf("location_id in (%s)"  ,strings.Join(tmp_condition,",")))
+	if len(location_ids)>0{
+		conditions=append( conditions,fmt.Sprintf(`location_id IN (%s)`,int_join(location_ids,",")))
 	}
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLElocation,nil, []string{`location_id`, `location_name`, `picture`, `father_location_id`}, conditions, &location_id, &location_name, &picture, &father_id)
+	items:=[]string{`location_id`, 
+				    `location_name`, 
+				    `father_location_id`}
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLElocation,nil, items, conditions, &location_id,
+																				  &location_name,
+																				  &father_id)
 	if err!=nil{
-		return err
+		return r,err
 	}
 	for cur.Fetch() {
 		if !father_id.Valid {
@@ -52,11 +56,10 @@ func CacheLocation(name interface{},id ...int) error {
 		location:=new(Location)
 		location.LocationId=location_id
 		location.LocationName=location_name
-		location.Picture=picture
 		location.FatherLocationId=father_id_i
-		PROMETHEUS.LocationMapId[location.LocationId]=location
+		r=append(r,location)
 	}
-	return  nil
+	return  r,err
 }
 
 

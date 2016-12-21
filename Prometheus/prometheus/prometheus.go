@@ -11,7 +11,6 @@ type Device_i interface{
 	//GetTag() ([]Tag, error)
 	//AddTag(...Tag) error
 	//DeleteTag(...Tag) error
-	//ComputSum()string
 	Delete()error
 	Get_DeviceId()int
 	Get_DeviceName()string
@@ -80,20 +79,20 @@ type Cabinet struct {
 	IsCloud       string
 	CapacityTotal uint64
 	CapacityUsed  uint64
-	IdcId    int
+	Idc     	  *Idc
 }
 type Idc struct{
 	IdcId int
 	IdcName string
-	LocationId int
+	Location *Location
 }
 
 type Location struct {
-	LocationId       int
-	LocationName     string
-	Picture          string
-	FatherLocationId interface{}
+	LocationId         int
+	LocationName       string
+	FatherLocationId   interface{}
 }
+
 
 type Tag string
 

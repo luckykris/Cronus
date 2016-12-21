@@ -56,6 +56,7 @@ func GetDeviceModelViaDB(names []string,device_types []string,device_model_ids [
 		deviceModel.DeviceModelName=device_model_name
 		deviceModel.DeviceType=device_type
 		deviceModel.U=u
+		deviceModel.HALF_FULL=half_full
 		result=append(result,deviceModel)
 	}
 	return 

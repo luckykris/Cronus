@@ -48,6 +48,8 @@ func AddServer(server *Server)(error){
 }
 
 func (server *Server)Update(fake_server *Server)error{
+	defer server.Unlock()
+	server.Lock()
 	_,err:=server.UpdateServerViaDB(fake_server)
 	if err!=nil{
 		return err
@@ -75,11 +77,11 @@ func AddServerViaDB(server *Server)(error) {
 		return global.ERROR_resource_duplicate
 	}
 	//
-	rows:=[][]interface{}{[]interface{}{server.Device.DeviceName,
-										server.Device.DeviceModel.DeviceModelId,
+	rows:=[][]interface{}{[]interface{}{server.Get_DeviceName(),
+										server.Get_DeviceModel().DeviceModelId,
 										time.Now().Unix(),
-										server.Device.GroupId,
-										server.Device.Env}}
+										server.Get_GroupId(),
+										server.Get_Env()}}
 	err=tx.Add(global.TABLEdevice,[]string{`device_name`,
 									  `device_model_id`,
 									  `ctime`,
@@ -90,7 +92,7 @@ func AddServerViaDB(server *Server)(error) {
 		return err
 	}
 	var device_id int
-	conditions:=[]string{fmt.Sprintf("device_name='%s'",server.Device.DeviceName)}
+	conditions:=[]string{fmt.Sprintf("device_name='%s'",server.Get_DeviceName())}
 	items:=[]string{"device_id"}
 	cur,err:=tx.Get(global.TABLEdevice, nil,items, conditions,  
 					&device_id)
@@ -267,8 +269,8 @@ func (server *Server)UpdateServerViaDB(fake_server *Server)(*Server,error) {
 				   }
 	value:=[]interface{}{
 					fake_server.Get_DeviceName(),
-					fake_server.GroupId,
-					fake_server.Env,
+					fake_server.Get_GroupId(),
+					fake_server.Get_Env(),
 				   }
 	err=tx.Update(global.TABLEdevice, conditions,items,value)
 	if err!=nil{
@@ -307,12 +309,12 @@ func(server *Server)ComputeSum()string{
 }
 func (server *Server)FakeCopy()*Server{
 		r := new(Server)
-		r.Device.DeviceId=server.Device.DeviceId
-		r.Device.DeviceName=server.Device.DeviceName
-		r.Device.DeviceModel=server.Device.DeviceModel
+		r.Device.DeviceId=server.Get_DeviceId()
+		r.Device.DeviceName=server.Get_DeviceName()
+		r.Device.DeviceModel=server.Get_DeviceModel()
 		r.Device.FatherDeviceId=nil
 		r.Device.Ctime=server.Device.Ctime
-		r.Device.GroupId=server.Device.GroupId
+		r.Device.GroupId=server.Get_GroupId()
 		r.Device.Env=server.Device.Env
 		r.Serial=server.Serial
 		r.Hostname=server.Hostname

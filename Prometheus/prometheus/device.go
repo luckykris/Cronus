@@ -26,28 +26,18 @@ func (self *Device)DeleteViaDB()error{
 	return PROMETHEUS.dbobj.Delete(global.TABLEdevice,conditions)
 }
 func (self *Device)Get_DeviceId()int{
-	defer self.RUnlock()
-	self.RLock()
 	return self.DeviceId
 }
 func (self *Device)Get_DeviceName()string{
-	defer self.RUnlock()
-	self.RLock()
 	return self.DeviceName
 }
 func (self *Device)Get_DeviceModel()*DeviceModel{
-	defer self.RUnlock()
-	self.RLock()
 	return self.DeviceModel
 }
 func (self *Device)Get_GroupId()int{
-	defer self.RUnlock()
-	self.RLock()
 	return self.GroupId
 }
 func (self *Device)Get_Env()uint8{
-	defer self.RUnlock()
-	self.RLock()
 	return self.Env
 }
 //func GetDeviceModel(id ...int)([]*DeviceModel,error) {
