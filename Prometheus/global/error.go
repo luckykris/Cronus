@@ -7,4 +7,5 @@ const (
 	ERROR_data_logic         =Error("data logic problem")
 	ERROR_resource_notexist  =Error("resource isn`t exist")
 	ERROR_resource_duplicate =Error("the resource has been declare by other")
+	ERROR_parameter_miss     =Error("miss parameter")
 )

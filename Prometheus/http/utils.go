@@ -3,22 +3,15 @@ package http
 import (
 	"fmt"
 	"strconv"
-	"github.com/Unknwon/macaron"
+	"github.com/go-macaron/macaron"
 )
 
 
-
-type ArgString struct{
-	Name string
-	Need bool
-	Default interface{}
-}
-type ArgInt struct{
-	Name string
-	Need bool
-	Default interface{}
-}
-
+const (
+		INT =iota
+		STRING 
+		FLOAT
+)
 func arg2IntOrNil(arg string)(interface{},error){
 	var r_arg interface{}
 	var err error = nil
@@ -29,55 +22,37 @@ func arg2IntOrNil(arg string)(interface{},error){
 	}
 	return r_arg,err
 }
-func arg2StringOrNil(arg string)(interface{},error){
+func arg2StringOrNil(arg string)(interface{}){
 	var r_arg interface{}
 	if arg == "" || arg == "null" {
 		r_arg = nil
 	} else {
 		r_arg =arg
 	}
-	return r_arg,nil
+	return r_arg
 }
 
-func getAllStringArgs(ctx *macaron.Context,args []ArgString)(map[string]interface{},error){
-	args_map:=map[string]interface{}{}
-	var err error
-	ctx.Req.ParseForm()
-	for _,arg:=range args{
-		v,err:=arg2StringOrNil(ctx.Req.Form.Get(arg.Name))
+func getArg(ctx *macaron.Context,key string ,t int,need bool,defaultv interface{})(interface{},error){
+	var err error =nil
+	var r interface{}
+	switch t{
+	case STRING:
+		r=arg2StringOrNil(ctx.Req.Form.Get(key))
+	case INT:
+		r,err=arg2IntOrNil(ctx.Req.Form.Get(key))
 		if err!=nil{
-			return args_map,err
+			return r,fmt.Errorf("'%s' must be int.",key)
 		}
-		if v == nil{
-			if arg.Need{
-				return args_map,fmt.Errorf("%s can not be nil",arg.Name)
-			}else{
-				v=arg.Default
-			}
-		}
-		args_map[arg.Name]=v
-	}	
-	return args_map,err
+	}
+	if r==nil{
+		if need{
+			return r,fmt.Errorf("'%s' must be specify and must not be null.",key)
+		}else{
+			return defaultv,err
+		} 
+	}else{
+		return r,err
+	}
 }
 
 
-func getAllIntArgs(ctx *macaron.Context,args []ArgInt)(map[string]interface{},error){
-	args_map:=map[string]interface{}{}
-	var err error
-	ctx.Req.ParseForm()
-	for _,arg:=range args{
-		v,err:=arg2IntOrNil(ctx.Req.Form.Get(arg.Name))
-		if err!=nil{
-			return args_map,err
-		}
-		if v == nil{
-			if arg.Need{
-				return args_map,fmt.Errorf("%s can not be nil",arg.Name)
-			}else{
-				v=arg.Default
-			}
-		}
-		args_map[arg.Name]=v
-	}	
-	return args_map,err
-}

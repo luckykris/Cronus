@@ -191,6 +191,8 @@ func _CheckTypeAndModifyString(v interface{}) string {
 		return fmt.Sprintf("%d", v.(uint8))
 	case int:
 		return fmt.Sprintf("%d", v.(int))
+	case uint32:
+		return fmt.Sprintf("%d", v.(uint32))
 	case int64:
 		return fmt.Sprintf("%d", v.(int64))
 	case float64:

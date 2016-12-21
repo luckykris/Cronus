@@ -4,7 +4,7 @@ import (
 //	"database/sql"
 	"fmt"
 //	"strings"
-	"time"
+	//"time"
 	"github.com/luckykris/Cronus/Prometheus/global"
 //	log "github.com/Sirupsen/logrus"
 )
@@ -39,6 +39,16 @@ func (self *Device)Get_DeviceModel()*DeviceModel{
 	defer self.RUnlock()
 	self.RLock()
 	return self.DeviceModel
+}
+func (self *Device)Get_GroupId()int{
+	defer self.RUnlock()
+	self.RLock()
+	return self.GroupId
+}
+func (self *Device)Get_Env()uint8{
+	defer self.RUnlock()
+	self.RLock()
+	return self.Env
 }
 //func GetDeviceModel(id ...int)([]*DeviceModel,error) {
 //	deviceModels:=[]*DeviceModel{}

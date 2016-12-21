@@ -12,6 +12,16 @@ import (
 )
 
 
+func GetOneServer(device_name_i interface{},device_id_i interface{})(*Server,error){
+	if device_id_i !=nil{
+		s,ok:=DEVICE_INDEX_ID[SERVER][device_id_i.(int)]
+		if ok {
+			return s.Value.(*Server),nil
+		}
+		return nil,global.ERROR_resource_notexist
+	}
+	return nil,global.ERROR_parameter_miss
+}
 func GetServer(device_name_i interface{},device_id_i interface{})([]*Server,error){
 	r:=[]*Server{}
 	if device_id_i !=nil{
@@ -33,6 +43,17 @@ func AddServer(server *Server)(error){
 		return err
 	}else{
 		FlushDeviceCache(server)
+		return nil
+	}
+}
+
+func (server *Server)Update(fake_server *Server)error{
+	_,err:=server.UpdateServerViaDB(fake_server)
+	if err!=nil{
+		return err
+	}else{
+		DropDeviceCache(server)
+		FlushDeviceCache(fake_server)
 		return nil
 	}
 }
@@ -222,60 +243,88 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 	return 
 }
 
-func UpdateServerViaDB(server *Server) error {
-	var err error
-	conditions:=[]string{fmt.Sprintf("device_id = %d" , server.DeviceId)}
-	server_pre_ls,err:=GetServer(nil,server.DeviceId)
+func (server *Server)UpdateServerViaDB(fake_server *Server)(*Server,error) {
+	var err error=nil
+	conditions:=[]string{fmt.Sprintf("device_id = %d" , server.Get_DeviceId())}
+	fake_server.Checksum=fake_server.ComputeSum()
+	if fake_server.Checksum==server.Checksum{
+		return server,nil
+	}
+	tx,err:=PROMETHEUS.dbobj.Begin()
 	if err!=nil{
-		return err
+		return server,err
 	}
-	checksum:=server.ComputSum()
-	if server_pre_ls[0].Checksum == checksum{
-		return nil
-	}
-	server.LastChangeTime=uint64(time.Now().Unix())
-	err=PROMETHEUS.dbobj.Update(global.TABLEserver, conditions, []string{`serial`, `hostname`, `memsize`, `os`,`release`,`last_change_time`,`checksum`}, []interface{}{server.Serial,server.Hostname,server.Memsize,server.Os,server.Release,server.LastChangeTime,checksum})
+	defer func(){
+		if err!=nil{
+			tx.Rollback()
+		}else{
+			tx.Commit()
+		}
+	}()
+	items:=[]string{`device_name`,
+					`group_id`,
+					`env`,
+				   }
+	value:=[]interface{}{
+					fake_server.Get_DeviceName(),
+					fake_server.GroupId,
+					fake_server.Env,
+				   }
+	err=tx.Update(global.TABLEdevice, conditions,items,value)
 	if err!=nil{
-		return err
+		return server,err
 	}
+	items2:=[]string{`serial`, 
+					 `hostname`, 
+					 `memsize`, 
+					 `os`,
+					 `_release`,
+					 `last_change_time`,
+					 `checksum`,
+					}
+	value2:=[]interface{}{fake_server.Serial,
+					 	  fake_server.Hostname,
+					 	  fake_server.Memsize,
+					 	  fake_server.Os,
+					 	  fake_server.Release,
+					 	  time.Now().Unix(),
+					 	  fake_server.Checksum,
+						 }
+	err=tx.Update(global.TABLEserver, conditions,items2,value2)
 	if err!=nil{
-		return err
+		return server,err
 	}
-	return nil
+	return fake_server,err
 }
-//func (self *Server)Update(d Device)(err error){
-//	defer self.Unlock()
-//	self.Lock()
-//	err=nil
-//	err=self.UpdateViaDB(d)
-//	if err!=nil{
-//		return 
-//	}
-//	FlushDeviceCache(self)
-//	return
-//}
-//func (self *Server)UpdateViaDB(d Device)(err error){
-//	err = nil
-//	conditions:=[]string{fmt.Sprintf("device_id = %d" , self.DeviceId)}
-//	items:=[]string{`device_name`,
-//					`ctime`,
-//					`group_id`,
-//					`env`,
-//					}
-//	value:=[]interface{}{d.DeviceName,
-//					   time.Now().Unix(),
-//					   d.GroupId,
-//					   d.Env,
-//					  }
-//	err=PROMETHEUS.dbobj.Update(global.TABLEdevice, conditions, items,value)
-//	return 
-//}
 
-func(server *Server)ComputSum()string{
-	s:=fmt.Sprintf("%s%s%d%s%f",server.Serial,server.Hostname,server.Memsize,server.Os,server.Release)
+func(server *Server)ComputeSum()string{
+	s:=fmt.Sprintf("%s%s%s%d%s%f%d%d",server.Get_DeviceName(),server.Serial,server.Hostname,server.Memsize,server.Os,server.Release,server.Get_GroupId(),server.Get_Env())
 	return fmt.Sprintf("%x", md5.Sum([]byte(s)))
 	//netPorts_count_ipv4_int:=0
 	//for _,netPort :=range server.NetPorts{
 //		netPorts_count_ipv4_int+=netPort.Ipv4Int
 //	}
 }
+func (server *Server)FakeCopy()*Server{
+		r := new(Server)
+		r.Device.DeviceId=server.Device.DeviceId
+		r.Device.DeviceName=server.Device.DeviceName
+		r.Device.DeviceModel=server.Device.DeviceModel
+		r.Device.FatherDeviceId=nil
+		r.Device.Ctime=server.Device.Ctime
+		r.Device.GroupId=server.Device.GroupId
+		r.Device.Env=server.Device.Env
+		r.Serial=server.Serial
+		r.Hostname=server.Hostname
+		r.Memsize=server.Memsize
+		r.Processor=server.Processor
+		r.Os=server.Os
+		r.Release=server.Release
+		r.LastChangeTime=server.LastChangeTime
+		r.Checksum=server.Checksum
+		return r
+}
+
+//func (server *Server)attr_avaliable()bool{
+//	
+//}
