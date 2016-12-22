@@ -62,6 +62,24 @@ func GetDeviceModelViaDB(names []string,device_types []string,device_model_ids [
 	return 
 }
 
+func AddDeviceModelViaDB(deviceModel *DeviceModel)(error) {
+	_,err:=GetOneDeviceModel(server.Device.DeviceName)
+	if err==nil{
+		return global.ERROR_resource_duplicate
+	}
+	//
+	rows:=[][]interface{}{[]interface{}{deviceModel.DeviceModelId,
+										deviceModel.DeviceType,
+										deviceModel.U,
+										deviceModel.HALF_FULL,
+										}}
+	err=tx.Add(global.TABLEdeviceModel,[]string{`device_model_name`,
+									  	  `device_type`,
+									  	  `u`,
+									  	  `half_full`,
+									      },rows)
+	return err
+}
 
 
 func (self *DeviceModel)Get_DeviceType()string{

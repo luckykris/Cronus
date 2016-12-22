@@ -142,6 +142,7 @@ func if_device_name_exist(name string)bool{
 	return false
 }
 
+
 //func (device *Device)Init(	deviceId  int,deviceName   string,deviceType  string,fatherDeviceId interface{}){
 //	device.DeviceId=deviceId
 //	device.DeviceName=deviceName
