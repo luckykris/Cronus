@@ -23,18 +23,22 @@ func GetOneServer(device_name_i interface{},device_id_i interface{})(*Server,err
 	return nil,global.ERROR_parameter_miss
 }
 func GetServer(device_name_i interface{},device_id_i interface{})([]*Server,error){
-	r:=[]*Server{}
-	if device_id_i !=nil{
-		s,ok:=DEVICE_INDEX_ID[SERVER][device_id_i.(int)]
-		if ok {
-			r=append(r,s.Value.(*Server))
+	if PROMETHEUS.ReadCache{
+		r:=[]*Server{}
+		if device_id_i !=nil{
+			s,ok:=DEVICE_INDEX_ID[SERVER][device_id_i.(int)]
+			if ok {
+				r=append(r,s.Value.(*Server))
+			}
+			return r,nil
+		}
+		for _,v:=range DEVICE_INDEX_ID[SERVER]{
+			r=append(r,v.Value.(*Server))
 		}
 		return r,nil
+	}else{
+		return GetServerViaDB([]int{} ,[]string{},[]int{} ,[]uint8{})
 	}
-	for _,v:=range DEVICE_INDEX_ID[SERVER]{
-		r=append(r,v.Value.(*Server))
-	}
-	return r,nil
 }
 
 func AddServer(server *Server)(error){
@@ -168,6 +172,12 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 					&function_type,
 					&ctime)
 	device_id_map_netports := map[int][]NetPort{}
+	//get cabinet
+	device_id_map_cabinet_id,err:=GetDeviceCabinetMapViaDB(device_ids)
+	if err!=nil{
+		return 
+	}
+	//
 	for cur.Fetch() {
 		if !mac.Valid {
 			mac_i = nil
@@ -214,13 +224,18 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 					&last_change_time,
 					&checksum)
 	var tmp_e2 error //tmp variable error
+	var ok bool
 	for cur.Fetch() {
 		r := new(Server)
 		r.Device.DeviceId=device_id
 		r.Device.DeviceName=device_name
 		r.Device.DeviceModel,tmp_e2=GetDeviceModel(device_model_id)
 		if tmp_e2!=nil{
-			log.Debug("can`t find device model id:",device_model_id)
+			log.Error("can`t find device model id:",device_model_id)
+		}
+		r.Device.CabinetId,ok=device_id_map_cabinet_id[device_id]
+		if !ok{
+			r.Device.CabinetId=nil
 		}
 		r.Device.FatherDeviceId=nil
 		r.Device.Ctime=ctime

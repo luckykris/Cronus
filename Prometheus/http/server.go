@@ -6,6 +6,24 @@ import (
 )
 
 
+func GetServerSpace(ctx *macaron.Context) {
+	var r interface{}
+	var err error
+	var server *prometheus.Server
+	servers, err := prometheus.GetServer(nil,ctx.ParamsInt("id"))
+	if len(servers)<1 {
+		ctx.JSON(404, "Not Found")
+		return
+	}else{
+		server = servers[0]
+	}
+	r,err=server.GetSpace()
+	if err != nil {
+		ctx.JSON(500, err.Error())
+		return
+	}
+	ctx.JSON(200, &r)
+}
 func GetServer(ctx *macaron.Context) {
 	var r interface{}
 	var err error

@@ -17,14 +17,16 @@ type Cache struct{
 }
 var DEVICE_CACHE 	  =new(Cache)
 var DEVICEMODEL_CACHE =new(Cache)
-var LOCATION_CACHE =new(Cache)
+var LOCATION_CACHE    =new(Cache)
+var IDC_CACHE         =new(Cache)
+var CABINET_CACHE     =new(Cache)
 
 var DEVICEMODEL_INDEX_ID 	map[int]*list.Element
-
 var LOCATION_INDEX_ID       map[int]*list.Element
-
 var DEVICE_INDEX_ID 		map[string]map[int]*list.Element
 var DEVICE_INDEX_NAME 		map[string]map[string]*list.Element
+var IDC_INDEX_ID 		    map[int]*list.Element
+var CABINET_INDEX_ID 		map[int]*list.Element
 
 func Cache_Index_Init()(error) {
 	start_t:=time.Now().UnixNano()
@@ -33,10 +35,36 @@ func Cache_Index_Init()(error) {
 		}()
 	var err error=nil
 	var tmp_name string
-	err=init_cache_and_index_Location()    ;tmp_name="Location";   if err!=nil{log.Fatal(fmt.Sprintf("%s cache init failed:%s",tmp_name,err.Error()));return err }else{log.Debug(fmt.Sprintf("%s cache init success",tmp_name))} 
+	err=init_cache_and_index_Location()    ;tmp_name="Location";   if err!=nil{log.Fatal(fmt.Sprintf("%s cache init failed:%s",tmp_name,err.Error()));return err }else{log.Debug(fmt.Sprintf("%s cache init success",tmp_name))}
+	err=init_cache_and_index_Idc()         ;tmp_name="Idc";        if err!=nil{log.Fatal(fmt.Sprintf("%s cache init failed:%s",tmp_name,err.Error()));return err }else{log.Debug(fmt.Sprintf("%s cache init success",tmp_name))}
+	err=init_cache_and_index_Cabinet()     ;tmp_name="Cabinet";    if err!=nil{log.Fatal(fmt.Sprintf("%s cache init failed:%s",tmp_name,err.Error()));return err }else{log.Debug(fmt.Sprintf("%s cache init success",tmp_name))}  
 	err=init_cache_and_index_DeviceModel() ;tmp_name="DeviceModel";if err!=nil{log.Fatal(fmt.Sprintf("%s cache init failed:%s",tmp_name,err.Error()));return err }else{log.Debug(fmt.Sprintf("%s cache init success",tmp_name))}  
-	err=init_cache_and_index_Device()      ;tmp_name="Device";     if err!=nil{log.Fatal(fmt.Sprintf("%s cache init failed:%s",tmp_name,err.Error()));return err }else{log.Debug(fmt.Sprintf("%s cache init success",tmp_name))}  
+	err=init_cache_and_index_Device()      ;tmp_name="Device";     if err!=nil{log.Fatal(fmt.Sprintf("%s cache init failed:%s",tmp_name,err.Error()));return err }else{log.Debug(fmt.Sprintf("%s cache init success",tmp_name))}    
 	return err
+}
+func init_cache_and_index_Cabinet()error{
+	CABINET_INDEX_ID=map[int]*list.Element{}
+	CABINET_CACHE.Container=list.New()
+	l,err:=GetCabinetViaDB([]int{},[]string{})
+	if err!=nil{
+		return err
+	}
+	for i:=range l{
+		CABINET_INDEX_ID[l[i].CabinetId]=CABINET_CACHE.Container.PushBack(l[i])
+	}
+	return nil
+}
+func init_cache_and_index_Idc()error{
+	IDC_INDEX_ID=map[int]*list.Element{}
+	IDC_CACHE.Container=list.New()
+	l,err:=GetIdcViaDB([]int{},[]string{})
+	if err!=nil{
+		return err
+	}
+	for i:=range l{
+		IDC_INDEX_ID[l[i].IdcId]=IDC_CACHE.Container.PushBack(l[i])
+	}
+	return nil
 }
 func init_cache_and_index_Location()error{
 	LOCATION_INDEX_ID=map[int]*list.Element{}

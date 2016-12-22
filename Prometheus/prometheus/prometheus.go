@@ -27,6 +27,7 @@ type Device struct {
 	Env	           uint8
 	DeviceModel  *DeviceModel
 	NetPorts	[]NetPort
+	CabinetId	    interface{}
 }
 
 type Server struct {
@@ -98,9 +99,7 @@ type Tag string
 
 type Prometheus struct {
 	dbobj db.Dbi
-	CabinetMapId map[int]*Cabinet
-	LocationMapId map[int]*Location
-	IdcMapId map[int]*Idc
+	ReadCache bool
 }
 
 var PROMETHEUS 				*Prometheus
@@ -108,12 +107,9 @@ var PROMETHEUS 				*Prometheus
 func Init(mainCfg cfg.MainCfg) {
 	var err error
 	log.Debug("Start init Database.")
-	PROMETHEUS = &Prometheus{
-							 CabinetMapId:map[int]*Cabinet{},
-							 LocationMapId:map[int]*Location{},
-							 IdcMapId:map[int]*Idc{},
-							}
+	PROMETHEUS = new(Prometheus)
 	PROMETHEUS.dbobj, err = db.Init(mainCfg.DbCfg)
+	PROMETHEUS.ReadCache=mainCfg.PrometheusCfg.ReadCache
 	if err != nil {
 		log.Fatal("Init Database Failed.")
 		os.Exit(255)

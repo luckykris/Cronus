@@ -18,6 +18,7 @@ type MainCfg struct {
 	DbCfg  DbCfgStruct  `toml:"database"`
 	LogCfg LogCfgStruct `toml:"log"`
 	SnifferCfg SnifferCfgStruct `toml:"sniffer"`
+	PrometheusCfg PrometheusCfgStruct `toml:"prometheus"`
 	Daemon bool
 	Debug  bool
 }
@@ -41,6 +42,10 @@ type LogCfgStruct struct {
 	LevelId log.Level `toml:"levelId"`
 }
 
+//log config struct for toml
+type PrometheusCfgStruct struct {
+	ReadCache   bool    `toml:"readCache"`
+}
 //log config struct for toml
 type SnifferCfgStruct struct {
 	Class   	string  `toml:"class"`
@@ -124,6 +129,9 @@ func LoadCfg() MainCfg {
 	}
 	if !meta.IsDefined("sniffer", "plugin_path") {
 		mainCfgObj.SnifferCfg.PluginPath = "/usr/share/" + SOFTWARE
+	}
+	if !meta.IsDefined("prometheus", "readCache") {
+		mainCfgObj.PrometheusCfg.ReadCache = true
 	}
 	return mainCfgObj
 }

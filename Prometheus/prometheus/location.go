@@ -7,6 +7,20 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/global"
 )
 
+func GetOneLocation(location_id interface{})(*Location, error) {
+	var r *Location
+	if location_id!=nil{
+		s,ok:=LOCATION_INDEX_ID[location_id.(int)]
+		if ok {
+			r=s.Value.(*Location)
+			return r,nil
+		}else{
+			return r,global.ERROR_resource_notexist
+		}
+	}else{
+		return r,nil
+	}
+}
 func GetLocation(location_id interface{})( []*Location, error) {
 	r:=[]*Location{}
 	if location_id!=nil{
