@@ -229,7 +229,7 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 		r := new(Server)
 		r.Device.DeviceId=device_id
 		r.Device.DeviceName=device_name
-		r.Device.DeviceModel,tmp_e2=GetDeviceModel(device_model_id)
+		r.Device.DeviceModel,tmp_e2=GetOneDeviceModel(device_model_id)
 		if tmp_e2!=nil{
 			log.Error("can`t find device model id:",device_model_id)
 		}

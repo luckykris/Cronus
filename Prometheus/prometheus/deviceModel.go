@@ -9,7 +9,7 @@ import (
 
 
 
-func GetDeviceModel(device_model_id interface{})(*DeviceModel,error){
+func GetOneDeviceModel(device_model_id interface{})(*DeviceModel,error){
 	if device_model_id !=nil{
 		s,ok:=DEVICEMODEL_INDEX_ID[device_model_id.(int)]
 		if ok {
@@ -19,12 +19,12 @@ func GetDeviceModel(device_model_id interface{})(*DeviceModel,error){
 	}
 	return &DeviceModel{},global.ERROR_resource_notexist
 }
-func GetDeviceModel_List()([]*DeviceModel){
+func GetDeviceModel()([]*DeviceModel,error){
 	r:=[]*DeviceModel{}
 	for _,v:=range DEVICEMODEL_INDEX_ID{
 		r=append(r,v.Value.(*DeviceModel))
 	}
-	return r
+	return r,nil
 }
 
 func GetDeviceModelViaDB(names []string,device_types []string,device_model_ids []int) (result []*DeviceModel,err error) {

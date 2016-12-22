@@ -19,6 +19,9 @@ func LoadRoute() {
 			WEB.Get("/?:id:int", GetCabinet)
 			WEB.Get("/:id:int/space", GetCabinetSpace)
 		})
+		WEB.Group("/deviceModel", func() {
+			WEB.Get("/?:id:int", GetDeviceModel)
+		})
 	})
 	WEB.NotFound(NotFound)
 }

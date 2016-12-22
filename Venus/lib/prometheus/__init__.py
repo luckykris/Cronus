@@ -10,14 +10,17 @@ class Prometheus:
 	def __init__(self,url):
 		self.url=url
 	def __apiRequest(self,api,method,data={}):
-		if method == "GET":
-			r = requests.get(self.url+api,data)
-		elif method == "POST":
-			r = requests.post(self.url+api,data)
-		elif method == "DELETE":
-			r = requests.delete(self.url+api)
-		elif method == "UPDATE":
-			r = requests.patch(self.url+api,data)
+		try:
+			if method == "GET":
+				r = requests.get(self.url+api,data)
+			elif method == "POST":
+				r = requests.post(self.url+api,data)
+			elif method == "DELETE":
+				r = requests.delete(self.url+api)
+			elif method == "UPDATE":
+				r = requests.patch(self.url+api,data)
+		except:
+			raise PrometheusError("Can`t connect to prometheus.")
 		if r.status_code >399:
 			raise PrometheusError("HTTP CODE:%d,Text:%s" % (r.status_code,r.json()))
 		else:
@@ -38,12 +41,12 @@ class Prometheus:
 		api='devices/%d' % device_id
 		return self.__apiRequest(api,'DELETE')
 	def getServer(self,deviceId=None):
-		api="servers"
+		api="server"
 		if deviceId !=None:
 			api="%s/%d" % (api,deviceId)
 		return self.__apiRequest(api,'GET')
 	def addServer(self,server):
-		return  self.__apiRequest('servers','POST',server)
+		return  self.__apiRequest('server','POST',server)
 	def getDeviceModel(self,deviceModelId=None):
 		api="deviceModel"
 		if deviceModelId !=None:

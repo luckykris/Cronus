@@ -51,7 +51,7 @@ func AddServer(ctx *macaron.Context) {
 	var err error
 	server:=new(prometheus.Server)
 	server.Device.DeviceName=ctx.Query("DeviceName")
-	server.Device.DeviceModel,err=prometheus.GetDeviceModel(ctx.QueryInt("DeviceModelId"))
+	server.Device.DeviceModel,err=prometheus.GetOneDeviceModel(ctx.QueryInt("DeviceModelId"))
 	if err != nil {
 		ctx.JSON(405, err.Error())
 		return

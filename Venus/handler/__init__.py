@@ -75,8 +75,8 @@ class BaseHandler(tornado.web.RequestHandler):
 			try:
 				data=func(self)
 				success=True
-			#except urllib.error.HTTPError as code:
-			#	errDetail=code
+			except prometheus.PrometheusError as err:
+				errDetail=err
 			except urllib.error.HTTPError as err:
 				if err.code:
 					errDetail="Not Found"
