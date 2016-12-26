@@ -1,9 +1,23 @@
 from  __init__ import *
 a=Prometheus("http://127.0.0.1:81/v1/")
 #a=Prometheus("http://172.16.3.20/v1/")
-device={
-	"DeviceName":"functiontest",
-	"DeviceType":"Server"
+name_suffix="test"
+
+DeviceModel={
+	"DeviceModelName":name_suffix+"-server-device-model",
+	"DeviceType":"Server",
+	"U":2,
+	"HALF_FULL":"half"}
+Server={
+	"DeviceName":name_suffix+"-server",
+	"DeviceModelName":DeviceModel["DeviceModelName"],
+	"GroupId":10,
+	"Env":3,
+	"Serial":"asdasd",
+	"Hostname":"myhost",
+	"Memsize":9999,
+	"Os":"RedHat",
+	"Release":6.5
 }
 tag={
 	"TagName":"functiontest_tag",
@@ -35,6 +49,30 @@ def device_netPortMap(device_id):
 	netPorts=a.getDeviceNetPorts(device_id)
 	netPorts_map={x['Ipv4Int']:x['NetPortId'] for x  in netPorts}
 	return netPorts_map
+
+@deco
+def DeviceModel_add():
+	a.AddDeviceModel(DeviceModel)
+@deco
+def DeviceModel_get():
+	a.GetDeviceModel(DeviceModel["DeviceModelName"])
+@deco
+def DeviceModel_delete():
+	a.DeleteDeviceModel(DeviceModel["DeviceModelName"])
+
+
+@deco
+def Server_add():
+	a.AddServer(Server)
+@deco
+def Server_get():
+	a.GetServer(Server["DeviceName"])
+@deco
+def Server_delete():
+	a.DeleteServer(Server["DeviceName"])
+@deco
+def Server_update():
+	a.UpdateServer(Server["DeviceName"],Server)
 @deco	
 def device_add():
 	a.addDevice(device)
@@ -112,21 +150,11 @@ def cabinet_get():
 def space_get():
 	a.getSpace()
 
-device_add()
-device_get()
-device_get_one()
-tag_add()
-tag_get()
-tag_get_one()
-tag_update()
-device_netPort_add()
-device_netPort_update()
-device_netPort_get()
-device_tag_add()
-device_tag_get()
-device_tag_delete()
-device_update()
-device_delete()
-tag_delete()
-cabinet_get()
-space_get()
+
+DeviceModel_add()
+DeviceModel_get()
+Server_add()
+Server_get()
+Server_update()
+Server_delete()
+DeviceModel_delete()

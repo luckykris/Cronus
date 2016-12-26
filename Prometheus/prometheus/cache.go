@@ -22,6 +22,7 @@ var IDC_CACHE         =new(Cache)
 var CABINET_CACHE     =new(Cache)
 
 var DEVICEMODEL_INDEX_ID 	map[int]*list.Element
+var DEVICEMODEL_INDEX_NAME 	map[string]*list.Element
 var LOCATION_INDEX_ID       map[int]*list.Element
 var DEVICE_INDEX_ID 		map[string]map[int]*list.Element
 var DEVICE_INDEX_NAME 		map[string]map[string]*list.Element
@@ -80,13 +81,14 @@ func init_cache_and_index_Location()error{
 }
 func init_cache_and_index_DeviceModel()error{
 	DEVICEMODEL_INDEX_ID=map[int]*list.Element{}
+	DEVICEMODEL_INDEX_NAME=map[string]*list.Element{}
 	DEVICEMODEL_CACHE.Container=list.New()
 	m,err:=GetDeviceModelViaDB([]string{},[]string{},[]int{})
 	if err!=nil{
 		return err
 	}
 	for i:=range m{
-		DEVICEMODEL_INDEX_ID[m[i].DeviceModelId]=DEVICEMODEL_CACHE.Container.PushBack(m[i])
+		create_device_model_cache_and_index(m[i])
 	}
 	return nil
 }
@@ -101,31 +103,35 @@ func init_cache_and_index_Device()error{
 		return err
 	}
 	for i:=range s{
-		create_device_index(s[i])
+		create_device_cache_and_index(s[i])
 	}
 	return err
 }
 
 func FlushDeviceCache(device Device_i){
-	drop_device_cache(device)
-	create_device_index(device)
+	drop_device_cache_and_index(device)
+	create_device_cache_and_index(device)
 }
 func DropDeviceCache(device Device_i){
-	drop_device_cache(device )
-	drop_device_index(device )
+	drop_device_cache_and_index(device )
 }
-func drop_device_cache(device Device_i){
+//device cache func
+func drop_device_cache_and_index(device Device_i){
+	defer DEVICE_CACHE.Unlock()
+	DEVICE_CACHE.Lock()
 	switch device.Get_DeviceModel().Get_DeviceType(){
 	case SERVER:
 		old_device,ok:=DEVICE_INDEX_ID[SERVER][device.Get_DeviceId()]
 		if ok{
+			delete(DEVICE_INDEX_ID[SERVER],device.Get_DeviceId())
+			delete(DEVICE_INDEX_NAME[SERVER],device.Get_DeviceName())
 			DEVICE_CACHE.Container.Remove(old_device)
 		}
 	default:
 		panic("device type not support")	
 	}
 }
-func create_device_index(device Device_i){
+func create_device_cache_and_index(device Device_i){
 	defer DEVICE_CACHE.Unlock()
 	DEVICE_CACHE.Lock()
 	switch device.Get_DeviceModel().Get_DeviceType(){
@@ -137,12 +143,22 @@ func create_device_index(device Device_i){
 		panic("device type not support")	
 	}
 }
-func drop_device_index(device Device_i){
-	switch device.Get_DeviceModel().Get_DeviceType(){
-	case SERVER:
-		delete(DEVICE_INDEX_ID[SERVER],device.(*Server).Get_DeviceId())
-		delete(DEVICE_INDEX_NAME[SERVER],device.(*Server).Get_DeviceName())
-	default:
-		panic("device type not support")	
+
+//device model cache func
+func drop_device_model_cache_and_index(self *DeviceModel){
+	defer DEVICEMODEL_CACHE.Unlock()
+	DEVICEMODEL_CACHE.Lock()
+	old_self,ok:=DEVICEMODEL_INDEX_ID[self.DeviceModelId]
+	if ok{
+		delete(DEVICEMODEL_INDEX_ID,self.DeviceModelId)
+		delete(DEVICEMODEL_INDEX_NAME,self.DeviceModelName)
+		DEVICEMODEL_CACHE.Container.Remove(old_self)
 	}
+}
+func create_device_model_cache_and_index(self *DeviceModel){
+	defer DEVICEMODEL_CACHE.Unlock()
+	DEVICEMODEL_CACHE.Lock()
+	tmp_e:=DEVICEMODEL_CACHE.Container.PushBack(self)
+	DEVICEMODEL_INDEX_ID[self.DeviceModelId]=tmp_e
+	DEVICEMODEL_INDEX_NAME[self.DeviceModelName]=tmp_e
 }

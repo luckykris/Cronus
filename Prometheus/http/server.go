@@ -10,7 +10,7 @@ func GetServerSpace(ctx *macaron.Context) {
 	var r interface{}
 	var err error
 	var server *prometheus.Server
-	servers, err := prometheus.GetServer(nil,ctx.ParamsInt("id"))
+	servers, err := prometheus.GetServer(nil,ctx.ParamsInt("*"))
 	if len(servers)<1 {
 		ctx.JSON(404, "Not Found")
 		return
@@ -27,15 +27,13 @@ func GetServerSpace(ctx *macaron.Context) {
 func GetServer(ctx *macaron.Context) {
 	var r interface{}
 	var err error
-	if ctx.Params("id") == ""{
+	if ctx.Params("*") == ""{
 		r, err = prometheus.GetServer(nil,nil)
 	} else {
-		r, err = prometheus.GetServer(nil,ctx.ParamsInt("id"))
-		if len(r.([]*prometheus.Server))<1 {
-			ctx.JSON(404, "Not Found")
+		r, err = prometheus.GetOneServer(nil,ctx.Params("*"))
+		if err!=nil {
+			ctx.JSON(404, err.Error())
 			return
-		}else{
-			r = r.([]*prometheus.Server)[0]
 		}
 	}
 	if err != nil {
@@ -47,11 +45,13 @@ func GetServer(ctx *macaron.Context) {
 
 func AddServer(ctx *macaron.Context) {
 	ctx.Req.ParseForm()
-	var r interface{}
 	var err error
 	server:=new(prometheus.Server)
-	server.Device.DeviceName=ctx.Query("DeviceName")
-	server.Device.DeviceModel,err=prometheus.GetOneDeviceModel(ctx.QueryInt("DeviceModelId"))
+	DeviceName     ,err := getArg(ctx,"DeviceName"       ,STRING,true ,nil);if err != nil {ctx.JSON(405, err.Error());return}
+    DeviceModelId  ,err := getArg(ctx,"DeviceModelId"    ,INT   ,false,nil);if err != nil {ctx.JSON(405, err.Error());return}
+    DeviceModelName,err := getArg(ctx,"DeviceModelName"  ,STRING,false,nil);if err != nil {ctx.JSON(405, err.Error());return}
+	server.Device.DeviceName=DeviceName.(string)
+	server.Device.DeviceModel,err=prometheus.GetOneDeviceModel(DeviceModelId,DeviceModelName)
 	if err != nil {
 		ctx.JSON(405, err.Error())
 		return
@@ -63,20 +63,18 @@ func AddServer(ctx *macaron.Context) {
 		ctx.JSON(500, err.Error())
 		return
 	}
-	ctx.JSON(200, &r)
+	ctx.JSON(200, SUCCESS)
 }
 
 func DeleteServer(ctx *macaron.Context) {
 	var err error
-	var server *prometheus.Server
-	servers, err := prometheus.GetServer(nil,ctx.ParamsInt("id"))
-	if len(servers)<1 {
+	var self *prometheus.Server
+	self, err = prometheus.GetOneServer(nil,ctx.Params("*"))
+	if err!=nil {
 		ctx.JSON(404, "Not Found")
 		return
-	}else{
-		server = servers[0]
 	}
-	err = server.Delete()
+	err = self.Delete()
 	if err != nil {
 		ctx.JSON(500, err.Error())
 		return
@@ -87,7 +85,7 @@ func DeleteServer(ctx *macaron.Context) {
 func UpdateServer(ctx *macaron.Context) {
 	var err error=nil
 	var server,fake *prometheus.Server
-	server, err = prometheus.GetOneServer(nil,ctx.ParamsInt("id"))
+	server, err = prometheus.GetOneServer(nil,ctx.Params("*"))
 	if err!=nil{
 		ctx.JSON(404, err.Error())
 		return
@@ -105,10 +103,10 @@ func UpdateServer(ctx *macaron.Context) {
 
 	fake.Device.DeviceName=DeviceName.(string)
 	fake.Device.GroupId   =GroupId.(int)
-	fake.Device.Env       =Env.(uint8)
+	fake.Device.Env       =uint8(Env.(int))
 	fake.Serial    =Serial.(string)
 	fake.Hostname  =Hostname.(string)
-	fake.Memsize   =Memsize.(uint32)
+	fake.Memsize   =uint32(Memsize.(int))
 	fake.Os        =Os.(string)
 	fake.Release   =Release.(float64)
 	err=server.Update(fake)

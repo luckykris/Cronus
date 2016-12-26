@@ -7,6 +7,9 @@ import (
 
 var WEB *macaron.Macaron = macaron.New()
 var REQ uint64 = 0
+const (
+	SUCCESS string="success"
+)
 
 func Start(debug bool) {
 	macaron.Env = macaron.PROD

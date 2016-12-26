@@ -12,9 +12,15 @@ import (
 )
 
 
-func GetOneServer(device_name_i interface{},device_id_i interface{})(*Server,error){
+func GetOneServer(device_id_i interface{},device_name_i interface{})(*Server,error){
 	if device_id_i !=nil{
 		s,ok:=DEVICE_INDEX_ID[SERVER][device_id_i.(int)]
+		if ok {
+			return s.Value.(*Server),nil
+		}
+		return nil,global.ERROR_resource_notexist
+	}else if device_name_i!=nil{
+		s,ok:=DEVICE_INDEX_NAME[SERVER][device_name_i.(string)]
 		if ok {
 			return s.Value.(*Server),nil
 		}
@@ -22,8 +28,8 @@ func GetOneServer(device_name_i interface{},device_id_i interface{})(*Server,err
 	}
 	return nil,global.ERROR_parameter_miss
 }
-func GetServer(device_name_i interface{},device_id_i interface{})([]*Server,error){
-	if PROMETHEUS.ReadCache{
+func GetServer(device_id_i interface{},device_name_i interface{})([]*Server,error){
+	if ifcache(){
 		r:=[]*Server{}
 		if device_id_i !=nil{
 			s,ok:=DEVICE_INDEX_ID[SERVER][device_id_i.(int)]
@@ -43,12 +49,10 @@ func GetServer(device_name_i interface{},device_id_i interface{})([]*Server,erro
 
 func AddServer(server *Server)(error){
 	err:=AddServerViaDB(server)
-	if err!=nil{
-		return err
-	}else{
+	if err==nil{
 		FlushDeviceCache(server)
-		return nil
 	}
+	return err
 }
 
 func (server *Server)Update(fake_server *Server)error{
@@ -65,6 +69,15 @@ func (server *Server)Update(fake_server *Server)error{
 }
 
 func AddServerViaDB(server *Server)(error) {
+	//check 
+	if if_device_name_exist(server.Device.DeviceName){
+		return global.ERROR_resource_duplicate
+	}
+	if server.Get_DeviceModel().Get_DeviceType() != SERVER{
+		return global.ERROR_device_type_dismatch
+	}
+	//
+
 	tx,err:=PROMETHEUS.dbobj.Begin()
 	if err!=nil{
 		return err
@@ -76,10 +89,6 @@ func AddServerViaDB(server *Server)(error) {
 			tx.Commit()
 		}
 	}()
-	//check
-	if if_device_name_exist(server.Device.DeviceName){
-		return global.ERROR_resource_duplicate
-	}
 	//
 	rows:=[][]interface{}{[]interface{}{server.Get_DeviceName(),
 										server.Get_DeviceModel().DeviceModelId,
@@ -104,6 +113,7 @@ func AddServerViaDB(server *Server)(error) {
 		err= global.ERROR_data_logic
 	}
 	cur.Close()
+	server.Device.DeviceId=device_id//rewrite server struct`s autoincrease id
 	if err!=nil{
 		return err
 	}
@@ -229,7 +239,7 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 		r := new(Server)
 		r.Device.DeviceId=device_id
 		r.Device.DeviceName=device_name
-		r.Device.DeviceModel,tmp_e2=GetOneDeviceModel(device_model_id)
+		r.Device.DeviceModel,tmp_e2=GetOneDeviceModel(device_model_id,nil)
 		if tmp_e2!=nil{
 			log.Error("can`t find device model id:",device_model_id)
 		}

@@ -9,9 +9,15 @@ import (
 
 
 
-func GetOneDeviceModel(device_model_id interface{})(*DeviceModel,error){
+func GetOneDeviceModel(device_model_id interface{},device_model_name interface{})(*DeviceModel,error){
 	if device_model_id !=nil{
 		s,ok:=DEVICEMODEL_INDEX_ID[device_model_id.(int)]
+		if ok {
+			return s.Value.(*DeviceModel),nil
+		}
+		return &DeviceModel{},global.ERROR_resource_notexist
+	}else if device_model_name !=nil{
+		s,ok:=DEVICEMODEL_INDEX_NAME[device_model_name.(string)]
 		if ok {
 			return s.Value.(*DeviceModel),nil
 		}
@@ -25,6 +31,13 @@ func GetDeviceModel()([]*DeviceModel,error){
 		r=append(r,v.Value.(*DeviceModel))
 	}
 	return r,nil
+}
+func AddDeviceModel(deviceModel *DeviceModel)error{
+	err:=AddDeviceModelViaDB(deviceModel)
+	if err==nil {
+		create_device_model_cache_and_index(deviceModel)
+	}
+	return err
 }
 
 func GetDeviceModelViaDB(names []string,device_types []string,device_model_ids []int) (result []*DeviceModel,err error) {
@@ -46,7 +59,16 @@ func GetDeviceModelViaDB(names []string,device_types []string,device_model_ids [
 	if len(device_model_ids) >0 {
 		conditions=append( conditions,fmt.Sprintf(`device_model_id IN (%s)`,int_join(device_model_ids,",")))
 	}
-	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceModel, nil,[]string{`device_model_id`, `device_model_name`, `device_type`,`u`,`half_full`}, conditions, &device_model_id, &device_model_name, &device_type ,&u,&half_full)
+	items:=[]string{`device_model_id`, 
+		            `device_model_name`, 
+		            `device_type`,
+		            `u`,
+		            `half_full`}
+	cur, err := PROMETHEUS.dbobj.Get(global.TABLEdeviceModel, nil,items, conditions, &device_model_id,
+																					 &device_model_name, 
+																					 &device_type ,
+																					 &u,
+																					 &half_full)
 	if err!=nil{
 		return
 	}
@@ -62,13 +84,23 @@ func GetDeviceModelViaDB(names []string,device_types []string,device_model_ids [
 	return 
 }
 
-func AddDeviceModelViaDB(deviceModel *DeviceModel)(error) {
-	_,err:=GetOneDeviceModel(server.Device.DeviceName)
+func AddDeviceModelViaDB(deviceModel *DeviceModel)(err error) {
+	_,err=GetOneDeviceModel(nil,deviceModel.DeviceModelName)
 	if err==nil{
 		return global.ERROR_resource_duplicate
 	}
-	//
-	rows:=[][]interface{}{[]interface{}{deviceModel.DeviceModelId,
+	tx,err:=PROMETHEUS.dbobj.Begin()
+	if err!=nil{
+		return err
+	}
+	defer func(){
+		if err!=nil{
+			tx.Rollback()
+		}else{
+			tx.Commit()
+		}
+	}()
+	rows:=[][]interface{}{[]interface{}{deviceModel.DeviceModelName,
 										deviceModel.DeviceType,
 										deviceModel.U,
 										deviceModel.HALF_FULL,
@@ -78,9 +110,37 @@ func AddDeviceModelViaDB(deviceModel *DeviceModel)(error) {
 									  	  `u`,
 									  	  `half_full`,
 									      },rows)
+	if err!=nil{
+		return err
+	}
+	var device_model_id int
+	conditions:=[]string{fmt.Sprintf("device_model_name='%s'",deviceModel.DeviceModelName)}
+	items:=[]string{"device_model_id"}
+	cur,err:=tx.Get(global.TABLEdeviceModel, nil,items, conditions,  
+					&device_model_id)
+	if !cur.Fetch(){
+		err= global.ERROR_data_logic
+	}
+	deviceModel.DeviceModelId=device_model_id
+	cur.Close()
 	return err
 }
 
+func (self *DeviceModel)Delete()(err error){
+	defer self.Unlock()
+	self.Lock()
+	err=self.DeleteViaDB()
+	if err!=nil{
+		return 
+	}
+	drop_device_model_cache_and_index(self)
+	return 
+}
+func (self *DeviceModel)DeleteViaDB()error{
+	conditions:=[]string{}
+	conditions=append(conditions,fmt.Sprintf("device_model_id=%d",self.DeviceModelId))
+	return PROMETHEUS.dbobj.Delete(global.TABLEdeviceModel,conditions)
+}
 
 func (self *DeviceModel)Get_DeviceType()string{
 	return self.DeviceType

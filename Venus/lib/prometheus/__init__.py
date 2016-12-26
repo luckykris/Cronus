@@ -8,6 +8,8 @@ class PrometheusError(Exception):
 		return repr(self.value)
 class Prometheus:
 	def __init__(self,url):
+		self._deviceModel="deviceModel"
+		self._server="server"
 		self.url=url
 	def __apiRequest(self,api,method,data={}):
 		try:
@@ -28,6 +30,20 @@ class Prometheus:
 				return r.json()
 			except:
 				return r.text
+	def AddDeviceModel(self,js):
+		return self.__apiRequest(self._deviceModel,'POST',js)
+	def GetDeviceModel(self,name):
+		return self.__apiRequest(self._deviceModel+"/"+name,'GET')
+	def DeleteDeviceModel(self,name):
+		return self.__apiRequest(self._deviceModel+"/"+name,'DELETE')
+	def AddServer(self,js):
+		return self.__apiRequest(self._server,'POST',js)
+	def GetServer(self,name):
+		return self.__apiRequest(self._server+"/"+name,'GET')
+	def DeleteServer(self,name):
+		return self.__apiRequest(self._server+"/"+name,'DELETE')
+	def UpdateServer(self,name,js):
+		return self.__apiRequest(self._server+"/"+name,'UPDATE',js)
 	def getDevice(self,deviceId=None):
 		api="devices"
 		if deviceId !=None:
