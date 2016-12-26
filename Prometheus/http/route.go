@@ -1,11 +1,17 @@
 package http
 
+
+const (
+	APIVERSION string = "v1"
+	server_path string = "/"+APIVERSION+"/"+"server"
+)
 func LoadRoute() {
-	WEB.Group("/v1", func() {
+	WEB.Group("/"+APIVERSION, func() {
 		WEB.Group("/server", func() {
 			WEB.Get("/?*", GetServer)
 			WEB.Get("/*/space", GetServerSpace)
-			WEB.Delete("/*", DeleteServer)
+			WEB.Get("/*/netPorts", GetNetPort)
+			WEB.Delete("/*", DeleteDevice)
 			WEB.Patch("/*", UpdateServer)
 			WEB.Post("/", AddServer)
 		})

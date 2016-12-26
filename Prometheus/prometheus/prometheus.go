@@ -54,7 +54,7 @@ type Vm struct {
 
 type NetPort struct {
 	Mac       interface{}
-	Ipv4Int   interface{}
+	Ipv4      interface{}
 	NetPortType      string
 }
 

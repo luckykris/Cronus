@@ -66,21 +66,21 @@ func AddServer(ctx *macaron.Context) {
 	ctx.JSON(200, SUCCESS)
 }
 
-func DeleteServer(ctx *macaron.Context) {
-	var err error
-	var self *prometheus.Server
-	self, err = prometheus.GetOneServer(nil,ctx.Params("*"))
-	if err!=nil {
-		ctx.JSON(404, "Not Found")
-		return
-	}
-	err = self.Delete()
-	if err != nil {
-		ctx.JSON(500, err.Error())
-		return
-	}
-	ctx.JSON(200, nil)
-}
+//func DeleteServer(ctx *macaron.Context) {
+//	var err error
+//	var self *prometheus.Server
+//	self, err = prometheus.GetOneServer(nil,ctx.Params("*"))
+//	if err!=nil {
+//		ctx.JSON(404, "Not Found")
+//		return
+//	}
+//	err = self.Delete()
+//	if err != nil {
+//		ctx.JSON(500, err.Error())
+//		return
+//	}
+//	ctx.JSON(200, nil)
+//}
 
 func UpdateServer(ctx *macaron.Context) {
 	var err error=nil

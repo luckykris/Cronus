@@ -9,6 +9,7 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/global"
 	"github.com/luckykris/Cronus/Prometheus/db"
 	log "github.com/Sirupsen/logrus"
+	"github.com/luckykris/Cronus/Hephaestus/go/net"
 )
 
 
@@ -96,11 +97,11 @@ func AddServerViaDB(server *Server)(error) {
 										server.Get_GroupId(),
 										server.Get_Env()}}
 	err=tx.Add(global.TABLEdevice,[]string{`device_name`,
-									  `device_model_id`,
-									  `ctime`,
-									  `group_id`,
-									  `env`,
-									  },rows)
+									  	   `device_model_id`,
+									  	   `ctime`,
+									  	   `group_id`,
+									  	   `env`,
+									  	   },rows)
 	if err!=nil{
 		return err
 	}
@@ -198,7 +199,7 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 		if !ok{
 			device_id_map_netports[device_id]=[]NetPort{}
 		}
-		device_id_map_netports[device_id]=append(device_id_map_netports[device_id], NetPort{ mac_i, ipv4_int, netPort_type})
+		device_id_map_netports[device_id]=append(device_id_map_netports[device_id], NetPort{ mac_i, net.Ipv4Uint32ConverString(ipv4_int), netPort_type})
 	}
 	//search server
 	join_tables_t=[][4]string{
