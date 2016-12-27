@@ -24,28 +24,46 @@ func GetNetPort(ctx *macaron.Context) {
 	}
 }
 
-//func AddNetPort(ctx *macaron.Context) {
-//	ctx.Req.ParseForm()
-//	var err error
-//	server:=new(prometheus.Server)
-//	DeviceName     ,err := getArg(ctx,"Ipv4"             ,STRING,true ,nil);if err != nil {ctx.JSON(405, err.Error());return}
-//    DeviceModelId  ,err := getArg(ctx,"NetPortType"      ,STRING,false,"ether");if err != nil {ctx.JSON(405, err.Error());return}
-//   
-//	server.Device.DeviceName=DeviceName.(string)
-//	server.Device.DeviceModel,err=prometheus.GetOneDeviceModel(DeviceName,DeviceModelId)
-//	if err != nil {
-//		ctx.JSON(405, err.Error())
-//		return
-//	}
-//	server.Device.GroupId=0
-//	server.Device.Env=0
-//	err=prometheus.AddServer(server)
-//	if err != nil {
-//		ctx.JSON(500, err.Error())
-//		return
-//	}
-//	ctx.JSON(200, SUCCESS)
-//}
+func AddNetPort(ctx *macaron.Context) {
+	ctx.Req.ParseForm()
+	var err error
+	Ipv4         ,err := getArg(ctx,"Ipv4"        ,STRING,true ,nil    );if err != nil {ctx.JSON(405, err.Error());return}
+    NetPortType  ,err := getArg(ctx,"NetPortType" ,STRING,false,"ether");if err != nil {ctx.JSON(405, err.Error());return}
+    Mac          ,err := getArg(ctx,"Mac"         ,STRING,false,nil    );if err != nil {ctx.JSON(405, err.Error());return}
+    Mask         ,err := getArg(ctx,"Mask"        ,INT   ,false,24     );if err != nil {ctx.JSON(405, err.Error());return}
+	if filepath.HasPrefix(ctx.Req.Request.RequestURI,server_path){
+		self, err := prometheus.GetOneServer(nil,ctx.Params("*"))
+		if err!=nil {
+			ctx.JSON(404, err.Error())
+		}else{
+			err:=self.AddNetPort(prometheus.NetPort{Ipv4:Ipv4.(string),NetPortType:NetPortType.(string),Mac:Mac,Mask:uint8(Mask.(int))})
+			if err!=nil{ctx.JSON(404, err.Error())}else{ctx.JSON(200, SUCCESS)}
+		}
+		return
+	}else{
+		ctx.JSON(503, "url path parse fatal")
+		return
+	}
+}
+
+func DeleteNetPort(ctx *macaron.Context) {
+	ctx.Req.ParseForm()
+	var err error
+	Ipv4         ,err := getArg(ctx,"Ipv4"        ,STRING,true ,nil    );if err != nil {ctx.JSON(405, err.Error());return}
+	if filepath.HasPrefix(ctx.Req.Request.RequestURI,server_path){
+		self, err := prometheus.GetOneServer(nil,ctx.Params("*"))
+		if err!=nil {
+			ctx.JSON(404, err.Error())
+		}else{
+			err:=self.DeleteNetPort(prometheus.NetPort{Ipv4:Ipv4.(string)})
+			if err!=nil{ctx.JSON(404, err.Error())}else{ctx.JSON(200, SUCCESS)}
+		}
+		return
+	}else{
+		ctx.JSON(503, "url path parse fatal")
+		return
+	}
+}
 
 //func DeleteServer(ctx *macaron.Context) {
 //	var err error

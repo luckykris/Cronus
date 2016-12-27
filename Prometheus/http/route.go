@@ -9,11 +9,13 @@ func LoadRoute() {
 	WEB.Group("/"+APIVERSION, func() {
 		WEB.Group("/server", func() {
 			WEB.Get("/?*", GetServer)
-			WEB.Get("/*/space", GetServerSpace)
-			WEB.Get("/*/netPorts", GetNetPort)
 			WEB.Delete("/*", DeleteDevice)
 			WEB.Patch("/*", UpdateServer)
 			WEB.Post("/", AddServer)
+			WEB.Get("/*/space", GetServerSpace)
+			WEB.Get("/*/netPorts", GetNetPort)
+			WEB.Post("/*/netPorts", AddNetPort)
+			WEB.Delete("/*/netPorts", DeleteNetPort)
 		})
 		WEB.Group("/location", func() {
 			WEB.Get("/?:id:int", GetLocation)

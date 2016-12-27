@@ -17,15 +17,11 @@ Server={
 	"Hostname":"myhost",
 	"Memsize":9999,
 	"Os":"RedHat",
-	"Release":6.5
+	"Release":6.5,
+	"Ipv4":"200.200.200.1"
 }
 tag={
 	"TagName":"functiontest_tag",
-}
-netPort={
-	"Mac":"FF:FF:FF:FF:FF:FF",
-	"Ipv4Int":1,
-	"Type":"eth"
 }
 
 def deco(func):
@@ -73,6 +69,18 @@ def Server_delete():
 @deco
 def Server_update():
 	a.UpdateServer(Server["DeviceName"],Server)
+@deco
+def NetPort_add():
+	a.AddNetPort("server",Server["DeviceName"],Server)
+@deco
+def NetPort_get():
+	a.GetNetPort("server",Server["DeviceName"])
+@deco
+def NetPort_delete():
+	a.DeleteNetPort("server",Server["DeviceName"],Server)
+
+
+
 @deco	
 def device_add():
 	a.addDevice(device)
@@ -156,5 +164,8 @@ DeviceModel_get()
 Server_add()
 Server_get()
 Server_update()
+NetPort_add()
+NetPort_get()
+NetPort_delete()
 Server_delete()
 DeviceModel_delete()

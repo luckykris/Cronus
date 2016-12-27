@@ -150,6 +150,7 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 	var mac sql.NullString
 	var mac_i interface{}
 	var ipv4_int uint32
+	var mask   uint8
 	var netPort_type string
 	var function_type string
 
@@ -172,6 +173,7 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 	items:=[]string{ `mac`,
 					 `ipv4_int`,
 					 strings.Join([]string{global.TABLEserver,"device_id"},"."),
+					 `mask`,
 					 `netPort_type`,
 					 `function_type`,
 					 `ctime`}
@@ -179,6 +181,7 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 					&mac,
 					&ipv4_int,
 					&device_id, 
+					&mask,
 					&netPort_type,
 					&function_type,
 					&ctime)
@@ -199,7 +202,7 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 		if !ok{
 			device_id_map_netports[device_id]=[]NetPort{}
 		}
-		device_id_map_netports[device_id]=append(device_id_map_netports[device_id], NetPort{ mac_i, net.Ipv4Uint32ConverString(ipv4_int), netPort_type})
+		device_id_map_netports[device_id]=append(device_id_map_netports[device_id], NetPort{ mac_i, net.Ipv4Uint32ConverString(ipv4_int), netPort_type,mask})
 	}
 	//search server
 	join_tables_t=[][4]string{

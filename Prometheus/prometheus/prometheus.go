@@ -54,8 +54,9 @@ type Vm struct {
 
 type NetPort struct {
 	Mac       interface{}
-	Ipv4      interface{}
+	Ipv4      string
 	NetPortType      string
+	Mask	  uint8
 }
 
 type Space struct {

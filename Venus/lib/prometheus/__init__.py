@@ -1,5 +1,6 @@
  #coding=utf-8
 import requests
+import urllib
 import json
 class PrometheusError(Exception):
 	def __init__(self, value):
@@ -18,11 +19,14 @@ class Prometheus:
 			elif method == "POST":
 				r = requests.post(self.url+api,data)
 			elif method == "DELETE":
-				r = requests.delete(self.url+api)
+				suffix=""
+				if data!={}:
+					suffix="?"+urllib.parse.urlencode(data)
+				r = requests.delete(self.url+api+suffix)
 			elif method == "UPDATE":
 				r = requests.patch(self.url+api,data)
-		except:
-			raise PrometheusError("Can`t connect to prometheus.")
+		except Exception as e:
+			raise PrometheusError("Can`t connect to prometheus.:"+str(e))
 		if r.status_code >399:
 			raise PrometheusError("HTTP CODE:%d,Text:%s" % (r.status_code,r.json()))
 		else:
@@ -44,6 +48,12 @@ class Prometheus:
 		return self.__apiRequest(self._server+"/"+name,'DELETE')
 	def UpdateServer(self,name,js):
 		return self.__apiRequest(self._server+"/"+name,'UPDATE',js)
+	def AddNetPort(self,dt,name,js):
+		return self.__apiRequest(dt+"/"+name+"/netPorts",'POST',js)
+	def DeleteNetPort(self,dt,name,js):
+		return self.__apiRequest(dt+"/"+name+"/netPorts",'DELETE',js)
+	def GetNetPort(self,dt,name):
+		return self.__apiRequest(dt+"/"+name+"/netPorts",'GET')
 	def getDevice(self,deviceId=None):
 		api="devices"
 		if deviceId !=None:
