@@ -7,19 +7,24 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/global"
 )
 
-func GetOneLocation(location_id interface{})(*Location, error) {
+func GetOneLocation(id interface{},name interface{})(*Location, error) {
 	var r *Location
-	if location_id!=nil{
-		s,ok:=LOCATION_INDEX_ID[location_id.(int)]
+	if id!=nil{
+		s,ok:=LOCATION_INDEX_ID[id.(int)]
 		if ok {
 			r=s.Value.(*Location)
 			return r,nil
-		}else{
-			return r,global.ERROR_resource_notexist
 		}
-	}else{
-		return r,nil
+		return r,global.ERROR_resource_notexist
+	}else if name!=nil{
+		s,ok:=LOCATION_INDEX_NAME[name.(string)]
+		if ok {
+			r=s.Value.(*Location)
+			return r,nil
+		}
+		return r,global.ERROR_resource_notexist
 	}
+	return nil,global.ERROR_parameter_miss
 }
 func GetLocation(location_id interface{})( []*Location, error) {
 	r:=[]*Location{}
@@ -77,16 +82,76 @@ func GetLocationViaDB(location_ids []int,location_names []string)([]*Location,er
 }
 
 
-func AddLocation(values [][]interface{}) error {
-	return PROMETHEUS.dbobj.Add(global.TABLElocation, []string{`location_name`, `picture`, `father_location_id`}, values)
+func AddLocationViaDB(self *Location) error {
+	_,err:=GetOneLocation(nil,self.LocationName)
+	if err==nil{return global.ERROR_resource_duplicate}
+	tx,err:=PROMETHEUS.dbobj.Begin()
+	if err!=nil{return err}
+	items:=[]string{`location_name`, 
+			        `father_location_id`}
+	values:=[][]interface{}{[]interface{}{
+					self.LocationName,
+					self.FatherLocationId,
+	}}
+	err=tx.Add(global.TABLElocation, items, values)
+	if err!=nil{return err}
+	defer func(){if err!=nil{tx.Rollback()}else{tx.Commit()}}()
+	var id int
+	conditions:=[]string{fmt.Sprintf("location_name='%s'",self.LocationName)}
+	items2:=[]string{"location_id"}
+	cur,err:=tx.Get(global.TABLElocation, nil,items2, conditions,  
+					&id)
+	if !cur.Fetch(){
+		err= global.ERROR_data_logic
+	}
+	cur.Close()
+	self.LocationId=id
+	return err
 }
 
-func DeleteLocation(id int) error {
-	c := fmt.Sprintf("location_id = %d", id)
-	return PROMETHEUS.dbobj.Delete(global.TABLElocation, []string{c})
+func (self *Location)Delete()(err error){
+	defer self.Unlock()
+	self.Lock()
+	err=self.DeleteViaDB()
+	if err!=nil{
+		return 
+	}
+	drop_cache_and_index(self)
+	return 
+}
+func (self *Location)DeleteViaDB()error{
+	conditions:=[]string{}
+	conditions=append(conditions,fmt.Sprintf("location_id=%d",self.LocationId))
+	return PROMETHEUS.dbobj.Delete(global.TABLElocation,conditions)
+}
+func (self *Location)Update(fake *Location)(err error){
+	defer self.Unlock()
+	self.Lock()
+	err=self.DeleteViaDB()
+	if err!=nil{
+		return 
+	}
+	drop_cache_and_index(self)
+	return 
 }
 
-func UpdateLocation(id int, cloumns []string, values []interface{}) error {
-	c := fmt.Sprintf("location_id = %d", id)
-	return PROMETHEUS.dbobj.Update(global.TABLElocation, []string{c}, cloumns, values)
+func (self *Location)UpdateLocationViaDB(fake *Location)(*Location,error) {
+	c := fmt.Sprintf("location_id = %d", self.LocationId)
+	items:=[]string{`location_name`,
+					}
+	values:=[]interface{}{
+					self.LocationName,
+						}
+	err:=PROMETHEUS.dbobj.Update(global.TABLElocation, []string{c}, items, values)
+	if err!=nil{return self,err}
+	self.LocationName =fake.LocationName
+	return self,nil
+}
+
+func (self *Location)FakeCopy()*Location{
+		r := new(Location)
+		r.LocationId=self.LocationId
+		r.LocationName =self.LocationName 
+		r.FatherLocationId=self.FatherLocationId
+		return r
 }

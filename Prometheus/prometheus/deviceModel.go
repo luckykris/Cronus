@@ -35,7 +35,7 @@ func GetDeviceModel()([]*DeviceModel,error){
 func AddDeviceModel(deviceModel *DeviceModel)error{
 	err:=AddDeviceModelViaDB(deviceModel)
 	if err==nil {
-		create_device_model_cache_and_index(deviceModel)
+		create_cache_and_index(deviceModel)
 	}
 	return err
 }
@@ -133,7 +133,7 @@ func (self *DeviceModel)Delete()(err error){
 	if err!=nil{
 		return 
 	}
-	drop_device_model_cache_and_index(self)
+	drop_cache_and_index(self)
 	return 
 }
 func (self *DeviceModel)DeleteViaDB()error{

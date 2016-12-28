@@ -71,7 +71,8 @@ func (server *Server)Update(fake_server *Server)error{
 
 func AddServerViaDB(server *Server)(error) {
 	//check 
-	if if_device_name_exist(server.Device.DeviceName){
+	_,err:=GetOneServer(nil,server.Device.DeviceName)
+	if err==nil{
 		return global.ERROR_resource_duplicate
 	}
 	if server.Get_DeviceModel().Get_DeviceType() != SERVER{
@@ -114,10 +115,10 @@ func AddServerViaDB(server *Server)(error) {
 		err= global.ERROR_data_logic
 	}
 	cur.Close()
-	server.Device.DeviceId=device_id//rewrite server struct`s autoincrease id
 	if err!=nil{
 		return err
 	}
+	server.Device.DeviceId=device_id//rewrite server struct`s autoincrease id
 	err=tx.Add(global.TABLEserver,[]string{`device_id`},[][]interface{}{[]interface{}{device_id}})
 	if err!=nil{
 		return err

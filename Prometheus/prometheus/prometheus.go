@@ -76,20 +76,22 @@ type DeviceModel struct {
 }
 
 type Cabinet struct {
+	sync.RWMutex
 	CabinetId     int
 	CabinetName   string
-	IsCloud       string
 	CapacityTotal uint64
 	CapacityUsed  uint64
 	Idc     	  *Idc
 }
 type Idc struct{
+	sync.RWMutex
 	IdcId int
 	IdcName string
 	Location *Location
 }
 
 type Location struct {
+	sync.RWMutex
 	LocationId         int
 	LocationName       string
 	FatherLocationId   interface{}
@@ -133,15 +135,15 @@ func Init(mainCfg cfg.MainCfg) {
 }
 
 
-func if_device_name_exist(name string)bool{
-	for _,a_kind_of_device :=range DEVICE_INDEX_NAME{
-		_,exist:=a_kind_of_device[name]
-		if exist{
-			return true
-		}
-	}
-	return false
-}
+//func if_device_name_exist(name string)bool{
+//	for _,a_kind_of_device :=range DEVICE_INDEX_NAME{
+//		_,exist:=a_kind_of_device[name]
+//		if exist{
+//			return true
+//		}
+//	}
+//	return false
+//}
 
 func ifcache()bool{
 	return PROMETHEUS.ReadCache

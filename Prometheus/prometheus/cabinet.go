@@ -81,16 +81,45 @@ func GetCabinetViaDB(ids []int,names []string)([]*Cabinet,error){
 }
 
 
-func AddCabinet(values [][]interface{}) error {
-	return PROMETHEUS.dbobj.Add(global.TABLEcabinet, []string{`cabinet_name`, `iscloud`, `capacity_total`, `capacity_used`, `location_id`}, values)
+func AddCabinetViaDB(self *Cabinet) error {
+	items:=[]string{`cabinet_name`,
+					`capacity_total`,
+					`capacity_used`,
+					`location_id`}
+	values:=[][]interface{}{[]interface{}{
+					self.CabinetName,
+					self.CapacityTotal,
+					self.CapacityUsed,
+					self.Idc.IdcId,
+		}}
+	return PROMETHEUS.dbobj.Add(global.TABLEcabinet, items, values)
 }
 
-func DeleteCabinet(id int) error {
-	c := fmt.Sprintf("cabinet_id = %d", id)
+func (self *Cabinet)DeleteCabinetViaDB() error {
+	c := fmt.Sprintf("cabinet_id = %d", self.CabinetId)
 	return PROMETHEUS.dbobj.Delete(global.TABLEcabinet, []string{c})
 }
 
-func UpdateCabinet(id int, cloumns []string, values []interface{}) error {
-	c := fmt.Sprintf("cabinet_id = %d", id)
-	return PROMETHEUS.dbobj.Update(global.TABLEcabinet, []string{c}, cloumns, values)
+func (self *Cabinet)UpdateCabinetViaDB(fake *Cabinet)(*Cabinet ,error) {
+	c := fmt.Sprintf("cabinet_id = %d", self.CabinetId)
+	items:=[]string{`cabinet_name` ,
+					`capacity_used`,}
+	values:=[]interface{}{
+					fake.CabinetName,
+					fake.CapacityUsed,
+		}
+	err:=PROMETHEUS.dbobj.Update(global.TABLEcabinet, []string{c}, items, values)
+	if err!=nil{return self,err}
+	self.CabinetName =fake.CabinetName
+	self.CapacityUsed=fake.CapacityUsed
+	return self,nil
+}
+func (self *Cabinet)FakeCopy()*Cabinet{
+		r := new(Cabinet)
+		r.CabinetId=self.CabinetId
+		r.CabinetName =self.CabinetName 
+		r.CapacityTotal=self.CapacityTotal
+		r.CapacityUsed=self.CapacityUsed
+		r.Idc=self.Idc
+		return r
 }

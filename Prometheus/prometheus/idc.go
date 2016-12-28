@@ -62,7 +62,7 @@ func GetIdcViaDB(idc_ids []int,idc_names []string)([]*Idc ,error) {
 		idc:=new(Idc)
 		idc.IdcId=idc_id
 		idc.IdcName=idc_name
-		idc.Location,tmp_e2=GetOneLocation(location_id)
+		idc.Location,tmp_e2=GetOneLocation(location_id,nil)
 		if tmp_e2!=nil{
 			log.Error("can`t find location id:",location_id)
 		}
