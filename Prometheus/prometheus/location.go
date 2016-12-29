@@ -26,10 +26,10 @@ func GetOneLocation(id interface{},name interface{})(*Location, error) {
 	}
 	return nil,global.ERROR_parameter_miss
 }
-func GetLocation(location_id interface{})( []*Location, error) {
+func GetLocation(id interface{},name interface{})( []*Location, error) {
 	r:=[]*Location{}
-	if location_id!=nil{
-		s,ok:=LOCATION_INDEX_ID[location_id.(int)]
+	if id!=nil{
+		s,ok:=LOCATION_INDEX_ID[id.(int)]
 		if ok {
 			r=append(r,s.Value.(*Location))
 			return r,nil
@@ -81,6 +81,13 @@ func GetLocationViaDB(location_ids []int,location_names []string)([]*Location,er
 	return  r,err
 }
 
+func AddLocation(self *Location)error{
+	err:=AddLocationViaDB(self)
+	if err==nil{
+		create_cache_and_index(self)
+	}
+	return err
+}
 
 func AddLocationViaDB(self *Location) error {
 	_,err:=GetOneLocation(nil,self.LocationName)
@@ -113,10 +120,9 @@ func (self *Location)Delete()(err error){
 	defer self.Unlock()
 	self.Lock()
 	err=self.DeleteViaDB()
-	if err!=nil{
-		return 
+	if err==nil{
+		drop_cache_and_index(self)
 	}
-	drop_cache_and_index(self)
 	return 
 }
 func (self *Location)DeleteViaDB()error{
@@ -127,25 +133,23 @@ func (self *Location)DeleteViaDB()error{
 func (self *Location)Update(fake *Location)(err error){
 	defer self.Unlock()
 	self.Lock()
-	err=self.DeleteViaDB()
-	if err!=nil{
-		return 
-	}
 	drop_cache_and_index(self)
+	err=self.UpdateViaDB(fake)
+	create_cache_and_index(self)
 	return 
 }
 
-func (self *Location)UpdateLocationViaDB(fake *Location)(*Location,error) {
+func (self *Location)UpdateViaDB(fake *Location)(error) {
 	c := fmt.Sprintf("location_id = %d", self.LocationId)
 	items:=[]string{`location_name`,
 					}
 	values:=[]interface{}{
-					self.LocationName,
+					fake.LocationName,
 						}
 	err:=PROMETHEUS.dbobj.Update(global.TABLElocation, []string{c}, items, values)
-	if err!=nil{return self,err}
+	if err!=nil{return err}
 	self.LocationName =fake.LocationName
-	return self,nil
+	return err
 }
 
 func (self *Location)FakeCopy()*Location{

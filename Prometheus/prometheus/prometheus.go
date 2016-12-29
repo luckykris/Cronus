@@ -79,8 +79,8 @@ type Cabinet struct {
 	sync.RWMutex
 	CabinetId     int
 	CabinetName   string
-	CapacityTotal uint64
-	CapacityUsed  uint64
+	CapacityTotal uint32
+	CapacityUsed  uint32
 	Idc     	  *Idc
 }
 type Idc struct{

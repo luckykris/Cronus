@@ -11,6 +11,9 @@ class Prometheus:
 	def __init__(self,url):
 		self._deviceModel="deviceModel"
 		self._server="server"
+		self._location="location"
+		self._idc="idc"
+		self._cabinet="cabinet"
 		self.url=url
 	def __apiRequest(self,api,method,data={}):
 		try:
@@ -54,6 +57,32 @@ class Prometheus:
 		return self.__apiRequest(dt+"/"+name+"/netPorts",'DELETE',js)
 	def GetNetPort(self,dt,name):
 		return self.__apiRequest(dt+"/"+name+"/netPorts",'GET')
+	def AddLocation(self,js):
+		return self.__apiRequest(self._location,'POST',js)
+	def GetLocation(self,name):
+		return self.__apiRequest(self._location+"/"+name,'GET')
+	def DeleteLocation(self,name):
+		return self.__apiRequest(self._location+"/"+name,'DELETE')
+	def UpdateLocation(self,name,js):
+		return self.__apiRequest(self._location+"/"+name,'UPDATE',js)
+	def AddIdc(self,js):
+		return self.__apiRequest(self._idc,'POST',js)
+	def GetIdc(self,name):
+		return self.__apiRequest(self._idc+"/"+name,'GET')
+	def DeleteIdc(self,name):
+		return self.__apiRequest(self._idc+"/"+name,'DELETE')
+	def UpdateIdc(self,name,js):
+		return self.__apiRequest(self._idc+"/"+name,'UPDATE',js)
+	def AddCabinet(self,js):
+		return self.__apiRequest(self._cabinet,'POST',js)
+	def GetCabinet(self,name):
+		return self.__apiRequest(self._cabinet+"/"+name,'GET')
+	def DeleteCabinet(self,name):
+		return self.__apiRequest(self._cabinet+"/"+name,'DELETE')
+	def UpdateCabinet(self,name,js):
+		return self.__apiRequest(self._cabinet+"/"+name,'UPDATE',js)
+
+
 	def getDevice(self,deviceId=None):
 		api="devices"
 		if deviceId !=None:

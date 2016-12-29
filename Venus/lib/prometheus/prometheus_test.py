@@ -23,6 +23,19 @@ Server={
 tag={
 	"TagName":"functiontest_tag",
 }
+Location={
+	"LocationName":name_suffix+"-location"
+}
+Idc={
+	"IdcName":name_suffix+"-idc",
+	"LocationName":Location["LocationName"]
+}
+Cabinet={
+	"CabinetName":name_suffix+"-cabinet",
+	"CapacityTotal":200,
+	"IdcName":Idc["IdcName"]
+}
+
 
 def deco(func):
 	def _deco():
@@ -80,6 +93,47 @@ def NetPort_delete():
 	a.DeleteNetPort("server",Server["DeviceName"],Server)
 
 
+@deco
+def Location_add():
+	a.AddLocation(Location)
+@deco
+def Location_get():
+	a.GetLocation(Location["LocationName"])
+@deco
+def Location_delete():
+	a.DeleteLocation(Location["LocationName"])
+@deco
+def Location_update():
+	a.UpdateLocation(Location["LocationName"],Location)
+
+
+
+@deco
+def Idc_add():
+	a.AddIdc(Idc)
+@deco
+def Idc_get():
+	a.GetIdc(Idc["IdcName"])
+@deco
+def Idc_delete():
+	a.DeleteIdc(Idc["IdcName"])
+@deco
+def Idc_update():
+	a.UpdateIdc(Idc["IdcName"],Idc)
+
+
+@deco
+def Cabinet_add():
+	a.AddCabinet(Cabinet)
+@deco
+def Cabinet_get():
+	a.GetCabinet(Cabinet["CabinetName"])
+@deco
+def Cabinet_delete():
+	a.DeleteCabinet(Cabinet["CabinetName"])
+@deco
+def Cabinet_update():
+	a.UpdateCabinet(Cabinet["CabinetName"],Cabinet)
 
 @deco	
 def device_add():
@@ -159,6 +213,15 @@ def space_get():
 	a.getSpace()
 
 
+Location_add()
+Location_get()
+Location_update()
+Idc_add()
+Idc_get()
+Idc_update()
+Cabinet_add()
+Cabinet_get()
+Cabinet_update()
 DeviceModel_add()
 DeviceModel_get()
 Server_add()
@@ -169,3 +232,6 @@ NetPort_get()
 NetPort_delete()
 Server_delete()
 DeviceModel_delete()
+Cabinet_delete()
+Idc_delete()
+Location_delete()

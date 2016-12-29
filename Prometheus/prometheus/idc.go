@@ -7,23 +7,29 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-func GetOneIdc(idc_id interface{})(*Idc, error) {
+func GetOneIdc(id interface{},name interface{})(*Idc, error) {
 	var r *Idc
-	if idc_id!=nil{
-		s,ok:=IDC_INDEX_ID[idc_id.(int)]
+	if id!=nil{
+		s,ok:=IDC_INDEX_ID[id.(int)]
 		if ok {
 			r=s.Value.(*Idc)
 			return r,nil
-		}else{
-			return r,global.ERROR_resource_notexist
 		}
+		return r,global.ERROR_resource_notexist
+	}else if name!=nil{
+		s,ok:=IDC_INDEX_NAME[name.(string)]
+		if ok {
+			r=s.Value.(*Idc)
+			return r,nil
+		}
+		return r,global.ERROR_resource_notexist
 	}
-	return r,nil
+	return nil,global.ERROR_parameter_miss
 }
-func GetIdc(idc_id interface{})( []*Idc, error) {
+func GetIdc(id interface{},name interface{})( []*Idc, error) {
 	r:=[]*Idc{}
-	if idc_id!=nil{
-		s,ok:=IDC_INDEX_ID[idc_id.(int)]
+	if id!=nil{
+		s,ok:=IDC_INDEX_ID[id.(int)]
 		if ok {
 			r=append(r,s.Value.(*Idc))
 			return r,nil
@@ -72,16 +78,82 @@ func GetIdcViaDB(idc_ids []int,idc_names []string)([]*Idc ,error) {
 }
 
 
-func AddIdc(values [][]interface{}) error {
-	return PROMETHEUS.dbobj.Add(global.TABLEidc, []string{`idc_name`, `location_id`}, values)
+func AddIdc(self *Idc)error{
+	err:=AddIdcViaDB(self)
+	if err==nil{
+		create_cache_and_index(self)
+	}
+	return err
 }
 
-func DeleteIdc(id int) error {
-	c := fmt.Sprintf("idc_id = %d", id)
-	return PROMETHEUS.dbobj.Delete(global.TABLEidc, []string{c})
+func AddIdcViaDB(self *Idc) error {
+	_,err:=GetOneIdc(nil,self.IdcName)
+	if err==nil{return global.ERROR_resource_duplicate}
+	tx,err:=PROMETHEUS.dbobj.Begin()
+	if err!=nil{return err}
+	items:=[]string{`idc_name`, 
+			        `location_id`}
+	values:=[][]interface{}{[]interface{}{
+					self.IdcName,
+					self.Location.LocationId,
+	}}
+	err=tx.Add(global.TABLEidc, items, values)
+	if err!=nil{return err}
+	defer func(){if err!=nil{tx.Rollback()}else{tx.Commit()}}()
+	var id int
+	conditions:=[]string{fmt.Sprintf("idc_name='%s'",self.IdcName)}
+	items2:=[]string{"idc_id"}
+	cur,err:=tx.Get(global.TABLEidc, nil,items2, conditions,  
+					&id)
+	if !cur.Fetch(){
+		err= global.ERROR_data_logic
+	}
+	cur.Close()
+	self.IdcId=id
+	return err
 }
 
-func UpdateIdc(id int, cloumns []string, values []interface{}) error {
-	c := fmt.Sprintf("idc_id = %d", id)
-	return PROMETHEUS.dbobj.Update(global.TABLEidc, []string{c}, cloumns, values)
+func (self *Idc)Delete()(err error){
+	defer self.Unlock()
+	self.Lock()
+	err=self.DeleteViaDB()
+	if err==nil{
+		drop_cache_and_index(self)
+	}
+	return 
+}
+func (self *Idc)DeleteViaDB()error{
+	conditions:=[]string{}
+	conditions=append(conditions,fmt.Sprintf("idc_id=%d",self.IdcId))
+	return PROMETHEUS.dbobj.Delete(global.TABLEidc,conditions)
+}
+
+func (self *Idc)Update(fake *Idc)(err error){
+	defer self.Unlock()
+	self.Lock()
+	drop_cache_and_index(self)
+	err=self.UpdateViaDB(fake)
+	create_cache_and_index(self)
+	return 
+}
+
+func (self *Idc)UpdateViaDB(fake *Idc)(error) {
+	c := fmt.Sprintf("idc_id = %d", self.IdcId)
+	items:=[]string{`idc_name`,
+					}
+	values:=[]interface{}{
+					fake.IdcName,
+						}
+	err:=PROMETHEUS.dbobj.Update(global.TABLEidc, []string{c}, items, values)
+	if err!=nil{return err}
+	self.IdcName =fake.IdcName
+	return err
+}
+
+func (self *Idc)FakeCopy()*Idc{
+		r := new(Idc)
+		r.IdcId=self.IdcId
+		r.IdcName =self.IdcName 
+		r.Location=self.Location
+		return r
 }

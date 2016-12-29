@@ -18,14 +18,23 @@ func LoadRoute() {
 			WEB.Delete("/*/netPorts", DeleteNetPort)
 		})
 		WEB.Group("/location", func() {
-			WEB.Get("/?:id:int", GetLocation)
+			WEB.Get("/?*", GetLocation)
+			WEB.Delete("/*", DeleteLocation)
+			WEB.Patch("/*", UpdateLocation)
+			WEB.Post("/", AddLocation)
 		})
 		WEB.Group("/idc", func() {
-			WEB.Get("/?:id:int", GetIdc)
+			WEB.Get("/?*", GetIdc)
+			WEB.Delete("/*", DeleteIdc)
+			WEB.Patch("/*", UpdateIdc)
+			WEB.Post("/", AddIdc)
 		})
 		WEB.Group("/cabinet", func() {
-			WEB.Get("/?:id:int", GetCabinet)
-			WEB.Get("/:id:int/space", GetCabinetSpace)
+			WEB.Get("/?*", GetCabinet)
+			WEB.Delete("/*", DeleteCabinet)
+			WEB.Patch("/*", UpdateCabinet)
+			WEB.Post("/", AddCabinet)
+			//WEB.Get("/*/space", GetCabinetSpace)
 		})
 		WEB.Group("/deviceModel", func() {
 			WEB.Get("/?*", GetDeviceModel)
