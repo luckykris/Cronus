@@ -34,7 +34,7 @@ func LoadRoute() {
 			WEB.Delete("/*", DeleteCabinet)
 			WEB.Patch("/*", UpdateCabinet)
 			WEB.Post("/", AddCabinet)
-			//WEB.Get("/*/space", GetCabinetSpace)
+			WEB.Get("/*/space", GetCabinetSpace)
 		})
 		WEB.Group("/deviceModel", func() {
 			WEB.Get("/?*", GetDeviceModel)

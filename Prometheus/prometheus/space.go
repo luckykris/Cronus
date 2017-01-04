@@ -40,9 +40,25 @@ func (cabinet *Cabinet)GetSpace() ([]Space,error) {
 	var position string
 	conditions:=[]string{fmt.Sprintf("cabinet_id=%d",cabinet.CabinetId)}
 	cur, err := PROMETHEUS.dbobj.Get(global.TABLEspace,nil, []string{`cabinet_id`, `device_id`, `u_position`, `position`}, conditions, &cabinet_id, &device_id, &u_position, &position)
+	//init map
+	m:= map[string]map[int]Space{}
+	for _,v:=range []string{"front","rear"}{
+		m[v]=map[int]Space{}
+	}
+	//
 	r := []Space{}
 	for cur.Fetch() {
-		r = append(r, Space{cabinet_id, device_id, u_position, position})
+		m[position][u_position]=Space{cabinet_id, device_id, u_position, position}
+	}
+	for i:=0;i<int(cabinet.CapacityTotal);i++{
+		for _,v:=range []string{"front","rear"}{
+			s,ok:=m[v][i]
+			if ok{
+				r=append(r,s)
+			}else{
+				r=append(r,Space{cabinet.CabinetId, nil, i, v})
+			}
+		}
 	}
 	return r,err
 }

@@ -61,7 +61,7 @@ type NetPort struct {
 
 type Space struct {
 	CabinetId int
-	DeviceId  int
+	DeviceId  interface{}
 	UPosition int
 	Position  string
 }

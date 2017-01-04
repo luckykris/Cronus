@@ -11,12 +11,10 @@ func GetCabinetSpace(ctx *macaron.Context) {
 	var r interface{}
 	var err error
 	var cabinet *prometheus.Cabinet
-	cabinets, err := prometheus.GetCabinet(ctx.ParamsInt("id"),nil)
-	if len(cabinets)<1 {
+	cabinet, err = prometheus.GetOneCabinet(nil,ctx.Params("*"))
+	if err!=nil {
 		ctx.JSON(404, err.Error())
 		return
-	}else{
-		cabinet = cabinets[0]
 	}
 	r,err=cabinet.GetSpace()
 	if err != nil {
