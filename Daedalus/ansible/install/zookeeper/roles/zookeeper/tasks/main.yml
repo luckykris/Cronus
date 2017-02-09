@@ -1,0 +1,23 @@
+---
+- name: "check java"
+  yum: name=java-1.8.0 state=present
+- name: "check  deploy dir"
+  file: path={{deploy_dir}}/{{pn}} state=directory
+- name: "check  and install"
+  shell: /bin/ls {{deploy_dir}}/{{pn}}/bin/zkServer.sh
+  register: result
+  ignore_errors: True
+- name: "install zookeeper"
+  unarchive: copy=yes src={{pkg_dir}}/{{pn}}.tar.gz dest={{deploy_dir}}
+  when: result.rc != 0
+- name: "check  data_dir"
+  file: state=directory path={{data_dir}}
+- name: "copy myid"
+  template: src=myid dest={{data_dir}}/
+  notify: restart zookeeper
+- name: "copy cfg"
+  template: src=zoo.cfg dest={{deploy_dir}}/{{pn}}/conf/
+  notify: restart zookeeper
+
+
+

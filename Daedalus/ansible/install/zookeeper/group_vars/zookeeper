@@ -1,0 +1,7 @@
+data_dir: /data/data/zookeeper
+deploy_dir: /data/server/
+#program name
+pn: zookeeper
+#build a $pn.tar.gz and put it in $pkg_dir
+pkg_dir: /data/pkg/
+server: "server.1=192.168.31.101:2888:3888\nserver.2=192.168.31.102:2888:3888\nserver.3=192.168.31.103:2888:3888"
