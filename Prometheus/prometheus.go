@@ -5,8 +5,8 @@ import (
 	"github.com/luckykris/Cronus/Prometheus/cfg"
 	"github.com/luckykris/Cronus/Prometheus/prometheus"
 	"github.com/luckykris/Cronus/Prometheus/http"
-	"github.com/luckykris/Cronus/Hephaestus/os"
-	"github.com/luckykris/Cronus/Hephaestus/safe"
+	"github.com/luckykris/Cronus/Hephaestus/go/os"
+	"github.com/luckykris/Cronus/Hephaestus/go/safe"
 )
 
 func main() {

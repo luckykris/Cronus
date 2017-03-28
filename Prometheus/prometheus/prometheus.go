@@ -7,6 +7,11 @@ import (
 	"os"
 	"sync"
 )
+
+const (
+	HALF string="half"
+	FULL string="full"
+)
 type Device_i interface{
 	//GetTag() ([]Tag, error)
 	//AddTag(...Tag) error

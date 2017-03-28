@@ -11,6 +11,7 @@ import (
 type CRUD interface{
 	Get(string, interface{},[]string, []string, ...interface{}) (*Cur, error)
 	GetJoin(string, [][4]string, interface {}, []string, []string, ...interface {}) (*Cur, error)
+	GetCount(string, interface{} , []string)(int,error)
 	Add(string, []string, [][]interface{}) error
 	Delete(string, []string) error
 	Update(string, []string, []string, []interface{}) error

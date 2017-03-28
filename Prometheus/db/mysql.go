@@ -89,6 +89,8 @@ func combine_getjoin_sql(crud_i crud,ltable string,tables [][4]string, groupby i
 	}
 	return combine_get_sql(crud_i,table, groupby,columns_name, conditions, columns ...)
 }
+
+
 func combine_add_sql(crud_i crud ,table string, columns_name []string, values [][]interface{})error{
 	values3 := []string{}
 	for row := range values {

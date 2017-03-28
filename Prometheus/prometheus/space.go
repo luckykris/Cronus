@@ -77,6 +77,61 @@ func GetDeviceCabinetMapViaDB(device_ids []int)(map[int]int,error){
 	return mm, err
 }
 
+func (device *Device)SetSpace(cabinet_id ,start_u int,front_rear string)error{
+	var capacity_totabl int
+	cabinet:=GetOneCabinet(cabinet_id,nil)
+	deviceModel:=device.Get_DeviceModel()
+	//check if start_u is avaliable
+	var end_u=start_u+deviceModel.U-1
+	if start_u > cabinet.CapacityTotal || end_u >cabinet.CapacityTotal {
+		return global.ERROR_resource_outof_range
+	}
+	tx,err:=PROMETHEUS.dbobj.Begin()
+	if err!=nil{
+		return err
+	}
+	defer func(){
+		if err!=nil{
+			tx.Rollback()
+		}else{
+			tx.Commit()
+		}
+	}()
+	//check if the space is free
+	conditions:=[]string{fmt.Sprintf("cabinet_id=%d",cabinet_id),
+					 	 fmt.Sprintf("u_position>=%d",start_u),
+					 	 fmt.Sprintf("u_position<=%d",end_u)),
+				}
+	if deviceModel.HALF_FULL == HALF {
+		conditions=append(conditions,fmt.Sprintf("position=%s"),front_rear)
+	}
+	var inuse_space int 
+	cur,err := tx.Get(global.TABLEspace,"count(*)",conditions，&inuse_space)
+	if !cur.Fetch(){
+		err = ERROR_resource_notexist
+	}
+	cur.Close()
+	if err!=nil{
+		return err
+	}
+	if inuse_space >0{
+		return ERROR_resource_duplicate
+	}
+	take_spaces:=[][]interface{}{}
+	switch deviceModel.HALF_FULL{ 
+	case HALF:
+		for i:=start_u;i<=end_u;i++;{
+			take_spaces=append(take_spaces,[]interface{}{cabinet_id,device.Get_DeviceId(),i,front_rear})
+		}
+	case FULL:
+		for i:=start_u;i<=end_u;i++;{
+			take_spaces=append(take_spaces,[]interface{}{cabinet_id,device.Get_DeviceId(),i,FRONT})
+			take_spaces=append(take_spaces,[]interface{}{cabinet_id,device.Get_DeviceId(),i,REAR})
+		}
+	}
+	err=tx.Add(global.TABLEspace,[]string{`cabinet_id`,`device_id`,`u_position`,`position`},take_spaces)
+	return err
+}
 //func (device *Device)AddSpace(cabinet_id ,start_u int,position string)(error){
 //	fmt.Printf("%#v \n",device.DeviceModel)
 //	var err error
