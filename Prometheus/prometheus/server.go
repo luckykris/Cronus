@@ -186,6 +186,9 @@ func GetServerViaDB(device_ids []int ,device_names []string,group_ids []int ,env
 					&netPort_type,
 					&function_type,
 					&ctime)
+	if err!=nil{
+		return 
+	}
 	device_id_map_netports := map[int][]NetPort{}
 	//get cabinet
 	device_id_map_cabinet_id,err:=GetDeviceCabinetMapViaDB(device_ids)
