@@ -10,6 +10,7 @@ import (
 )
 const(
 		SERVER string="Server"
+		VM string="VM"
 )
 type Cache struct{
 	Container *list.List
@@ -115,6 +116,13 @@ func drop_device_cache_and_index(device Device_i){
 			delete(DEVICE_INDEX_NAME[SERVER],device.Get_DeviceName())
 			DEVICE_CACHE.Container.Remove(old_device)
 		}
+	case VM:
+		old_device,ok:=DEVICE_INDEX_ID[VM][device.Get_DeviceId()]
+		if ok{
+			delete(DEVICE_INDEX_ID[VM],device.Get_DeviceId())
+			delete(DEVICE_INDEX_NAME[VM],device.Get_DeviceName())
+			DEVICE_CACHE.Container.Remove(old_device)
+		}
 	default:
 		panic("device type not support")	
 	}
@@ -127,6 +135,10 @@ func create_device_cache_and_index(device Device_i){
 		tmp_e:=DEVICE_CACHE.Container.PushBack(device)
 		DEVICE_INDEX_ID[SERVER][device.Get_DeviceId()]=tmp_e
 		DEVICE_INDEX_NAME[SERVER][device.Get_DeviceName()]=tmp_e
+	case VM:
+		tmp_e:=DEVICE_CACHE.Container.PushBack(device)
+		DEVICE_INDEX_ID[VM][device.Get_DeviceId()]=tmp_e
+		DEVICE_INDEX_NAME[VM][device.Get_DeviceName()]=tmp_e
 	default:
 		panic("device type not support")	
 	}

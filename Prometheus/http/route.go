@@ -17,6 +17,16 @@ func LoadRoute() {
 			WEB.Post("/*/netPorts", AddNetPort)
 			WEB.Delete("/*/netPorts", DeleteNetPort)
 		})
+		WEB.Group("/vm", func() {
+			WEB.Get("/?*", GetVm)
+			WEB.Delete("/*", DeleteDevice)
+			WEB.Patch("/*", UpdateVm)
+			WEB.Post("/", AddVm)
+			WEB.Get("/*/space", GetServerSpace)
+			WEB.Get("/*/netPorts", GetNetPort)
+			WEB.Post("/*/netPorts", AddNetPort)
+			WEB.Delete("/*/netPorts", DeleteNetPort)
+		})
 		WEB.Group("/location", func() {
 			WEB.Get("/?*", GetLocation)
 			WEB.Delete("/*", DeleteLocation)

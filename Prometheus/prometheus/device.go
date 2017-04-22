@@ -28,6 +28,12 @@ func (self *Device)DeleteViaDB()error{
 func (self *Device)Get_DeviceId()int{
 	return self.DeviceId
 }
+func (self *Device)Get_FatherDeviceId()interface{}{
+	return self.FatherDeviceId
+}
+func (self *Device)Get_FatherDevice()(*Server,error){
+	return GetOneServer(self.Get_DeviceId(),nil)
+}
 func (self *Device)Get_DeviceName()string{
 	return self.DeviceName
 }

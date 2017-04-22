@@ -49,10 +49,11 @@ type Server struct {
 
 type Vm struct {
 	Hostname string
-	Memsize int
+	Memsize uint32
+	Processor uint8
 	Os  string
 	Release float64
-	LastChangeTime int64
+	LastChangeTime uint64
 	Checksum string
 	Device 
 }
